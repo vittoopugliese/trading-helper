@@ -1,0 +1,284 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.wrap { padding: 1rem 0; font-family: var(--font-sans); }
+.tabs { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
+.tab { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; cursor: pointer; border: 0.5px solid var(--color-border-secondary); color: var(--color-text-secondary); background: var(--color-background-secondary); }
+.tab.active { background: var(--color-background-primary); color: var(--color-text-primary); border-color: var(--color-border-primary); }
+.panel { display: none; }
+.panel.active { display: block; }
+.section-label { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin: 20px 0 10px; }
+.section-label:first-of-type { margin-top: 0; }
+
+.stack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 8px; margin-bottom: 8px; }
+.stack-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 12px 14px; background: var(--color-background-secondary); }
+.stack-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px; }
+.stack-value { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+.stack-sub { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+
+.tree { font-family: var(--font-mono); font-size: 12px; color: var(--color-text-secondary); background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 14px 16px; line-height: 1.8; white-space: pre; overflow-x: auto; }
+.tree .folder { color: var(--color-text-primary); font-weight: 500; }
+.tree .comment { color: var(--color-text-tertiary); }
+
+.stage { border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); padding: 14px 16px; margin-bottom: 10px; }
+.stage-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.stage-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; flex-shrink: 0; background: var(--color-background-secondary); color: var(--color-text-secondary); }
+.stage-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+.stage-period { font-size: 12px; color: var(--color-text-secondary); }
+.stage-body { font-size: 12px; color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 6px; }
+.stage-list { font-size: 12px; color: var(--color-text-secondary); margin: 0; padding-left: 16px; line-height: 1.8; }
+
+.rule { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 12px 14px; margin-bottom: 8px; background: var(--color-background-primary); }
+.rule-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 5px; }
+.rule-body { font-size: 12px; color: var(--color-text-secondary); line-height: 1.6; }
+.code-inline { font-family: var(--font-mono); font-size: 11px; background: var(--color-background-secondary); padding: 1px 5px; border-radius: 4px; }
+
+.flow-step { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
+.flow-num { width: 22px; height: 22px; border-radius: 50%; background: var(--color-background-info); color: var(--color-text-info); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; }
+.flow-content { flex: 1; }
+.flow-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+.flow-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; line-height: 1.5; }
+
+.alert { border-radius: var(--border-radius-md); padding: 12px 14px; margin-bottom: 10px; font-size: 12px; line-height: 1.6; }
+.alert-info { background: var(--color-background-info); color: var(--color-text-info); border: 0.5px solid var(--color-border-info); }
+.alert-warning { background: var(--color-background-warning); color: var(--color-text-warning); border: 0.5px solid var(--color-border-warning); }
+</style>
+
+<div class="wrap">
+<div class="tabs">
+  <div class="tab active" onclick="show('stack')">Stack</div>
+  <div class="tab" onclick="show('estructura')">Estructura</div>
+  <div class="tab" onclick="show('fases')">Fases de build</div>
+  <div class="tab" onclick="show('flujo')">Flujo de uso</div>
+</div>
+
+<!-- STACK -->
+<div class="panel active" id="panel-stack">
+  <div class="stack-grid">
+    <div class="stack-card">
+      <div class="stack-label">Lenguaje</div>
+      <div class="stack-value">Python 3.11+</div>
+      <div class="stack-sub">typer o rich para la interfaz de terminal</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-label">LLM</div>
+      <div class="stack-value">Claude API (anthropic SDK)</div>
+      <div class="stack-sub">claude-sonnet-4-6 para razonamiento</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-label">Datos de mercado</div>
+      <div class="stack-value">python-binance</div>
+      <div class="stack-sub">klines + aggTrades, sin necesidad de cuenta API real, solo lectura pública</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-label">Base de datos local</div>
+      <div class="stack-value">SQLite</div>
+      <div class="stack-sub">velas cacheadas + historial de análisis + sesiones</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-label">Búsqueda en notas</div>
+      <div class="stack-value">ChromaDB (vector store local)</div>
+      <div class="stack-sub">indexa tus .md, corre 100% local, sin costo</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-label">Scheduler</div>
+      <div class="stack-value">APScheduler (dentro del mismo proceso)</div>
+      <div class="stack-sub">corre cada 15 min en background mientras la terminal está abierta</div>
+    </div>
+  </div>
+  <div class="alert alert-info">Todo corre en tu máquina. No necesitás servidor, ni Docker, ni nada en la nube para arrancar. Esto es clave: bajás la fricción a cero para empezar hoy mismo.</div>
+</div>
+
+<!-- ESTRUCTURA -->
+<div class="panel" id="panel-estructura">
+  <div class="section-label">Estructura de carpetas del proyecto</div>
+  <div class="tree">trading-agent/
+├── <span class="folder">notes/</span>              <span class="comment"># tus .md de Elliott + Order Flow</span>
+│   ├── elliott_waves.md
+│   ├── order_flow.md
+│   └── smart_money.md
+├── <span class="folder">data/</span>
+│   ├── cache.db          <span class="comment"># velas + volumen (SQLite)</span>
+│   ├── sessions.db        <span class="comment"># historial de análisis y contexto</span>
+│   └── chroma/             <span class="comment"># notas indexadas (vector store)</span>
+├── <span class="folder">agent/</span>
+│   ├── repl.py            <span class="comment"># el loop principal de terminal</span>
+│   ├── market_data.py     <span class="comment"># fetch + cache de Binance</span>
+│   ├── knowledge.py        <span class="comment"># indexado y búsqueda en notas</span>
+│   ├── analyst.py          <span class="comment"># prompt + llamada a Claude</span>
+│   ├── scheduler.py        <span class="comment"># el cron de 15 min en background</span>
+│   └── alerts.py           <span class="comment"># formato de salida A+ setup</span>
+├── config.yaml             <span class="comment"># pares activos, timeframes, riesgo</span>
+└── main.py                 <span class="comment"># entrypoint: python main.py</span></div>
+
+  <div class="section-label">Por qué esta separación</div>
+  <div class="rule">
+    <div class="rule-title">notes/ separado de todo</div>
+    <div class="rule-body">Vos seguís escribiendo tus .md como ya lo hacés. El sistema los re-indexa automáticamente cada vez que detecta un cambio. No tenés que aprender una herramienta nueva para documentar.</div>
+  </div>
+  <div class="rule">
+    <div class="rule-title">cache.db vs sessions.db separados</div>
+    <div class="rule-body">Los datos de mercado (cache.db) son efímeros y se pueden borrar sin perder nada importante. El historial de sesiones (sessions.db) es tu memoria — ahí vive el contexto de qué analizaste y cuándo. Separarlos evita que un reset de cache te borre el historial.</div>
+  </div>
+</div>
+
+<!-- FASES -->
+<div class="panel" id="panel-fases">
+  <div class="alert alert-warning">Construí esto en fases. Cada fase te da algo usable, no esperes a tener "todo" para probarlo.</div>
+
+  <div class="stage" style="border-color: var(--color-border-info);">
+    <div class="stage-header">
+      <div class="stage-num" style="background: var(--color-background-info); color: var(--color-text-info);">1</div>
+      <div>
+        <div class="stage-title">Market data + cache</div>
+        <div class="stage-period">Día 1-2</div>
+      </div>
+    </div>
+    <div class="stage-body">Conectar python-binance, traer klines de un par en varios timeframes (15m, 1h, 4h), guardarlas en SQLite con función de "traer solo lo nuevo".</div>
+    <ul class="stage-list">
+      <li>Función <span class="code-inline">get_klines(symbol, interval, limit)</span></li>
+      <li>Función <span class="code-inline">update_cache(symbol, interval)</span> — solo pide lo posterior al último timestamp guardado</li>
+      <li>Test manual: pedís BTC 4h y ves las velas en consola</li>
+    </ul>
+  </div>
+
+  <div class="stage">
+    <div class="stage-header">
+      <div class="stage-num">2</div>
+      <div>
+        <div class="stage-title">Indexado de notas</div>
+        <div class="stage-period">Día 3-4</div>
+      </div>
+    </div>
+    <div class="stage-body">ChromaDB local, lee tus .md, los parte en fragmentos (chunks) y los indexa. Función de búsqueda semántica: le das una pregunta o contexto de mercado, te devuelve los fragmentos de notas más relevantes.</div>
+    <ul class="stage-list">
+      <li>Función <span class="code-inline">index_notes(folder)</span> — corre al arrancar y cuando detecta cambios</li>
+      <li>Función <span class="code-inline">search_notes(query, top_k=5)</span></li>
+      <li>Test manual: buscás "onda 3 extendida" y te trae el fragmento correcto de tu nota</li>
+    </ul>
+  </div>
+
+  <div class="stage">
+    <div class="stage-header">
+      <div class="stage-num">3</div>
+      <div>
+        <div class="stage-title">El agente analista (el cerebro)</div>
+        <div class="stage-period">Día 5-7</div>
+      </div>
+    </div>
+    <div class="stage-body">Acá se junta todo. Armás el prompt que le pasa a Claude: las velas recientes (resumidas, no crudas), el resultado de búsqueda en tus notas relevante al setup actual, y le pedís un análisis estructurado.</div>
+    <ul class="stage-list">
+      <li>Función <span class="code-inline">analyze(symbol, timeframe, trade_type)</span></li>
+      <li>El prompt incluye: datos de mercado + fragmentos de notas + tu protocolo de A+ setup</li>
+      <li>Respuesta estructurada: setup encontrado o no, condiciones cumplidas, stop/target sugerido, confianza</li>
+    </ul>
+  </div>
+
+  <div class="stage">
+    <div class="stage-header">
+      <div class="stage-num">4</div>
+      <div>
+        <div class="stage-title">El REPL interactivo</div>
+        <div class="stage-period">Día 8-9</div>
+      </div>
+    </div>
+    <div class="stage-body">La interfaz tipo Claude Code que pediste. Un loop que lee comandos en lenguaje natural, los interpreta, y ejecuta la función correspondiente.</div>
+    <ul class="stage-list">
+      <li>Usás <span class="code-inline">rich</span> para que la terminal se vea bien (colores, tablas)</li>
+      <li>Vos escribís: "analizá BTC en 4h para swing"</li>
+      <li>El REPL parsea, llama a <span class="code-inline">analyze()</span>, muestra el resultado formateado</li>
+      <li>Guarda cada interacción en sessions.db para tener memoria</li>
+    </ul>
+  </div>
+
+  <div class="stage">
+    <div class="stage-header">
+      <div class="stage-num">5</div>
+      <div>
+        <div class="stage-title">Scheduler en background</div>
+        <div class="stage-period">Día 10-11</div>
+      </div>
+    </div>
+    <div class="stage-body">El loop de 15 minutos que corre solo mientras tenés la terminal abierta, sin que vos tengas que pedir nada. Revisa los pares que configuraste en config.yaml y te avisa en la misma terminal si encuentra un setup.</div>
+    <ul class="stage-list">
+      <li><span class="code-inline">APScheduler</span> corriendo en un thread separado del REPL</li>
+      <li>Lee <span class="code-inline">config.yaml</span> con tu lista de pares + timeframes a vigilar</li>
+      <li>Si encuentra setup A+, lo imprime en la terminal con sonido/color destacado</li>
+    </ul>
+  </div>
+
+  <div class="stage" style="border-color: var(--color-border-success);">
+    <div class="stage-header">
+      <div class="stage-num" style="background: var(--color-background-success); color: var(--color-text-success);">6</div>
+      <div>
+        <div class="stage-title">Pulido: memoria de sesión + comparaciones</div>
+        <div class="stage-period">Día 12+</div>
+      </div>
+    </div>
+    <div class="stage-body">Una vez que lo básico funciona, agregás lo que pediste: que recuerde el contexto. "Comparalo con el BTC que viste antes" busca en sessions.db el último análisis de ese par y se lo pasa a Claude como contexto adicional.</div>
+  </div>
+</div>
+
+<!-- FLUJO DE USO -->
+<div class="panel" id="panel-flujo">
+  <div class="section-label">Cómo se ve usándolo en la terminal</div>
+  <div class="flow-step">
+    <div class="flow-num">1</div>
+    <div class="flow-content">
+      <div class="flow-title">Arrancás: <span class="code-inline">python main.py</span></div>
+      <div class="flow-sub">El scheduler arranca en background. Las notas se re-indexan si cambiaron. Aparece un prompt tipo terminal interactiva.</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">2</div>
+    <div class="flow-content">
+      <div class="flow-title">Escribís: "analizá ETH en 4h, busco swing"</div>
+      <div class="flow-sub">El agente trae las velas de ETH en 4h y 1h (contexto), busca en tus notas de Elliott qué patrón aplica, y te devuelve si hay setup o no.</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">3</div>
+    <div class="flow-content">
+      <div class="flow-title">Mientras tanto, en background</div>
+      <div class="flow-sub">El scheduler revisa cada 15 min los pares de tu config.yaml. Si aparece algo, te interrumpe con una alerta en la misma terminal sin que pidas nada.</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">4</div>
+    <div class="flow-content">
+      <div class="flow-title">Escribís: "y SOL en 15min, para scalp"</div>
+      <div class="flow-sub">Pedido completamente independiente, distinto timeframe y tipo de trade. El agente sabe diferenciar criterios de scalp (más Order Flow, menos Elliott macro) de swing (más Elliott, contexto de tendencia mayor).</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">5</div>
+    <div class="flow-content">
+      <div class="flow-title">Salida de un análisis A+</div>
+      <div class="flow-sub code-inline" style="display: block; white-space: pre-wrap; margin-top: 6px; padding: 10px; background: var(--color-background-secondary); border-radius: 6px;">SETUP A+ — ETH/USDT — 4h — SWING
+Onda 3 en desarrollo (confluencia con tu nota "extension_rules.md")
+Order Flow: absorción compradora en 3.180
+Volumen: pico +180% vs media 20 períodos
+Stop sugerido: 3.140 | Target: 3.380 (R:R 1:5)
+Confianza: alta — 3 de 3 condiciones cumplidas</div>
+    </div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">6</div>
+    <div class="flow-content">
+      <div class="flow-title">Vos decidís</div>
+      <div class="flow-sub">El sistema nunca toca tu exchange. Vos leés, evaluás, y si estás de acuerdo, abrís la posición desde tu celular. Cero ejecución automática, cero emoción en el análisis.</div>
+    </div>
+  </div>
+
+  <div class="alert alert-info">Primer paso real para esta semana: armá la Fase 1 sola (market data + cache). Es la base de todo y la podés probar sin tocar Claude API todavía. Una vez que ves las velas guardándose en SQLite, seguís a la Fase 2.</div>
+</div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>

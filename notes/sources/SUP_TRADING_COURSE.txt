@@ -1,0 +1,53 @@
+SUP TRADING COURSE
+Punto A → (ser rentable ya) → Punto B
+Fase 1 → Entrenamiento.
+Entender cómo analizan el mercado. Se puede dividir en acción de precio y lectura de volumen. Por ejemplo, EW's y Order Flow.
+Fase 2 → Sistema.
+Es la fase más importante. Se trata de generar un sistema consistente. Salir del trading discrecional, dejar que el sistema señale las posiciones. Para generarlo, hay que utilizar estrategias existentes o crearlas.
+Fase 3 → Backtesting.
+Fundamental para comprobar el sistema. Sólo se puede construir confianza cuando mi sistema tiene buenas estadísticas luego de probarlo. Así, la psicología entra en segundo plano. Si el sistema es negativo, vuelven a generar otro, sino, siguen.
+Fase 4 → Campo.
+Luego de tener un sistema backtesteado con un sample de al menos 100 trades, paso a operar sólo ese sistema y hacen journaling de todos los trades. Un sólo sistema a la vez. Mi journal debe, principalmente, hablar de la operativa, la psicología y de la gestión de riesgo.
+DíaAssetBiasSetupConfluenceEntryTFTPsR%R final5/8 16:30BTCLongVWAP CAnchor VWAPEngulf candleM5TP1+BE Sí1%2,33R
+Win ✓
+
+También estadísticas de cuenta:
+Capital inicialProfit/LossTradesWRRR$1000+$3274461,4%32,7
+Fase 5 → Mejoras
+Analizan, en monthly review, la operativa, psico y gestión, leyendo los journals.
+
+El objetivo es operar un sistema, una estrategia. Volverse bueno en uno sólo y así la psico no afecte los trades.
+
+Risk Management y Psicología
+Máximo 2% total account en stop losses por posición.
+
+Lo importante es la consistencia, small wins for a long period of time.
+
+"El mercado hará lo que quiere, no lo que queremos que haga." Tomar desde el primer momento que el trading es una profesión y no será una empresa, que tiene ganancias y a veces pérdidas, entonces es parte del ámbito. Para manejar mejor esto, conviene trabajar un sistema backtesteado.
+
+Aceptan el riesgo desde entrada. Una ballena puede hacer market order y me invalida el análisis.
+
+Hacen foco en charts y setups, NO en la plata.
+
+Ya cuando hay sistema, toman todos los trades, ya que sino, las emociones entran peor.
+
+Muy importante el journal para también analizar emociones. También muy clave trend within trend, seguir el timeframe de la estrategia y no convienen a moverse de TFs.
+
+Cómo solucionar el lado psicológico:
+¿Qué puedo hacer yo y cómo saco provecho del mercado? Definir eso. (Yo opero BTC y alts)
+El objetivo es tener un sistema y dejar emociones de lado. Siempre usan SL y siempre antes de entrar a un trade, revisan en dónde se invalida la teoría y ahí poner SL. Muy importante tratan de ver en dónde están los SL de los demás traders, ven en dónde se hará esa mecha para liquidarlos... tratan de no ser parte.
+Un tip para dejar la parte emocional es hacer TP1 rápido y así dejas de preocuparte.
+
+No trabajar también es una posición. El trader tiene 2 trabajos: análisis técnico y tomar o no trades, la idea es tener probabilidades de mi lado.
+Manual de Bias - Identificar tendencias
+Cómo identificar un bias y entender el HTF's (High Timeframe Market Structure). Priorizan y siguen la tendencia. Nunca buscan short en soporte ni long en resistencia.
+
+Buscan long en soporte y short en resistencias. Si se va contra tendencia, bookean TP rápido para proteger.
+
+No cambian bias si no hay signo de debilidad de la tendencia actual, o hasta tener confirmación en HTF.
+
+Buscan longs en HTF supports.
+
+Si rompe el último higher high, ahí tenemos un indicio de cambio de tendencia, pero lo correcto es operar con la tendencia (calabaza)
+
+Tip → Volume Profile en HTF

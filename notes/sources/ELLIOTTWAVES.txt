@@ -1,0 +1,326 @@
+ELLIOT WAVES AVANZADO BY PAPPE Y VITTORIO:
+
+1 - Estructura y tendencia!
+Siempre operar a favor de la tendencia. ¡SIEMPRE!!
+Se detectan y dictan por sus altos y sus bajos, es decir, los extremos de los movimientos (swings).
+Prestarle atención al Order Book, a donde haya más órdenes es a donde generalmente se dirige.
+Prestarle atención a las zonas de oferta y demanda, marcan con cajitas. Zonas de oferta son donde se vende, zonas de demanda son donde se compra. (verde)
+
+OFERTA → Se ofrece → Se vende → Precio baja
+
+DEMANDA → Se quiere comprar → Precio sube
+
+Una zona de demanda se puede detectar con una ruptura previa con cuerpo de vela y encontrando el pullback o la pausa previa a esa ruptura. Probablemente se retestee.
+
+Esa pausa suele ser un Order Block.
+2 - Smart Money - Oferta, Demanda y Volume Profile!
+Lo que tenemos que buscar es el Order Block dentro del cluster y que éste esté dentro de un Point of Interest.
+
+POI = Sumatoria de flujos previos
+
+Primero marcan clusters (compresiones/rangos), luego toman perfil de volumen entre ese rango.
+Si el precio rebota en el Value Area High y vuelve, es probable que el precio vaya a meterse nuevamente al rango. Esto anula el rebote, y lo que hay que esperar es que el precio vaya a la parte baja del rango.
+
+Hay dos o tres palabras que no puedo garantizar al 100%:
+
+"compresiones/rangos" podría decir otra palabra parecida.
+"pullback" lo deduzco por contexto, la palabra está algo borrosa.
+"Value Area High" parece escrito en inglés y se alcanza a leer bastante bien.
+
+Si querés, también puedo 
+pasarte estos apuntes limpios y reorganizados en formato de estudio, 
+explicando cada concepto (Order Block, POI, Oferta/Demanda, Cluster, Volume Profile, Value Area High, etc.) para que te quede mucho más claro que el manuscrito.
+
+y estas
+
+Sí, estas se leen bastante bien. Te las transcribo lo más fiel posible al original (corrigiendo sólo algunos espacios y signos).
+
+3 - Smart Money - Liquidez, Imbalance y Mitigación!
+Lo principal es detectar los clusters y cajitas, pero luego detectar la liquidez, una manera de detectarla es viendo si hay bajos no mitigados, es decir, bajos no tomados. Luego se toman esos bajos, el precio tiende a explotar al alza.
+Un imbalance es, entre muchas cosas, cuando el precio se mueve con explosividad dentro de un imbalance existen los Fair Value Gaps. Se puede medir con el nivel 0.5 Fib, midiendo sólo la vela explosiva.
+Muy importante marcar POI's y clusters y colocar blocks por debajo de la liquidez (para compras).
+El "inducement" es cuando el precio todavía no retesteó correctamente una zona, por ejemplo sólo mitigó un FVG y faltaba un POI, entonces el precio para generar liquidez "amaga" y sube para inducirla, liquida el restante y la utiliza de fuerza hasta ese POI faltante.
+4 - BOS, CHOCH y Smart Money!
+Lo primero que hay que hacer es marcar altos y bajos, esto va a dictar la tendencia. La estructura dicta la tendencia y esto luego dicta el análisis.
+Hay que entender los tipos de rompimiento.
+Entender que en un impulso hay 2 rompimientos y en una corrección, generalmente, sólo 1.
+Cuando el conteo no es claro, enfocarse en contar rupturas fijándose en porcentajes de las expansiones y flats.
+El BOS al alza significa el rompimiento de una onda 3 o 5 de una onda 2 o 4. (Break of Structure)
+Contar 2 BOS en la onda mayor y luego los demás en la 1, 3 y 5 de esa onda, para luego analizar el BOS de la onda 2 mayor.
+CHOCH significa Change of Character. Luego de detectar el primer rompimiento de un último bajo de la onda 5, revisar si se hace un BOS bajista.
+Siempre buscar los 2 rompimientos de la onda 5 macro dentro de su quinta onda y etc.
+El BOS es con cuerpo de vela. Si es sólo con mecha, es posiblemente un CHOCH o sweep de liquidity.
+5 - POI's, Clusters y Order Blocks!
+Un Point of Interest suele ser una onda 4 o 2.
+Para encontrar, en un mercado bajista, mejor dicho en una corrección, en un ABC, encontrar B para buscar ventas en su alto y tratar de detectar dos BOS, es decir los de la onda C de "B" y los 1 o 2 en C.
+
+Hay algunas palabras donde la foto está un poco movida (sobre todo en la sección 5), pero el 95% del contenido se entiende. Si seguís subiendo páginas, 
+puedo ir armándote un documento completo y ordenado de todos los apuntes del curso de criptología/masterclass en formato limpio y profesional.
+
+Perfecto. Estas dos páginas son bastante legibles. Te las paso en limpio:
+
+5 - POI's, Clusters y Order Blocks (continuación)
+Normalmente tratamos de buscar las ventas en la onda 4. También es válido en la cuarta onda de 3, ya que estaría cerca de 4.
+En resumen:
+
+Buscar Points of Interest entre:
+
+La onda 4 de 3.
+La onda 4 de A.
+
+Dándole prioridad a la 4 de 3, ya que está más alta y será mejor venta.
+
+Lo mismo sirve al revés para compras.
+
+Pueden existir los POI sin clusters.
+
+Un POI suele ser:
+
+Rangos.
+Ondas 4 y 2.
+
+Pero suelen marcarse con cajitas. Son zonas de mucho debate donde el precio suele tener una parada.
+
+Un cluster es un rango en un POI.
+El POI es una zona de interés en donde el precio históricamente lateralizó.
+Se le llama POI a la suma de clusters.
+Más validado estará el POI mientras más clusters haya.
+
+POI = C + C [+ C + ATH]
+(la fórmula está algo borrosa pero parece indicar acumulación de clusters)
+
+Un Order Block se busca dentro de un POI, alrededor de un cluster.
+Se detecta en una vela "perfecta":
+Misma mecha a ambos lados.
+Cuerpo pequeño.
+Impulso Tradicional
+BOS, SCO, CHOCH ??? Elliott Waves para!!!
+En el impulso tradicional, la onda 3 nunca es la más chica.
+Además, el volumen es mayor en esta onda.
+La onda 4 no se mete en la zona de 2, es decir:
+no overlap.
+Retrocesos de la Onda 2
+
+0.5 - 0.618 - 0.66 - 0.786
+
+Estos son los niveles normales a tomar por la onda 2.
+
+También puede tomar:
+
+0.382 (raro, sólo en onda 4)
+0.886
+
+El 0.886 ya indica peligro, quizás no estés en un impulso.
+
+Regla general
+Mínimo: 0.5
+Máximo: 0.786
+
+Golden Pocket:
+
+0.618 - 0.66
+
+Targets para la Onda 3
+1.618
+2
+2.618
+3
+3.236
+3.618
+
+Estos son los niveles normales.
+
+Sin embargo, el mínimo requerido es:
+
+1 a 1
+
+Ya que indica que la onda 3 al menos es igual a la 1.
+
+Retrocesos en Onda 4
+0.236
+0.382
+0.5
+
+Son los niveles requeridos.
+
+Los más comunes son:
+
+0.382
+0.5
+
+Si se toca el 0.618, la onda 4 queda invalidada.
+
+Targets en Onda 5
+
+Hay 3 formas:
+
+Método 1
+
+Agarrar con impulso de Fibonacci:
+
+Desde el bajo de 1.
+Hasta el alto de 3.
+Terminando en el bajo de 4.
+
+Niveles importantes:
+
+0.618
+0.786
+Método 2
+
+Agarrar:
+
+Alto de 3.
+Bajo de 4.
+
+Con retrocesos de Fibonacci.
+
+Marcar niveles:
+
+1.618
+2.618
+
+Como mínimo:
+
+1.236
+Método 3
+
+Agarrar con impulso de Fibonacci:
+
+Desde el bajo de 1.
+Luego el alto de 1.
+Luego el bajo de 4.
+
+Mirar niveles:
+
+1
+1.236
+1.618
+
+Hasta ahora, juntando todas las páginas que subiste, tus apuntes cubren bastante bien el enfoque de Smart Money Concepts (SMC) mezclado con Elliott Waves, Volume Profile, Order Blocks, Liquidez, Imbalances/FVGs y estructura BOS/CHOCH. Veo que el curso sigue una metodología bastante concreta y puedo ayudarte después a convertir todo esto en un único manual ordenado de estudio de 10-15 páginas, mucho más fácil de repasar que los apuntes originales.
+
+Tiempos!
+
+Para calcular los tiempos de la onda 2, con la herramienta trend based fib time, tocan inicio de onda 1 y luego 2 veces el final de la onda 1. Como mínimo, la onda 2 llega al 0,382. 0,618 y 1 son los siguientes niveles, máximo 4.
+Para calcular los tiempos de retroceso en 4, marcar desde el alto de 1, hasta el bottom de 2 y luego al final de 3. Normalmente, 4 tarda 1 a 1 veces más que 2.
+Para los tiempos de 1 y 5, se agarra el bottom de 1, al top de 1 y luego hasta el bottom de 4. Los niveles normales de 5 terminan entre el 1,618 y 0,618.
+Recordar que la onda 3 es la que más volumen tiene! Los tiempos de Fib NO hacen invalidaciones. También, debe haber divergencia de volumen entre 3 y 5. Debe ser menor en 5.
+
+
+Impulso con 1 extendida!
+
+3 siempre debe ser la del medio, no la más chica.
+4 no tiene que hacer overlap con 2.
+Retroceso de 2 en impulsos con 1 extendido: 0,236, 0,382 (común/típico), 0,5 y 0,618 (raro).
+Impulso en 3: no puede llegar al 1 a 1 ya que esto indicaría que no estamos ante una onda 1 extendida.
+Retroceso en 4: se calcula desde el bajo de 3 hasta su alto, los targets son los mismos, sólo que el 0,236 es el target común como el 0,382.
+Impulso en 5: no puede llegar al 1 a 1 de 3. El nivel al que llegan es el 0,786 y 0,886. Se mide agarrando con impulso de Fib, como si fuese onda 3, 0 y 2 agarran.
+
+Tiempos:
+
+Retroceso en 2 debe ser al menos 0,382 veces 1, pero el target común es entre 1 y 1,618.
+Retroceso en 4 es igual, sólo más largo. Poquito nomás.
+
+
+Una nota: en la página 2, la frase "Se mide agarrando con impulso de Fib, como si fuese onda 3, 0 y 2 agarran" tiene letra poco clara hacia el final — revisala contra el original si podés, porque "0 y 2 agarran" no me cierra del todo en el contexto.
+¿Querés que te arme ya el manual completo y ordenado con todas las páginas que me pasaste hasta ahora?23:45Claude responded: Acá están las dos páginas siguientes transcritas:Acá están las dos páginas siguientes transcritas:
+Impulso con 5 extendida
+
+Mismas reglas iniciales sobre volumen y largos de ondas.
+Mismos retrocesos en 2.
+Si o sí, 3 pasa el 1 a 1.
+Los retrocesos en 4 son 0,236 como común, quedan iguales a 4, sólo que NO debe overlapear con 2.
+Para tener el target de 5 overshooted, con impulso de Fib agarran toda la onda 3 incluyendo desde el bottom de 2, hasta top de 3 y bottom de 4, marcar el 1,618 como target.
+En tiempos, 4 debe ser 1 a 1 más grande que 2.
+La onda 5 tiene más volumen que 3.
+
+Contracting Diagonal / Leading
+
+Existe overlap entre 2 y 4.
+Las leading diagonals pasan en las ondas A o 1 de un impulso.
+Pueden existir diagonales con todas sus 5 ondas siendo zigzags, es decir 3-3-3-3-3. Pero lo normal es como el tradicional, 5-3-5-3-5.
+Las leading diagonals sólo pueden ser 3-3-3-3-3.
+La diferencia entre una nested structure y una diagonal sería que la diagonal siempre toma el ATH.
+Las ondas 4, especialmente dentro de una nested structure, son bastante complejas y chatas. Generalmente, una seguidilla de 4-5, 4-5 y 4-5 son zonas de distribución en las que el precio ranguea, para posteriormente iniciar un bear market y corregir.
+Normalmente, la tercer onda tiende a ser menor que la primera, los targets de reversión son: 0,786 y 0,886 y 1.
+La quinta onda, si o si, debe ser menor al 1 a 1, medido con Fib trend desde el bottom de 2, al top de 3 y hasta el bottom de 4.
+
+Tiempos:
+
+La primer onda tiene que tardar menos de 1 vez en realizar el alto, lo mismo para la siguiente, midiéndolo a la siguiente onda.
+(Ya no es de tiempos) Los targets comunes de la primer onda correctiva (2) son los mismos de una onda 2 normal.
+Para la segunda onda (4), el target común no va del 0,5 al 0,786, sino que pasan a ser 0,382 y el golden pocket → 0,618 - 0,66.
+Si es una nested no hay reglas, sino que son los otros niveles.
+Si canalizamos la leading diagonal desde 0 hasta 1, la onda 4 no debe tocar la parte baja del canal.
+Con respecto al volumen, deben ir a la baja ya que cada impulso es más chico. La regla del volumen divergente es para las...
+
+(la última línea queda cortada al final de la página — "Leading", "Contracting" y "Ending" parecen ser encabezados de la página siguiente)
+¿Seguís subiendo páginas o ya querés que arme el manual completo con todo lo que tengo hasta ahora?23:46Claude responded: Acá están las dos páginas siguientes transcritas:Acá están las dos páginas siguientes transcritas:
+Retroceso ABC / Zigzag 5-3-5
+
+Un zigzag debe respetar su estructura, si en A hay 5 ondas, si o si en C debe haber 5 ondas. Es el más común y más simple.
+En un 1-2 o A-B, la diferenciación la vemos en 3 o C. Si el volumen es ascendente, es más probable onda 3.
+Los ABC son más comunes en la onda 2, pero aparecen en 4 también, sólo que como sub-estructura.
+Generalmente las ondas B de una corrección ya detectada son zigzags.
+En los WXY o doble combos, la mayoría de veces tienen un ABC como estructura.
+Se enfatiza no tratar ondas 4 ya que tienen sub-estructuras muy complejas, ej: zigzag, WXY, ZZ o X.
+El único caso en el que aplique 3 ondas es en un flat.
+Los ZZ son estructuras 5-3-5.
+Los WXY son estructuras 3-3-3.
+Los flats son estructuras 3-3-5.
+Los triángulos son estructuras 3-3-3-3-3.
+Igualmente, los ZZ pueden suceder a diagonales, sean leading, ending, contracting o expanding. Todos sus movimientos son 3 ondas ZZ. También en triángulos.
+El área común de retroceso para B es la misma que los Fibs de 2, sólo que luego de bajar o subir el 0,786, es preferible contar esa 2 como B, más si toma el 0,886.
+El target común para una onda B suele ser el 0,382 - todos.
+Tener en cuenta que para elegir como target alguno de estos niveles, hay que contar la estructura interna. Hay que saber cuándo está completa para operarla en ese Fib.
+Si termina en el 0,382, lo más probable es que venga onda C.
+
+Tiempos en ZZ
+
+Para descartar una posible onda 2, podemos saber que la misma es corta en tiempo y sharp en precio. El tiempo mínimo de B es el 0,382, con un máximo de 5.
+Si da la casualidad de tener un triángulo en la B del ABC, el target de C cambia: el target normal es entre el área del 1-1,236 al 1,618 (3) y como mínimo el 0,618. Pero en el caso del triángulo, el área común ahora es el 0,618 como común y lo raro es 1-1,236.
+El tiempo de la onda C es del 1 al 1,618, midiendo con los 3 puntos: 0-A-B. Marcar área de precio y tiempo con sus targets comunes.
+El volumen de C es recién en su final, a diferencia de 3 que es en toda la onda.
+
+Expanding Flats 3-3-5
+
+Suceden cuando B y C toman el bajo/alto de A. No confundir con ABC's / ZZ normales. Una pista de que viene un flat y no un ZZ es que la primer estructura es correctiva, 3 ondas, en vez de 5 como en el ZZ. Generalmente primero un ABC ZZ. En A no se permiten triángulos. Ni A son 5 ondas. A ≠ C.
+B la podemos calcular tomando con retroceso toda A, de inicio a fin, y marcando el 1,236 y 0,382. El 1,618 es raro y da la pauta si es un flat. En B lo más común es WZZ. No buscar triángulos en B, pueden pasar pero enfóquense en buscar ZZ o WXY que terminen entre 236 y 382.
+Luego viene C en 5 ondas. Para calcularla, se toma con impulso tomando toda A y proyectando al alto de B, los niveles son 1,618. Y con retroceso se agarra todo B y marcamos los: 1,618 y 1,382. Pero la zona es entre los 2 618's.
+
+El target mínimo de B es tomar el alto, ya se considera completa, pero siempre medir estructura también.
+Un flat puede suceder en A y B. No en C ya que siempre son 5 ondas. A (flat), B (ZZ).
+Dentro de WXY no buscamos WXY internos, sólo ABC, ZZ o flats. Por eso en las 3 estructuras de WXYxZ podemos tener flats.
+
+Tiempos de flats
+
+El volumen aparece en el final de C ya que se liquidan bajos.
+El mínimo es 0,382, pero B puede ir hasta 0,618 y 1,618.
+El Fib de tiempo para medir C es tocando en 0 a A, luego doble click en B. No pasa por final de A y los tiempos son los mismos, pero no debe pasar B1 (?) Z.
+
+Regular Flat's 3-3-5
+
+Parecido al expanding flat, sólo que el alto y el bajo se toman con menos grado/precio/no tan impulsivo. Δ/∇ ex/reg.
+Para identificar si en los Fibs es flat o B, contar A. Si A son 3 ondas, ya se sabe que estás en un flat. En vez de un 5-3 tengo un 3-3 por eso le pongo los Fibs del flat.
+Si mi onda B pasa el 0,786 y en A tengo 3 ondas, las probabilidades de que C sean 3 ondas es muy baja, ya que las WXY, X no pasan el 0,786. O sea, es un flat.
+Si en A paso de tener 3 ondas y mi B de 3 ondas llega al 0,886, es muy probable que tenga un flat, por eso C son 5 ondas.
+
+ABC ZZ = 5-3-5 / WXY = 3-3-3 / Flats = 3-3-5
+
+La idea de un regular flat es tomar el alto/bajo de A por poquito. Para calcular C se mide igual que en los expanding flats. Los targets comunes son entre el 1 y el 1,236. También medir B con el retroceso y marcar 0,886 y 1,05. Si el conteo interno termina entre el retroceso, no dan vueltas y tomarlo como completado, ya que C en 5 ondas no debe tomar el nivel obligatoriamente. El área normal es el 1 del impulso (0-A-B) y el 1,05 del retroceso (?).
+En tiempos son iguales al expanded flat.
+El volumen en las ondas B de flats suele subir ya que toman niveles de A. En C, suben porque son impulsos.
+
+Running Flat 3-3-5
+
+Su invalidación está al tomar el bajo. En el expanding flat tenemos que tomarlo si o si, en el regular flat el bajo es necesario, y el running flat NO debe tomar el bajo.
+Running flat significa que sólo toma un sólo nivel, el de A lo respeta.
+Normalmente el RF va a la zona del 1,236 y 1,382. El expanded va a 1,382 y el running a 1,236.
+El retroceso va del 0,618 al 1 (impulso desde 0-A-B) para medir C, y el retroceso es el mismo de la WZ (?).
+Ya que B debe tomar el alto/bajo, el target mínimo a superar es el 1 y 1,05.
+Si ya hay 3 ondas en A y B, estás en un flat, se viene C es...
+Cuando B overshootea, estamos en un expanded o running.
+El volumen sólo al final con spikes en C.
+En tiempos son entre 0,618, 1, 1,18 y 2 - peligro!
+
+Hay dos o tres puntos sueltos algo dudosos (marqué con "(?)") donde la letra se complica un poco — convendría que los revises contra el original cuando puedas.

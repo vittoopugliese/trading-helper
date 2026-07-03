@@ -1,0 +1,67 @@
+[00:08:03] TEST HYPE Watcher — Prueba de alerta sonido+toast+log
+[00:08:40] LONG SETUP HYPEUSDT 78% — @ 69.7970 POI 69.67-69.95 patterns=['delta_confirmation', 'absorption']
+[00:09:35] LONG SETUP HYPEUSDT 83% — @ 69.8870 POI 69.67-69.95 patterns=['delta_confirmation']
+[00:10:32] LONG HYPEUSDT absorption_at_support — @ 69.8800 entry 69.8800 stop 69.5500 target 70.4000
+[00:11:27] LONG SETUP HYPEUSDT 76% — @ 69.8970 POI 69.67-69.95 patterns=['delta_confirmation', 'book_support']
+[00:12:22] LONG SETUP HYPEUSDT 80% — @ 69.9030 POI 69.67-69.95 patterns=['book_support']
+[00:13:17] LONG SETUP HYPEUSDT 87% — @ 69.8290 POI 69.67-69.95 patterns=['delta_confirmation', 'book_support']
+[00:14:12] LONG SETUP HYPEUSDT 77% — @ 69.9300 POI 69.67-69.95 patterns=['book_support']
+[22:16:57] SHORT SETUP HYPEUSDT 80% — @ 67.9830 POI 68.0-68.5 patterns=['book_resistance']
+[22:21:38] SHORT SETUP HYPEUSDT 79% — @ 68.0560 POI 68.0-68.5 patterns=['book_resistance', 'liquidity_sweep']
+[22:25:43] SHORT SETUP HYPEUSDT 78% — @ 68.2860 POI 68.0-68.5 patterns=['delta_confirmation', 'book_resistance']
+[22:27:46] SHORT SETUP HYPEUSDT 79% — @ 68.4710 POI 68.0-68.5 patterns=['liquidity_sweep']
+[22:33:55] SHORT SETUP HYPEUSDT 88% — @ 68.4110 POI 68.0-68.5 patterns=['delta_confirmation']
+[22:35:58] SHORT HYPEUSDT rejection_at_resistance — @ 68.3240 entry 68.3240 stop 68.8000 target 67.2500
+[22:35:58] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.3240 entry 68.3240 stop 68.8000 target 67.2500
+[22:38:01] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.2180 entry 68.2180 stop 68.8000 target 67.2500
+[22:38:02] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.2310 entry 68.2310 stop 68.8000 target 67.2500
+[22:44:11] SHORT SETUP HYPEUSDT 85% — @ 68.4140 POI 68.0-68.5 patterns=['delta_confirmation']
+[22:46:12] SHORT HYPEUSDT rejection_at_resistance — @ 68.3540 entry 68.3540 stop 68.8000 target 67.2500
+[22:46:13] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.3920 entry 68.3920 stop 68.8000 target 67.2500
+[22:46:13] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.3770 entry 68.3770 stop 68.8000 target 67.2500
+[22:48:17] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.3670 entry 68.3670 stop 68.4830 target 67.2500
+[22:48:17] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.3790 entry 68.3790 stop 68.8000 target 67.2500
+[22:48:18] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.4070 entry 68.4070 stop 68.8000 target 67.2500
+[22:50:20] SHORT SETUP HYPEUSDT 79% — @ 68.3910 POI 68.0-68.5 patterns=['delta_confirmation', 'book_resistance']
+[22:52:24] SHORT HYPEUSDT rejection_at_resistance — @ 68.4220 entry 68.4220 stop 68.8000 target 67.2500
+[22:52:25] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.4220 entry 68.4220 stop 68.8000 target 67.2500
+[22:54:28] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.2940 entry 68.2940 stop 68.6360 target 67.2500
+[22:54:28] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.3790 entry 68.3790 stop 68.8000 target 67.2500
+[22:56:31] SHORT SETUP HYPEUSDT 81% — @ 68.4520 POI 68.0-68.5 patterns=['book_resistance']
+[22:58:39] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.3460 entry 68.3460 stop 68.8000 target 67.2500
+[23:00:41] SHORT HYPEUSDT rejection_at_resistance — @ 68.4810 entry 68.4810 stop 68.8000 target 67.2500
+[23:00:42] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.5140 entry 68.5140 stop 68.8000 target 67.2500
+[23:02:46] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.4460 entry 68.4460 stop 68.6360 target 67.2500
+[23:02:46] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.3440 entry 68.3440 stop 68.8000 target 67.2500
+[23:02:47] SHORT HYPEUSDT rejection_at_resistance — @ 68.3520 entry 68.3520 stop 68.8000 target 67.2500
+[23:04:49] SHORT HYPEUSDT rejection_at_resistance — @ 68.4320 entry 68.4320 stop 68.8000 target 67.2500
+[23:04:50] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.4320 entry 68.4320 stop 68.6290 target 67.2500
+[23:04:50] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.4600 entry 68.4600 stop 68.8000 target 67.2500
+[23:10:59] SHORT SETUP HYPEUSDT 82% — @ 68.3800 POI 68.0-68.5 patterns=['delta_confirmation']
+[23:16:01] LONG SETUP HYPEUSDT 76% — @ 68.3340 POI 68.25-68.35 patterns=['book_support']
+[23:18:05] SHORT HYPEUSDT rejection_at_resistance — @ 68.5450 entry 68.5450 stop 68.9500 target 68.0000
+[23:20:10] LONG HYPEUSDT sweep_reclaim_bottom — @ 68.5740 entry 68.5740 stop 68.0000 target 68.6600
+[23:20:10] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.5190 entry 68.5190 stop 68.6490 target 68.0000
+[23:20:11] SHORT HYPEUSDT rejection_at_resistance — @ 68.5550 entry 68.5550 stop 68.9500 target 68.0000
+[23:26:23] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.5180 entry 68.5180 stop 68.6490 target 68.0000
+[23:26:24] SHORT HYPEUSDT rejection_at_resistance — @ 68.5000 entry 68.5000 stop 68.9500 target 68.0000
+[23:26:24] SHORT HYPEUSDT rejection_at_resistance — @ 68.5810 entry 68.5810 stop 68.9500 target 68.0000
+[23:30:28] LONG HYPEUSDT sweep_reclaim_bottom — @ 68.4500 entry 68.4500 stop 66.8220 target 68.6600
+[23:32:31] LONG HYPEUSDT sweep_reclaim_bottom — @ 68.5450 entry 68.5450 stop 68.0000 target 68.6600
+[23:32:31] LONG HYPEUSDT sweep_reclaim_bottom — @ 68.5750 entry 68.5750 stop 66.8220 target 68.6600
+[23:34:34] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.5320 entry 68.5320 stop 68.6390 target 68.0000
+[23:34:34] LONG HYPEUSDT sweep_reclaim_bottom — @ 68.5500 entry 68.5500 stop 68.0000 target 68.6600
+[23:36:36] SHORT HYPEUSDT rejection_at_resistance — @ 68.5050 entry 68.5050 stop 68.9500 target 68.0000
+[23:36:37] SHORT HYPEUSDT delta_flip_after_bounce — @ 68.4530 entry 68.4530 stop 68.6760 target 68.0000
+[14:07:08] LONG HYPEUSDT sweep_reclaim_bottom — @ 67.4140 entry 67.4140 stop 65.6600 target 67.8500
+[14:08:31] LONG HYPEUSDT sweep_reclaim_bottom — @ 67.5200 entry 67.5200 stop 65.6600 target 67.8500
+[14:09:54] LONG HYPEUSDT sweep_reclaim_bottom — @ 67.4850 entry 67.4850 stop 65.6600 target 67.8500
+[14:11:16] LONG HYPEUSDT sweep_reclaim_bottom — @ 67.5060 entry 67.5060 stop 65.6600 target 67.8500
+[14:12:43] LONG HYPEUSDT sweep_reclaim_bottom — @ 67.5180 entry 67.5180 stop 65.6600 target 67.8500
+[14:14:06] LONG HYPEUSDT sweep_reclaim_bottom — @ 67.5970 entry 67.5970 stop 65.6600 target 67.8500
+[14:15:27] LONG HYPEUSDT sweep_reclaim_bottom — @ 67.5910 entry 67.5910 stop 65.6600 target 67.8500
+[14:16:49] LONG HYPEUSDT sweep_reclaim_bottom — @ 67.5630 entry 67.5630 stop 65.6600 target 67.8500
+[14:18:12] LONG HYPEUSDT sweep_reclaim_bottom — @ 67.5390 entry 67.5390 stop 65.6600 target 67.8500
+[15:27:41] LONG HYPEUSDT trapped_shorts — @ 69.1810 entry 69.1810 stop 65.6600 target 67.8500
+[15:29:07] LONG HYPEUSDT trapped_shorts — @ 69.0270 entry 69.0270 stop 65.6600 target 67.8500
+[15:31:57] LONG HYPEUSDT sweep_reclaim_bottom — @ 69.0430 entry 69.0430 stop 65.6600 target 67.8500

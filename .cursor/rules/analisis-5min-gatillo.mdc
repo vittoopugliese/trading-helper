@@ -1,0 +1,56 @@
+---
+description: Protocolo de analisis en 5min para ejecutar scalp — cruzar order flow en vivo con los patrones de gatillo guardados en notes
+alwaysApply: true
+---
+
+# Protocolo "analiza en 5 min" — gatillo de ejecucion
+
+Cuando el trader diga algo como "analiza en 5 min", "estamos en gatillo", "estoy
+ready para ejecutar" o pida lectura de scalp para entrar YA, seguir este protocolo.
+El trader esta frente al grafico (ATAS) listo para apretar el boton; mi trabajo es
+confirmar o frenar con datos.
+
+## Paso 1 — Traer data tecnica EN VIVO (no de memoria)
+- Correr el order flow fresco (delta/CVD por vela + flujo live aggTrades + derivados).
+  Scripts utiles: `scripts/of_scalp_check.py`, `scripts/of_at_60.py`, `scripts/of_short_hunt.py`.
+- Usar SIEMPRE `market_data.fetch_ticker_price` para el precio actual (el cache de
+  klines puede estar atrasado — ya paso). Confirmar que el precio coincide con lo que
+  ve el trader antes de opinar.
+- Mirar 1m/5m/15m como minimo; el TF de ejecucion del gatillo es 5m.
+
+## Paso 2 — Cruzar con los patrones guardados en notes
+Tener SUPER en cuenta, ademas de la data tecnica:
+- `notes/order-flow/gatillo-long-visual-atas.md` — 4 señales del gatillo LONG + 2 casos
+  reales (Jun 24 absorcion, Jun 25 sweep+reclaim).
+- `notes/order-flow/gatillo-short-visual-atas.md` — 4 señales del gatillo SHORT (espejo).
+- `notes/order-flow/entry-patterns.md` — absorcion, drenaje de delta, sweep, OB, SFP.
+- `notes/sources/SETUP_RULE_PATRON_ENTRADA.txt` — fuente del patron de entrada.
+- `notes/setup-rules/a-plus-checklist.md` — checklist A+ y red flags.
+- `notes/setup-rules/gestion-trade-activo.md` — parciales, trailing, NO salir por ruido.
+- `notes/setup-rules/risk-sizing-cuenta.md` — sizing $300 x10 (margen != riesgo; SL define riesgo).
+- `notes/smart-money/correlacion-btc-eth-hype.md` — mirar BTC antes de operar HYPE.
+- `notes/journal/` — casos previos y lecciones de ejecucion (errores a no repetir).
+- `context/HYPEUSDT.yaml` — bias, POI, invalidacion, targets vigentes.
+
+## Paso 3 — Evaluar el gatillo con las 4 señales (LONG)
+Confirmar cuantas se cumplen AHORA, en la zona (POI):
+1. Precio toca mi linea/POI (caja verde, pdLow, POC previo).
+2. Mecha que pincha por debajo y cierra arriba (sweep/absorcion).
+3. Barra de volumen MUY por encima de la media en la mecha.
+4. Delta flip: de rojo (venta) a verde (compra) -> buy_ratio cruzando ~0.55.
+Para short es el espejo: precio en resistencia + drenaje de delta + delta flip a rojo
+(buy_ratio < ~0.45) + volumen.
+
+## Paso 4 — Veredicto claro, sin suavizar
+- Si se cumplen >=3 señales en el POI y no hay invalidacion cerca -> decir
+  **ENTRADA MECANICA** en negrita (ver regla entrada-mecanica), con entry, SL
+  estructural (bajo la mecha/POI), TP1, y el SIZING calculado (cuenta $300 x10:
+  SL% -> riesgo $ -> notional -> margen; ver risk-sizing-cuenta.md).
+- Si faltan señales (ej. volumen chico, delta sigue en contra, precio en el aire) ->
+  decir claro QUE FALTA y que NO es momento. No inventar confluencia.
+- Recordar: contra-tendencia HTF (onda C) o BTC en contra -> size reducido y TP1 rapido.
+
+## Regla de oro
+Nunca dar luz verde solo por la nota o solo por el indicador. El gatillo es la
+COINCIDENCIA de: data tecnica en vivo + patron de las notas + precio en el POI.
+Si el order flow no confirma o el precio no esta en la zona: NO operar.

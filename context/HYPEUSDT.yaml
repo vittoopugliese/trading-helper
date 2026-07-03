@@ -1,0 +1,41 @@
+symbol: HYPEUSDT
+bias: none
+wave: "Onda C de (4) HTF bearish — hunt: LONG absorcion en soporte / SHORT drenaje delta en resistencia"
+trade_type: scalp
+poi:
+  low: 61.70
+  high: 62.00
+invalidation: 61.45
+targets:
+  - 62.90
+  - 63.00
+  - 63.70
+fib:
+  short_poi_low: 63.50
+  short_poi_high: 63.70
+  short_invalidation: 64.10
+  short_target_1: 62.20
+  short_target_2: 61.70
+  short_premium_low: 65.20
+  short_premium_high: 65.70
+  short_premium_invalidation: 65.66
+  short_premium_target_1: 62.20
+  short_premium_target_2: 60.50
+  long_scalp_low: 61.70
+  long_scalp_high: 62.00
+  long_scalp_invalidation: 61.45
+  long_scalp_target_1: 62.90
+  long_deep_support: 60.50
+  b_flat_max: 76.962
+  wave_c_target: 53.00
+  mco_invalidation: 74.41
+  broken_support: 65.20
+notes: >
+  Sin bias fijo — alerta la primera confluencia en POI con patron de entrada (SETUP_RULE).
+  LONG: absorcion en 61.70-62.00 (d2 neg + d1 positivo + buy_ratio>0.55) o sweep+reclaim con vol>MA.
+  SL long 61.45. TP 62.9 / 63.0 / 63.7.
+  SHORT: drenaje delta en 63.50-63.70 (d3>d2>0, d1<0) o rechazo con buy_ratio<0.48.
+  SL short 64.10. TP 62.2 / 61.7 / 60.5.
+  SHORT premium: 65.20-65.70 SL 65.66. HTF bearish mientras < 74.41.
+account_size: 300
+risk_pct: 7.0

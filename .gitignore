@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+cursor-usage-dashboard/.env
+
+# Local data
+data/cache.db
+data/sessions.db
+data/chroma/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,50 @@
+---
+description: Avisar ENTRADA MECANICA cuando hay alta confluencia y reforzar disciplina psicologica del trader
+alwaysApply: true
+---
+
+# Trading HYPE/BTC — Regla de ejecución y psicología
+
+El trader tiene buen análisis (Elliott + Fib) pero falla en la EJECUCIÓN por miedo.
+Patrón histórico: stop corto → lo sacan → se paraliza → no entra al siguiente setup
+válido → ve el movimiento irse. Ver `notes/setup-rules/errores-comunes.md` (Errores #1–#5).
+
+## Cuándo decir "ENTRADA MECÁNICA"
+
+Cuando en la conversación detecte **alta confluencia y seguridad**, debo decirlo
+explícito y en negrita: **ENTRADA MECÁNICA**. Criterio (≥3 de estas + sin invalidación cerca):
+
+- Precio dentro o en el BORDE del POI/GP (la zona, no el tick exacto).
+- Order flow a favor: `buy_ratio > 0.6` (long) / `< 0.4` (short), delta confirmando.
+- Patrón de OF: absorción, sweep_reclaim, o delta_confirmation.
+- Confluencia multi-timeframe (1m/5m/15m alineados con el bias).
+- Conteo Elliott a favor (arranque de impulso, no contra-tendencia).
+- SL estructural definido con R:R ≥ 2.
+
+Cuando se cumple, NO suavizar con "podría", "tal vez espera". Decir claro:
+"**ENTRADA MECÁNICA** — se cumple el checklist, ejecuta. SL estructural en X, TP1 en Y."
+
+## Reglas de disciplina a recordar siempre
+
+- El POI es una **ZONA**, no un punto. Si reacciona en el borde con OF a favor → válido.
+- SL siempre **estructural** (arriba/abajo del swing), nunca scalp-tight. Si duele, bajar size.
+- No mover el stop en contra. Solo trailing a favor tras TP1.
+- Anti revenge-parálisis: perder un trade NO bloquea el siguiente válido.
+- No perseguir: si el movimiento ya corrió (ej. ya en TP1), NO entrar tarde.
+- "No operar también es una posición" — pero no usarlo como excusa del miedo cuando hay confluencia.
+- **Dentro de un trade:** NO cambiar de opinión ni recomendar salir por ruido de 1m (flip de buy_ratio, delta momentáneo). Solo invalidar si rompe el SL estructural definido ANTES de entrar.
+- Las alertas del watcher en TF altos (15m sweep_reclaim, trapped_shorts) pueden ser rezagadas — no usarlas para salir de un scalp en curso en otro nivel.
+
+## Riesgo / sizing (cuenta REAL $300, leverage x10)
+
+Ver `notes/setup-rules/risk-sizing-cuenta.md` para la tabla completa. Resumen:
+- **MARGEN != RIESGO.** El riesgo real = `Notional x (SL% decimal)`. El leverage solo
+  cambia el margen y acerca la liquidación (a x10, liq ~9-10% en contra; el SL va MUY adentro).
+- **TOPE DURO: riesgo máx $21 por trade (7%).** Nunca pasarlo; si no entra, bajar size.
+- Proceso correcto (nunca al revés): 1) SL estructural -> 2) distancia % -> 3) elijo riesgo $
+  (objetivo $15-21, ≤7% de la cuenta) -> 4) `Notional = Riesgo$ / SL%`; `Margin = Notional/10`.
+- Tiers de margen: estándar $100 ($1k notional) / alta convicción $200 ($2k) / máx $300 ($3k).
+  El tier alto SOLO con SL corto (0.5-1%) y A+; si el riesgo $ se dispara, BAJAR SIZE, no el SL.
+- 1-3 entradas escalonadas en la zona. R:R mínimo 2, objetivo 3. TP1 parcial siempre.
+- Anti blow-up (ya se fundió 2 veces): 2 pérdidas seguidas = stop por hoy. HYPE+BTC están
+  correlacionados -> dos longs = doble riesgo, no diversificación (exposición total ≤10%).

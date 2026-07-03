@@ -1,0 +1,116 @@
+# Trading Helper Agent configuration
+
+binance:
+  base_url: https://fapi.binance.com
+  market: futures_um
+
+# Pairs to watch (Binance Futures USDT-M symbols)
+watchlist:
+  - HYPEUSDT
+  - BTCUSDT
+
+# Default timeframes for multi-TF analysis.
+# Scalp: 1m ejecucion; 5m/15m/1h = estructura Elliott + order flow
+timeframes:
+  scalp: 1m
+  intraday: 5m
+  swing: 15m
+  macro: 1h
+
+# How many candles to fetch per timeframe
+candle_limits:
+  1m: 200
+  5m: 200
+  15m: 200
+  1h: 300
+  4h: 300
+  8h: 300
+  1d: 400
+
+# A+ scoring thresholds
+scoring:
+  a_plus_threshold: 0.85
+  min_rr: 2.0
+
+# Scoring weights per trade type (must sum to 1.0 per type)
+weights:
+  swing:
+    trend_alignment: 0.08
+    delta_cvd: 0.12
+    volume_spike: 0.08
+    oi_confirmation: 0.08
+    funding_neutral: 0.05
+    structure_swing: 0.05
+    risk_reward: 0.10
+    price_in_poi: 0.12
+    invalidation_respected: 0.12
+    of_confirmation_at_poi: 0.12
+    cvd_divergence: 0.08
+  scalp:
+    delta_cvd: 0.15
+    volume_spike: 0.10
+    structure_swing: 0.05
+    oi_confirmation: 0.05
+    funding_neutral: 0.03
+    trend_alignment: 0.04
+    risk_reward: 0.08
+    price_in_poi: 0.18
+    invalidation_respected: 0.12
+    of_confirmation_at_poi: 0.15
+    cvd_divergence: 0.05
+
+# Condition thresholds
+thresholds:
+  volume_spike_ratio: 1.5
+  rsi_oversold: 35
+  rsi_overbought: 65
+  swing_lookback: 5
+  atr_stop_multiplier: 1.5
+  atr_target_multiplier: 3.0
+  poi_proximity_pct: 0.003
+  poi_tolerance_pct: 0.001
+  book_imbalance_ratio: 1.3
+  absorption_delta_ratio: 0.6
+
+# Order flow REST params
+order_flow:
+  agg_trades_limit: 1000
+  depth_limit: 20
+  cvd_lookback_trades: 200
+  divergence_lookback: 20
+
+# Risk management defaults — cuenta real $300, leverage x10
+# Ver notes/setup-rules/risk-sizing-cuenta.md (margen != riesgo; el SL define el riesgo).
+risk:
+  default_account_size: 300
+  max_risk_pct: 7.0        # TOPE DURO confirmado: 7% = $21 por trade. Bajar size, no SL.
+  max_risk_usd: 21         # riesgo $ maximo por trade (lo que se pierde si salta el SL)
+  leverage: 10
+  margin_standard: 100     # conviccion normal (notional $1000)
+  margin_high: 200         # A+ claro (notional $2000)
+  margin_max: 300          # all-in SOLO con SL corto (0.5-0.7%) para no pasar el tope $21
+  max_entries: 3           # 1-3 entradas escalonadas en la zona
+  max_total_exposure_pct: 10.0  # riesgo combinado si hay 2 trades (HYPE+BTC correlacionados)
+  daily_stop_losses: 2     # 2 perdidas seguidas = stop por hoy (anti revenge)
+
+# Scheduler - alert only when price at POI + order flow confirms
+scheduler:
+  enabled: true
+  interval_minutes: 1
+  default_trade_type: swing
+  alert_only_at_poi: true
+
+# Notes indexing
+notes:
+  folder: notes
+  chunk_size: 500
+  chunk_overlap: 50
+  top_k: 5
+  chunk_by_sections: true
+
+# Paths (relative to project root)
+paths:
+  cache_db: data/cache.db
+  sessions_db: data/sessions.db
+  chroma_dir: data/chroma
+  context_dir: context

@@ -1,0 +1,215 @@
+Rentabilidad en Trading, curso por fases y conceptos generales para aplicarlos y ser trader rentable.
+FASE 1 -> Entrenamiento: Entender como analizar el mercado. Se puede dividir en accion de precio y lectura de volumen. Aca usaremos Elliott Waves para la marcro y Order Flow para las ejecuciones en corto plazo.
+FASE 2 -> Sistema: Es la fase mas importante. Se trata de generar un sistema consistente. Salir del trading discrecional, dejar que el sistema señale las posiciones. Para generarlo, hay que utilizar estrategias existentes o crearlas.
+FASE 3 -> Backtesting: Fundamental para comprobar el sistema. Solo se puede construir confianza cuando mi sistema tiene buenas estadisticas luego de probarlo. Asi la psicologia entra en segundo plano, y es lo que queremos para no tomar decisiones emocionales. Si el sistema es negativo, volver a generar otro, sino seguir.
+FASE 4 -> Campo: Luego de tener un backtested system, con un sample de al menos 100 trades, paso a operar solo ese sistema y hacer (muy importante) journaling de todos los trades. Un solo sistema a la vez. Mi journal debe principalmente hablar de la operativa, la psicologia y de la gestion de riesgo.
+FASE 5 -> Mejoras: Analizar en monthly review la operativa, psicologia y gestion de riesgo leyendo los journals. El objetivo es operar un sistema, una estrategia y con un solo mentor, para no marearse y perfeccionarse en una cosa a la vez.
+------------------------------
+RISK MANAGEMENT Y PSICOLOGIA
+Arriesgar maximo 2% del total account en stop losses por posicion. Lo importante es la consistencia, pequenas ganancias por un largo periodo de tiempo.
+"El mercado hara lo que quiera, no lo que querramos que haga"
+Tomar desde el primer momento que el trading es una profesion y yo sere una empresa, que tiene ganancias y perdidas, entonces es parte del juego.
+Para manejar mejor esto, conviene tradear un backtested system.
+Aceptar el riesgo desde la entrada, una ballenma puede hacer market order y me invalida todo mi analisis.
+Hacer focus en charts y setups, NO en el dinero que podamos ganar.
+Ya cuando hay un sistema, tomar todos los trades ya que sino, las emociones entran en juego.
+Muy importante el journal para tambien analizar emociones. Tambien muy clave el trade within trend, seguir el timegrame de la estrategia y no comenzar a moverse de timeframes.
+*Como solucionar el lado psicologico:
+Que puedo hacer yo y como saco provecho del mercado? Definir eso: personalmente yo opero BTC, ya que en ATAS puedo ver todos los indicadores de order flow a diferencia de Stocks, que serian solo para comprar y holdear.
+El objetivo es tener un sistema y dejar emociones de lado. SIEMPRE usar stop loss y siempre antes de entrar a un trade, revisar donde se invalida la teoria y ahi poner el stop.
+Muy importante tratar de ver en donde estan los stop losses de los demas traders, ver en donde saltaran esas mechas para liquidarlos... tratar de no ser parte de ese analisis retail.
+Un tip para dejar la parte emocional es hacer el primer take profit rapido, y asi dejas de preocuparte.
+NO tradear tambien es una posicion. El trader tiene 2 trabajos: Analisis tecnico y tomar o no trades, la idea es tener probabilidades de mi lado.
+------------------------------
+MANUAL DE BIAS - IDENTIFICAR TENDENCIAS
+Como identificar un bias y entender el High Timeframe Market Structure (HTMS): Priorizar y seguir la tendencia.
+Nunca buscar short en soporte ni long en resistencia. NO cambiar el bias si no hay signo de debilidad de la tendencia actual o hasta tener confirmacion en HTF.
+Buscar longs en soportes HTF. Si se rompe el ultimo Higher High, ahi tenemos un indicio de cambio de tendencia, pero lo correcto es operar con la trend a la baja. TIP: Volume profile en HTF.
+------------------------------
+SWING FAILURE PATTERN (SFP)
+Lo primero a identificar es un buen punto de liquidez y que cuando llegue a romper ese nivel, solo deje mecha y deje cierre por debajo (o arriba de ese nivel). Son tomas de liquidez para continuar la tendencia original.
+Prestarle mucha atencion al SFP es un menor timeframe. Tratar de combinar con monthly o weekly POC's (Point of control de un volume profile)
+La ventaja del verlo con el order flow es que si el primer SFP se ven muchos shorts, es casi garantizado que habra un liquidity sweep y habra un segundo SFP.
+------------------------------
+VOLUME PROFILES - USAR VOLUMEN PARA ESTABLECER UN BIAS
+Segun Auction Market Theory el mercado puede encontrarse en balance o imbalance. Cuando rompemos ese balance, entramos en imbalance hasta encontrar nuevamente un balance (un fair price)
+Estos balances estan conformados por volumen y este es el que mueve el mercado.
+Un balance es un rango, el precio lateraliza porque eso es un fair price (una zona de precio justo) un imbalance es una tendencia, mejor dicho es el rompimiento de un area (balance) y el precio busca un nuevo rango.
+*5 REGLAS CLAVE
+1- Si el precio tiene aceptacion dentro del balance es probable que visite el lado contrario y en varias ocasiones retestea el Value Area High (VAH) o Value Area Low (VAL) antes de rotar al lado opuesto.
+2- Si el precio esta dentro del balance, se espera que reaccione en los extremos.
+3- Cuando el precio rompe el balance, tiende a generar un imbalance y buscar un nuevo valor, generalmente el VAH/VAL/POC de un area historica.
+4- Si el precio reacciona fuerte en el POC, puede romper la regla 1 (o sea, no es necesario que testee el otro extremo)
+5- So el tiempo/volumen se empieza a formar cerca de algun extremo es probable que rompa el balance. Cuando se comienza a comprimir cerca del VAH o VAL es porque probablemente rompera en esa direccion.
+------------------------------
+COMO IDENTIFICAR LOS MEJORES ORDER BLOCKS A OPERAR
+El mayor problema es no saber distinguir entre un falso OB y uno real donde quedaron traders atrapados.
+Un bullish OB es la ultima vela bajista previa a un movimiento alcista y un bearish OB es la ultima vela alcista previa al movimiento bajista (impulsivo). Ese es el bloque de ordenes previo a que rompa esa tendencia.
+El punto clave es saber si ese OB tiene mucho volumen.
+*CONDICIONES
+Debe formar un swing low/high
+Debe estar en una zona de soporte o resistencia (cluster) importante
+Se confirma una vez que el precio cierra por debajo/encima del 50% del precio del OB
+Idealmente se cambia la estructura a partir de ese movimiento.
+Idealmente genera un impulso con imbalances.
+Si tiene un 0,618 o un Optimal Trade Entry en la misma zona, perfecto.
+*REGLAS DE OB FALLIDOS
+1- El volumen en la vela del OB es bajo, por ende es un bloque debil.
+Recordar que es un bloque de ordenes y si no hay buena cantidad de ordenes, entonces no es ideal.
+El volumen no debe decrecer en la zona del OB. Si el volumen en velas anteriores es mayor que el volumen del OB, descartamos ese OB.
+2- Poco delta positivo/negativo - falta de traders atrapados/bloque de ordenes.
+Para que se considere un OB, debe estar lleno de volumen. NO debe tener un delta flojo en la vela del OB.
+3- Seguida del OB no hay posiciones fuertes, revisar el delta de las siguientes velas y comprobar que sea fuerte.
+Puede decirse que no hubo participacion insitucional en ese OB.
+*COMO SERIA UN BUEN OB
+1- Buen volumen, mayor a la media y a las velas anteriores.
+2- Buen delta negativo/positivo.
+3- Posiciones fuertes saliendo del OB.
+*COMO ENTRAR PRECISO: El OB puede ser grande, pero lo que hay que ver es que ese bloque tenga ordenes. Mirando solo el Price Action no se podra aniticipar este trade.
+*MODELOS DE ENTRADA
+1- Identificamos la zona de mayor volumen (en la vela del OB) y utilizamos una orden limite con stop debajo del OB.
+2- Identificamos la zona del mayor volumen y buscamos un patron en Low Timeframe (por ejemplo que la siguiente vela absorba estas ordenes y engulfee a la anterior) -Mejor RR ya que el stop es mas chico.
+*COMO HACER PARA CUANDO HAY MAS DE UN OB
+La clave es ver el volumen de ambas velas, ahi te daras cuenta si esta el volumen concentrado en una misma zona, o si esta separado, priorizar la vela de mayor volumen y delta.
+Tambien marcar esa zona desde el inicio del volumen fuerte de la primer vela hasta el final de la segunda.
+------------------------------
+ESTRATEGIA DE PERFIL DE VOLUMEN PARA DAY TRADING
+AUCTION MARKET THEORY (AMT)
+Los mercados son ioguales a cualquier intercambio donde los compradores y vendedores se encuentran a diario, oferta y demanda.
+Los dos propositos generales del mercado son facilitar el intercambio para ambos lados, y buscar el fair value del activo.
+Este proceso se ve representado en el volume profile, el AMT define un area donde el 68% del volumen en tiempo fue tradeado.
+Dentro de ese area de valor, tenemos los extremos (VAH/VAL) y el POC en donde se mantuvo la mayor cantidad de tiempo o se opero mas volumen.
+El mercado puede encontrarse en balance o imbalance. Cuando rompemos balance (rango) entramos en imbalance hasta encontrar nuevamente el balance (fair price) Balance = rango, Imbalance = tendencia.
+El AMT se trata de buscar un mercado eficiente en donde compradores y vendedores estan de acuerdo en un rango.
+Cuando la demanda excede la oferta o viceversa, se entra en tendencia hasta entrar en un acuerdo.
+BALANCE: En un mercado balanceado, los compradores y vendedores estan de acuerdo en el precio (area de valor - rango)
+IMBALANCE: Un mercado imbalanceado es lo opuesto, no hay un acuerdo en el precio y una parte del mercado esta siendo mas agresiva, lo que genera una tendencia.
+Los mercados se encuentran el 80% en estado de balance, y solo el 20% en tendencia. Importante saber tradear balances.
+Cuando rompemos un area de valor (balance) y entramos en imbalance, el precio busca un nuevo rango (balance) el cual muchas veces es un rango previo.
+*5 REGLAS CLAVE
+1- Una vez que se acepta el VAL de un balance, se tiende a rotar al VAH, el precio oscila entre estos dos valores, el 68% (la mayoria) del tiempo, ya que ese es el precio justo.
+Cuando se rompe el balance, se va a buscar el balance de un area previa. Si el precio reacciona en el POC del rango antiguo, se invalida la regla 1 y se vuelve al VAH/POC del rango previo.
+Finalmente si hay mucho tiempo, mucho delta y mucho volumen, consolidando en un extremo del balance, esto tiende a romperse.
+2- Siempre hay que preguntarse: Estamos en balance? O en busca de nuevo balance? Ejemplo: 
+Weekly, balance -> si cerramos H4 dentro del VAH las probabilidades de rotar al nivel contrario aumentan.
+Buscando nuevo balance -> Si cerramos H4 por fuera del VAH, las probabilidades de entrar en imbalance aumentan.
+Daily, balance -> Si cerramos M30 fuera del VAH las probabilidades de entrar en imbalance aumentan.
+-- Quien esta en control? --
+[] Estamos viendo creacion de value en el volumen?
+[] Estamos viendo creacion de value en el tiempo?
+[] Estamos generando value y encima del value precio? - tendencia sigue
+[] Dejamos de generar value por encima y ahora estamos generandolo dentro o solapando? - rango y potencial reversal
+NOTAS: Importante marcar Weekly y Monthly Volume Profiles, revisar cuando se trata de comenzar un imbalance para luego ver si NO se puede y se toca el VAL/VAH del balance anterior, el precio rotara al otro VAL/VAH.
+------------------------------
+COMO CONVERTIRSE EN ORDER FLOW TRADER
+Smart money sirve pero no lo es todo. Agregar order flow.
+Un Fair value gap es un imbalance en el precio donde no hubo suficiente volumen dejando un hueco en el mercado para rellenar mas adelante.
+En cualquiera de los trades, algo que se aprende a los golpes es a respetar el STOP LOSS. Siempre antes de entrar a una posicion hay que tener un SL definido y respetarlo, asi se sobrevive.
+Un order block es la ultima vela alcista o bajista antes de un movimiento impulsivo en la direccion opuesta, marcando una posible zona de reaccion del precio. Luego con el Order Flow podemos analizar si hubo volumen real dentro de ese OB y validad si tiene relevancia.
+El precio se mueve principalmente por bases, si hay mas compradores que vendedores, el precio sube y si hay mas gente vendiendo, el precio baja. Con el OF tenemos esos rayos X.
+El objetivo es hacer el trading mas mecanico y no discrecional. Si no hay volumen, no se mueve el precio. Si queres hacer del trading tu estilo de vida, tenbes que aprender OF.
+------------------------------
+BOOTCAMP ORDER FLOW #1 INTRO Y CONCEPTOS CLAVE
+El DOM "Depth of Market" es lo que forma las velas initiating and responsive activity.
+Responsive es el comportamiento esperado, cuando el mercado llega a los extremos del area de valor, esperamos actividad que llega a los extremos del area de valor, esperamos actividad que contenga el precio: Cuando llegamos a la parte baja esperamos compradores, y cuando llegamos a la alta, esperamos vendedores, para mantenernos en ese area de valor.
+Initiating es el comportamiento inesperado (iniciativo) ocurre cuando el mercado rompe el area de valor, esto ocurre solo cuando cambia la percepcion del fair value (ej: halving) "Ya no estamos de acuerdo en que el precio actual es el precio justo" entonces entramos en imbalance, se genera un imbalance (trend) y hasta encontar un nuevo far value o formar nuevo rango.
+*5 REGLAS CLAVE
+1- Si el precio tiene aceptacion dentro de un rango o area de valor, es muy probable que visite el lado contrario y en varias ocasiones retestea el VAH o VAl antes de rotar al lado opuesto.
+2- Si el precio esta en balance se espera que reaccione en los extremos y permanezca asi
+3- Cuando el precio rompe el balance tiende a generar un imbalance y buscar el nuevo valor, generalmente el VAH/VAL o POC de un area de valor historica.
+4- Si el precio reacciona fuerte en el POC, puede romper #1.
+5- Si el tiempo/volumen se comienzan a formar cerca de algun extremo es probable que rompa ese balance.
+*Naked POC -> Area o linea de precio que NO se tomo o toco. 
+*Footprint Charts -> A diferencia del DOM, que nos muestra todo, aca vamos a visualizar unicamente las ordenes que se ejecutaron en el mercado, nos muestra el volumen operado en un nivel especifico. En comparacion a las velas japonesas, parece que tenemos vision rayos X, para tomar decisiones informadas  viendo el volumen en tiempo real. Gracias a esto vemos informacion clave: donde los compradores o vendedores estan interesados, donde hubo absorcion de grandes jugadores, donde hubo mas volumen, etc. (atas) Del lado derecho vemos las compras market ejecutadas y del lado izquierdo vemos las ventas market ejecutadas.
+VOLUMEN, DELTA Y OPEN INTEREST
+*Volumen -> Ordenes totales, compras y ventas.
+*Delta ->  Diferencia entre compras y ventas.
+*Open Interest ->  Es la diferencia entre ordenes ingresando al mercado y ordenes que se estan cerrando. El numero refleja la cantidad de ordenes. Si en una vela entran 10 ordenes y se cierran 2 existentes, el OI total es de 8. Si el OI queda positivo es que mas gente ingreso al mercado y viceversa.
+Estos tres datos en conjunto nos sirven para medir la fuerza de los movimientos y tomas decisiones informadas a la hora de operar.
+*Bullish = Aumento de Volumen + Aumento de Open Interest + Delta Positivo
+*Bearish = Aumento de Volumen + Aumento de Open Interest + Delta Negativo
+La diferencia esta en que color se pone el delta. Si por ejemplo vemos un movimiento por encima del rango (intentando romper balance) pero el volumen es bajo, comparado al volumen tradeado en el rango podemos deducir que no hay suficiente interes para romper ese nivel, o sea, posible fakeout.
+Breakout vs Fakeout:
+Un breakout puede darse cuando se va viendo que el Volumen aumenta, que el delta es positivo y que el OI aumenta tambien. Esto implica que entra volumen, entra mas gente posicionada y esa gente es con delta positivo, es decir que apoya a la tendencia.
+Un fakeout, si esta la duda de que puede ser un swing failure pattern, lo importante es ver el delta, si es negativo, aunque el precio suba, significa que se esta vendiendo mas. Implica que el OI baje es decir que se cierran posiciones en el fakeoout.
+La idea del Order Flow es que luego de los analisis HTF, poner alertas cerca del area de interes para luego revisar mas al detalle con el volumen. Si bien el OF funciona mejor en Low Time Frame, podemos analizar posibles HTF SFP en H4.
+Si el volumen aparece en una mecha de una vela "tipo martillo bullish", o sea en la parte baja, significa que traders quedaron atrapados, pero tendria que ser volumen de venta.
+PILARES DEL TRADING INSTITUCIONAL - SMC + ORDER FLOW
+Los conceptos principales por los que se mueve el precio son: Liquidez (buyside liquidity BSL / sellside liquidity SSL) - Cambio de estructura (break market structure BMS) - Imbalances (ifvgs) - Order blocks - Breakers.
+Como buscar un trade: 
+Precio en consolidacion (esta generando liquidez) -> HTF POI (high timeframe point of interest - sweep/raid/barrido/zona de reversal) -> Bread&butter (ejecucion) -> Objetivo (toma de ganancias)
+Para nosotros tener mas seguridad sobre las decisiones que tomamos, tenemos que entender que es lo que pasa dentro de las ordenes, sin volumen el precio no se mueve y sin ver el volumen, no sabes que pasara.
+Footprint Charts -> Es una herramienta que nos permite ver el volumen operado a cada precio especifico dentro de cada vela. Nos revela las ordenes que ya fueron ejecutadas. Por que es importante?
+Porque el order flow nos muestra lo que esta pasando en el mercado. No buscamos predecir, sino reaccionar a lo que sucede.
+*Te da rayos X en las velas.
+*Muestra el volumen intercambiado en cada nivel de precio.
+*Permite tomar decisiones informadas basadas en absorcion, agresividad y zonas de mayor interes.
+*Identificas zonas clave, por ejemplo: si dentro de un order block hay suficiente volumen para esperar una reaccion.
+LIQUIDEZ: BUY & SELL SIDE LIQUIDITY - PATRONES CONOCIDOS
+*AMD / POWER OF THREE: Este es el patron que nos explica ICT, hace referencia a un falso rompimiento para luego revertir la tendencia y distribuir al lado contrario.
+1- Open Interest (posiciones) disminuyen indicando que se estan cerrando posiciones y por ende se esta tomando liquidez (porque, caso contrario, si aumenta quiere decir que esos traders estan buscando romper ese nivel y continuar en esa direccion)
+2- Nos paramos encima del bloque de ordenes que se genero en la toma de liquidez, indicando intencion de revertir la direccion del precio
+NOTA: Si una vela tiene volumen de venta debajo, son traders atrapados, al igual que si tiene volumen de compra por arriba. El volumen de shorts esta bien verlo en partes altas o medias y el volumen de longs esta bien verlo en la parte baja de las velas.
+3- Retest del bloque de ordenes mostrando absorcion (todas las ordenes de venta en la mecha + BMS break market structure con la vela cerrando alcista)
+*SFP - TOMAS DE LIQUIDEZ
+Michael de ICT nos introduce el concepto de barrida de liquidez. Lo que muchas veces pasa es que NO todas las barridas son validas, y si vemos solo las velas sin entender que esta pasando dentro, podemos evitar las falsas tomas de liquidez y enfocarnos en las que si sirven.
+Santo grial para confirmar un SFP: 
+[] Open Interest disminuye.
+[] Delta negativo.
+[] Incremento de OT contario.
+[] Traders atrapados.
+[] Volumen en la mecha (no en el cuerpo)
+Estos checks deberiamos tener cada vez que tenemos la duda para confirmar un SFP.
+*LIQUIDEZ OCULTA / HEATMAP
+ICT nos enseña como identificar liquidez basandonos en la accion de precio (minimos y maximos importantes) pero no solo esta ahi, puede estar en cualquier parte del grafico.
+Para leer esta liquidez oculta, utilizaremos el heatmap que nos va a mostrar ordenes de stops que estan esperando ser ejecutadas. 
+En varias ocasiones la liquidez no esta por encima o por debajo de un maximo y al llegar a ella el precio nos da una reaccion (todos los que esperaban se quedan sin trade)
+*FAIR VALUE GAPS - IMBALANCES
+Un fair value gap es un desequilibrio en el precio que se forma cuando hay una ineficiencia en el mercado, es decir, cuando el precio se mueve tan rapido que no se logra cubrir todas las ordenes de una zona.
+Segun ICT, esto suele representar una zona en la que insituciones y Smart Money aun tienen interes y probablemente retestearan a mitigar esa ineficiencia.
+Por esto es importante ver las ordenes! para ver si ese FVG es valido!
+Lo elegimos viendo cual tiene mejores Stacked Imbalances, lo que nos indica que en ese imbalance hubo una gran diferencia en la contrapartida de compras y ventas. Ayuda a refinar la zona de entrada.
+Vacios de volumen: Aumenta las probabilidades de que ese FVG sea el bueno. Si anclamos un perfil dinamico de la caida vemos que en la presunta zona de FVG tenemos un vacio de volumen y un Single Print en el TPO.
+*SINGLE PRINTS
+Estos se generan cuando hay un solo bloque en cierta porcion del precio o en base al TOP (time price opportunity)... Son similares a los FVGs pero no son lo mismo, los SPs se generan cuando el movimiento es rapido y se considera que hubo grandes participaciones en esa zona.
+Funcionan como imanes para el preci y cuando los revisamos tendemos a pensar que tendremos reaccion en dicha zona. Este es el verdadero imbalance.
+*ORDER BLOCKS
+Un BULLISH OB es la ultima vela bajista previa a un movimiento alcista (impuslsivo)
+Un BEARISH OB es la ultima vela alcista previa a un movimiento bajista (correctivo)
+Como saber su efectividad:
+[] Tiene que formar un Swing Low/High.
+[] Tiene que haber sido generado en una zona de soporte o resistencia importante.
+[] Se confirma una vez que el precio cierre por encima del 50% del OB.
+[] Idealmente cambiamos la estructura a partir de ese movimiento.
+[] Idealmente genera un impulso solo con imbalances.
+[] Si tiene un 0.618 o un optimmal trade entry PERFECTO.
+Metodos para tradearlos
+1- Poner alerta en el OB y buscar reaccion en Low Timeframe.
+2- Tirar un fibo en el OB y poner ordenes en el 0, 0.25, 0.5, etc. Invalidacion por encima del Swing Pivot.
+Order block = bloque de ordenes = volumen esperando ser tomado.
+Revisar en ATAS el volumen acumulado en la vela del OB.
+*ESTRATEGIA DE RANGOS (VOLUMEN, DELTA Y CVD)
+Pilares del OF:
+Volumen -> Se obtiene con la cantidad total de ordenes en un tiempo determinado.
+Delta -> Diferencia entre las ordenes de venta y compra. El delta nos indica la intencion de ese volumen, si predomina el delta negativo significa que hay mas intencion por parte de los shorts y viceversa.
+Open Interest -> es la diferencia entre ordenes ingresando al mercado y/o saliendo. No importa si son compras o ventas, son ordenes de ambos tipos. Sirve para evaluar la fuerza del movimiento.
+BULLISH -> +VOL +OI y DELTA POSITIVO (longs)
+BEARISH -> +VOL +OI y DELTA NEGATIVO (SHORTS)
+Si por ejemplo vemos un movimiento por encima del rango (intentando romper balance) pero el volumen es bajo comparado al volumen tradeado en el rango, podemos deducir que no hay interes para romper ese nivel - posible fakeout.
+CVD -> Cumulative Volume Delta es decir el delta acumulado. Mirar el delta de cada vela sirve, pero es mejor ver el total del delta que se va acumulando para entender la verdadera intencion de los participantes.
+El CVD en cripto lo usamos principalmente para ver divergencias. Es un mercado en el que los participantes agresivos (Market Orders)  no suelen estar del lado correcto, por ende el CVD nos sirve como benchmark, pero si para ver traders atrapados.
+Ej: si estamos en un rango o canal alcista y el CVD con minimos mas bajos... esto es una divergencia alcista que desemboca continuacion.. la logica de esto es que en cada minimo mas alto del precio, el CVD es cada vez mas bajo, indicando que hay mas shorts intentando empujar, sin embargo no se ve reflejado en el precio.
+Cuando esos shorts se quedan sin nafta, el precio revienta para el lado contrario... con un short squeeze.. o sea quedan traders atrapados.
+Como se detecta una divergencia en el CVD?
+ALCISTA -> Si o si en el precio haciendo higher lows y el CVD lower lows = Short squeeze.
+BAJISTA -> SI o si el precio haciendo lower lows y el CVD higher highs = Long squeeze.
+*DELTA RANGES STRATEGY
+Que son? se foirman cuando tenemos sellers (delta negativo) en la parte alta del rango y buyers (delta positivo) en la aprte baja del rango.
+El volumen juega un rol importante, por lo general en estos rangos el volumen incermenta cuando llegamos a los extremos.
+Tambien se pueden formar con traders activos a la inversa, con el objetivo de atrapar ambos lados buscando la liquidez en el lado contrario.
+Es importante medir la fuerza (Vol, delta, OI) de cada uno de estos intentos en el range high y en el range low para orientarse y para donde es probable que rompa ese rango.
+VOL/DELTA + PRICE
+Tenemos que enfocarnos en la relacion volumen y delta con el precio. Cuando las tres cosas se alinean en una misma direccion es muy probable que rompamos el rango y comencemos a expandir.
+DIVERGENCIAS EN EL CVD
+Se busca al precio haciendo un alto mas bajo y al CVD con un alto mas alto... significa que cuando el precio hace un Lower High preo el CVD hace un Higher High, dice que tenemos mas longs en el LH sin embargo el precio no rompe ese HH.
+Revisar el volumen del primer high, el segundo pico no debe tener tanto volumen, luego la vela bajista sera con mucho volumen y CVD bajando.

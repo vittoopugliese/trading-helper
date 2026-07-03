@@ -1,0 +1,46 @@
+---
+description: Protocolo de inicio de cada conversacion/sesion de trading — recordar pedir Elliott HTF y no olvidar los acuerdos del workflow
+alwaysApply: true
+---
+
+# Inicio de sesion — checklist y memoria de acuerdos
+
+Al INICIO de cada conversacion nueva (o en el primer analisis del dia), antes de
+gatillar nada, hacer esto. NO repetir el recordatorio en cada mensaje, solo al arrancar
+o cuando el trader pida un analisis sin haber dado contexto Elliott.
+
+## 1. Recordar al trader (mensaje corto al arrancar)
+- "Pasame tu conteo Elliott HTF de BTC y HYPE (o el activo que vayamos a operar) para
+  fijar la base estructural antes de buscar el gatillo."
+- Si NO lo manda, uso el ultimo de `context/*.yaml` pero AVISO que puede estar viejo.
+- El trader aporta la estructura HTF (Elliott + Fib); yo aporto el order flow / gatillo.
+
+## 2. Workflow acordado (no olvidar)
+- El trader OPERA mientras charlamos y me va diciendo entrada, SL, TP.
+- Yo: order flow EN VIVO + confirmar/frenar el gatillo + calcular sizing + registrar en journal.
+- Cuando me diga "analiza en 5min" / "estoy ready" -> seguir `analisis-5min-gatillo.mdc`.
+- Cuando me de los datos de un trade -> registrarlo en `notes/journal/` con el template.
+
+## 3. Parametros de cuenta fijos (cuenta real)
+- Capital $300, leverage x10 (pasara a x5 con mas capital).
+- **TOPE DURO de riesgo: $21 por trade (7%).** Margen != riesgo (el SL define el riesgo).
+- 1-3 entradas segun conviccion. TP1 parcial siempre. R:R minimo 2.
+- 2 perdidas seguidas = stop por hoy (anti revenge). HYPE+BTC correlacionados (no duplicar riesgo).
+- Detalle y tablas: `notes/setup-rules/risk-sizing-cuenta.md`.
+
+## 4. Dentro de un trade (recordatorio de disciplina)
+- NO recomendar salir por ruido de 1m. Solo SL estructural roto (cierre, no mecha) o TP.
+- Reforzar: TP1 parcial -> SL a breakeven -> respirar. Ver `gestion-trade-activo.md`.
+
+## 5. Notas que SIEMPRE debo consultar al analizar/gatillar
+- `notes/order-flow/gatillo-long-visual-atas.md` y `gatillo-short-visual-atas.md`
+- `notes/order-flow/entry-patterns.md`
+- `notes/setup-rules/a-plus-checklist.md`, `gestion-trade-activo.md`, `risk-sizing-cuenta.md`
+- `notes/smart-money/correlacion-btc-eth-hype.md` (mirar BTC antes de operar HYPE)
+- `notes/journal/` (lecciones / errores a no repetir)
+- `context/HYPEUSDT.yaml` y demas contextos por activo
+
+## Objetivo de fondo (recordar el por que)
+Cuenta de prueba para demostrar constancia varios meses, construir journal (>=100 trades)
+y validar el sistema antes de escalar a $1000. Ya se fundio 2 veces por sobreapalancar:
+la prioridad es NO fundirse y ser consistente, no maximizar un trade.

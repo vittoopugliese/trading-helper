@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cursor On-Demand Live</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --panel: #141820;
+      --border: #252b36;
+      --text: #e6eaf0;
+      --muted: #8b95a8;
+      --accent: #6ee7b7;
+      --up: #34d399;
+      --down: #64748b;
+      --warn: #fbbf24;
+      --err: #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    h1 { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; }
+    .sub { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+    .badge {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .badge.live { color: var(--accent); border-color: #1f4d3a; background: #0f241c; }
+    .badge.err { color: var(--err); border-color: #4a2020; background: #1a0f0f; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+    .card.hero { grid-column: 1 / -1; }
+    .label { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .value {
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-top: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+    .delta {
+      margin-top: 8px;
+      font-size: 0.95rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .delta.up { color: var(--up); }
+    .delta.flat { color: var(--down); }
+    .delta.down { color: var(--warn); }
+    .metric { font-size: 1.35rem; font-weight: 600; margin-top: 6px; font-variant-numeric: tabular-nums; }
+    .bar-wrap {
+      margin-top: 10px;
+      height: 8px;
+      background: #0b0d10;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #6ee7b7);
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+    .chart-card { padding: 12px 12px 8px; }
+    .chart-wrap { position: relative; height: 320px; }
+    .footer {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+    .error-box {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #4a2020;
+      background: #1a0f0f;
+      color: #fecaca;
+      font-size: 0.85rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Cursor On-Demand Usage</h1>
+        <p class="sub">Actualización cada 1s · ciclo de facturación actual</p>
+      </div>
+      <span id="statusBadge" class="badge">conectando…</span>
+    </header>
+
+    <div class="grid">
+      <div class="card hero">
+        <div class="label">On-demand (este ciclo)</div>
+        <div id="onDemandValue" class="value">—</div>
+        <div id="onDemandDelta" class="delta flat">—</div>
+      </div>
+
+      <div class="card">
+        <div class="label">Plan incluido</div>
+        <div id="planValue" class="metric">—</div>
+        <div class="bar-wrap"><div id="planBar" class="bar-fill" style="width:0%"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="label">Membresía / ciclo</div>
+        <div id="membership" class="metric" style="font-size:1rem;margin-top:10px;line-height:1.6">—</div>
+      </div>
+    </div>
+
+    <div class="card chart-card">
+      <div class="label" style="padding:4px 6px 8px">Gasto on-demand en vivo</div>
+      <div class="chart-wrap">
+        <canvas id="chart"></canvas>
+      </div>
+    </div>
+
+    <div id="errorBox" class="error-box"></div>
+
+    <p class="footer">
+      Fuente: endpoint interno del dashboard Cursor (<code>/api/usage-summary</code>).
+      Requiere cookie de sesión, no la API key del SDK. Solo localhost.
+    </p>
+  </div>
+
+  <script>
+    const fmtUsd = (n) => n == null ? '—' : '$' + n.toFixed(2);
+    const fmtUsd4 = (n) => n == null ? '—' : '$' + n.toFixed(4);
+    const fmtDelta = (cents) => {
+      if (cents == null || cents === 0) return { text: 'sin cambio', cls: 'flat' };
+      const dollars = cents / 100;
+      const sign = cents > 0 ? '+' : '';
+      return { text: `${sign}${fmtUsd4(Math.abs(dollars)).replace('$', sign ? '+$' : '-$')} último tick`, cls: cents > 0 ? 'up' : 'down' };
+    };
+
+    const ctx = document.getElementById('chart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        datasets: [{
+          label: 'On-demand ($)',
+          data: [],
+          borderColor: '#6ee7b7',
+          backgroundColor: 'rgba(110, 231, 183, 0.08)',
+          fill: true,
+          tension: 0.15,
+          pointRadius: 0,
+          borderWidth: 2,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 200 },
+        interaction: { mode: 'index', intersect: false },
+        scales: {
+          x: {
+            type: 'time',
+            time: { tooltipFormat: 'HH:mm:ss', displayFormats: { second: 'HH:mm:ss', minute: 'HH:mm' } },
+            grid: { color: '#1e2430' },
+            ticks: { color: '#8b95a8', maxTicksLimit: 8 },
+          },
+          y: {
+            grid: { color: '#1e2430' },
+            ticks: {
+              color: '#8b95a8',
+              callback: (v) => '$' + Number(v).toFixed(2),
+            },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => ' $' + ctx.parsed.y.toFixed(4),
+            },
+          },
+        },
+      },
+    });
+
+    function setError(msg) {
+      const box = document.getElementById('errorBox');
+      if (!msg) {
+        box.style.display = 'none';
+        box.textContent = '';
+        return;
+      }
+      box.style.display = 'block';
+      box.textContent = msg;
+    }
+
+    function updateUI(data) {
+      const badge = document.getElementById('statusBadge');
+      if (data.ok) {
+        badge.textContent = 'live · 1s';
+        badge.className = 'badge live';
+        setError(null);
+      } else {
+        badge.textContent = 'error';
+        badge.className = 'badge err';
+        setError(data.error || 'Error desconocido');
+      }
+
+      document.getElementById('onDemandValue').textContent = fmtUsd(data.on_demand_dollars);
+      const d = fmtDelta(data.delta_cents);
+      const deltaEl = document.getElementById('onDemandDelta');
+      deltaEl.textContent = d.text;
+      deltaEl.className = 'delta ' + d.cls;
+
+      const planUsed = data.plan_used;
+      const planLimit = data.plan_limit;
+      if (planUsed != null && planLimit != null) {
+        document.getElementById('planValue').textContent = `${planUsed} / ${planLimit} (${data.plan_percent ?? 0}%)`;
+        document.getElementById('planBar').style.width = Math.min(100, data.plan_percent ?? 0) + '%';
+      }
+
+      const start = data.billing_cycle_start ? new Date(data.billing_cycle_start).toLocaleDateString() : '—';
+      const end = data.billing_cycle_end ? new Date(data.billing_cycle_end).toLocaleDateString() : '—';
+      document.getElementById('membership').innerHTML =
+        `<strong>${data.membership_type ?? '—'}</strong><br>${start} → ${end}<br><span style="color:#8b95a8">última sync: ${data.updated_at ? new Date(data.updated_at).toLocaleTimeString() : '—'}</span>`;
+
+      const points = (data.history || [])
+        .filter((p) => p.dollars != null)
+        .map((p) => ({ x: new Date(p.t).getTime(), y: p.dollars }));
+
+      chart.data.datasets[0].data = points;
+      chart.update('none');
+    }
+
+    async function poll() {
+      try {
+        const res = await fetch('/api/usage', { cache: 'no-store' });
+        const ct = res.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+          throw new Error(
+            'Respuesta HTML en vez de JSON. Abrí http://127.0.0.1:8765 (no el archivo index.html directo). ' +
+            'Primero corré: .venv\\Scripts\\python.exe cursor-usage-dashboard\\server.py'
+          );
+        }
+        const data = await res.json();
+        updateUI(data);
+      } catch (err) {
+        setError(err.message);
+        document.getElementById('statusBadge').textContent = 'offline';
+        document.getElementById('statusBadge').className = 'badge err';
+      }
+    }
+
+    poll();
+    setInterval(poll, 1000);
+  </script>
+</body>
+</html>

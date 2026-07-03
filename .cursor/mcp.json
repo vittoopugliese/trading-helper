@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "trading-helper": {
+      "command": ".venv/Scripts/python.exe",
+      "args": ["main.py", "mcp"],
+      "cwd": "${workspaceFolder}"
+    }
+  }
+}

@@ -1,0 +1,58 @@
+23:48
+Acá están las cuatro páginas transcritas:
+
+Green Flags, patrones de entrada (siempre buscarlos en POI's)
+
+Absorción, traders atrapados: este se da cuando los sellers intentaron romper un nivel pero quedan mal posicionados. El mercado los castiga yendo rápidamente en la dirección contraria. Es un patrón que debe buscarse en zonas de interés (POI's). Sucede cuando tenemos muchas market orders tratando de romper un nivel (sop/res) pero del otro lado tenemos institucionales colocando órdenes límite que absorben esa presión, el precio revierte bruscamente en la dirección contraria.
+
+Cómo identificarlo en el Order Flow:
+
+Delta negativo incrementando: vemos muchas ventas intentando romper el soporte (números rojos altos en el footprint).
+La mecha y el cierre: a pesar de esa presión vendedora, la vela termina cerrando por fuera del soporte. El volumen más fuerte (POC) queda atrapado en la mecha inferior. Esto confirma que los sellers quedaron atrapados.
+Formas de entry:
+
+Entrada agresiva: en el retest del POC de la vela de absorción. Es una fast entry pero no siempre ocurre.
+Entrada conservadora: esperar a que cierre la siguiente vela, si esta cierra con cambio a delta positivo, confirmando que los buyers tomaron el control, ejecutamos entry.
+Gestión:
+
+Stop loss por debajo de la zona de absorción.
+Objetivo: liquidez más cercana hacia el otro lado.
+Drenaje de Delta: buscamos una falta de interés compradora (delta positivo) y posible reversal del precio. Indica una pérdida de interés en la dirección actual del mercado. Si el precio intenta seguir subiendo hacia mi POI, pero el volumen (delta) deja de crecer o disminuye, nos está avisando que el movimiento alcista se está agotando y hay posible reversal.
+
+Cómo identificarlo: en un contexto alcista, el precio sigue subiendo pero al observar los números del delta notamos que ya no son consistentes (1900, 2000, 1700) y vemos números más bajos (400, 600, incluso negativos).
+
+Resistencia en el Delta: se forma visualmente una especie de doble techo en las velas del delta, esto significa que aunque el precio suba, no hay más compradores agresivos dispuestos a pagar precios más altos. Es un desajuste entre precio y volumen.
+
+Entry's:
+
+Identifican el falso rompimiento (fakeout) en el POI: el precio intenta superar ese nivel pero falla.
+Esperan el cambio de delta confirmado: el delta pasa de positivo a negativo, validando que el precio y el volumen están ahora de acuerdo que el movimiento se acabó.
+Ejecutan orden cuando precio y volumen confirman, no entran a la zona. Nota: no operan en el aire: siempre dentro de una POI.
+Toma de liquidez: para esta, nuestro foco principal tiene que estar en el volumen, sin volumen no hay óptimos sweeps. Es un movimiento del precio que busca activar las órdenes de stop loss, generalmente situadas por debajo de mínimos o por encima de máximos, para luego revertir la dirección, confirmando si realmente hubo una toma de liquidez o fue un simple movimiento.
+
+Cómo identificarlo: la regla de oro es que al alcanzar el volumen alto, este debe ser más alto que la media, confirmando que las órdenes fueron absorbidas o liquidadas en ese punto (ver POI también a ver si acompaña volumen).
+
+Entry's:
+
+⊗ Confirmación del precio: nunca operes sólo por el volumen. Espera a que el precio confirme el rechazo a esa zona de interés, tras ver el pico del volumen.
+⊗ No operar a ciegas: la combinación de un volumen superior a la media junto con la confirmación en el precio es la validez.
+Finished/Unfinished Auction: se da cuando hay una disminución de órdenes hacia los highs y lows, significa que no hay interés en tratar esa zona. Si además de eso tenemos un "FA" esto puede indicar reversal. Miramos que la punta del POC sea 0 (?)
+
+Retroceso: retesteo de OB's
+
+Bloque de órdenes = mucho volumen, se puede usar para entradas de reversal, posicionando los SL por respeto de las áreas. Cuando tenemos un OB, marcamos con caja todo el OB y al retest entramos.
+
+SIEMPRE: precio + volumen. No operar a ciegas con esto!
+
+⊗ Red Flags: cosas que NO queremos ver:
+
+Un Finished Auction: funciona como imán para el precio. La lógica es que si hubo lows (compras?) en un precio, es probable que se vuelva a tomar (retest posible).
+Toma de liquidez sin incremento de volumen: si el volumen no incrementa, el precio tiende a volver ahí ya que no había interés genuino, liquidez falsa.
+Lo más importante
+
+⊗ Delta "leading" en contra: si el precio llega a un POI, la zona se infecta con mucha agresión de delta. (texto algo cortado por el ángulo de la foto)
+El precio en cuanto lo ve, retrocede triple, conecta...
+Para una zona, eliminamos que el delta tenga atrás...
+Esta última página (imagen 4) está fotografiada en formato vertical/rotado y con poca luz, así que algunas líneas finales se me complican bastante — te recomiendo que la revises directamente vos, porque arriesgaría a inventar contenido si sigo completando esas frases.
+
+¿Seguís con más páginas o ya armamos el manual completo y ordenado con todo lo que llevamos hasta ahora?
