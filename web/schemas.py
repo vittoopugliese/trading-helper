@@ -51,13 +51,21 @@ class ChatRequest(BaseModel):
 class JournalTradeCreate(BaseModel):
     symbol: str
     timeframe: str
-    direction: str
+    direction: Literal["long", "short"]
     trade_type: str = "scalp"
     entry: float | None = None
     stop: float | None = None
     target: float | None = None
     rr_planned: float | None = None
     wave: str = ""
-    result: str = "open"
+    result: Literal["open", "win", "loss", "breakeven", "missed"] = "open"
     emotion: str = ""
     notes: str = ""
+    of_pattern: str = ""
+    elliott_alineado: bool | None = None
+
+
+class JournalTradeClose(BaseModel):
+    result: Literal["win", "loss", "breakeven"]
+    rr_real: float | None = None
+    emotion: str = ""

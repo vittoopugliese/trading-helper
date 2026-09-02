@@ -157,6 +157,8 @@ def log_trade(
     rr_real: float | None = None,
     emotion: str = "",
     notes: str = "",
+    of_pattern: str = "",
+    elliott_alineado: bool | None = None,
 ) -> str:
     """Log a trade for journaling (setup, R, emotion). result: open|win|loss|breakeven."""
     trade_id = analyst.log_trade(
@@ -173,8 +175,16 @@ def log_trade(
         rr_real=rr_real,
         emotion=emotion,
         notes=notes,
+        of_pattern=of_pattern,
+        elliott_alineado=elliott_alineado,
     )
     return json.dumps({"trade_id": trade_id, "logged": True})
+
+
+@mcp.tool()
+def close_trade(trade_id: int, result: str, rr_real: float | None = None, emotion: str = "") -> str:
+    """Close an open journal trade. result: win|loss|breakeven."""
+    return json.dumps(analyst.close_trade(trade_id, result, rr_real, emotion))
 
 
 @mcp.tool()

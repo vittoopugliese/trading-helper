@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sqlite3
+from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -42,7 +43,7 @@ def _db_path() -> Path:
 
 def init_cache_db() -> None:
     """Create cache tables if they do not exist."""
-    with sqlite3.connect(_db_path()) as conn:
+    with closing(sqlite3.connect(_db_path())) as conn, conn:
         conn.executescript(
             """
             CREATE TABLE IF NOT EXISTS klines (
@@ -63,6 +64,59 @@ def init_cache_db() -> None:
             );
             CREATE INDEX IF NOT EXISTS idx_klines_symbol_interval
                 ON klines(symbol, interval, open_time);
+
+            CREATE TABLE IF NOT EXISTS derivatives_metrics (
+                symbol TEXT NOT NULL,
+                create_time INTEGER NOT NULL,
+                sum_open_interest REAL NOT NULL,
+                sum_open_interest_value REAL NOT NULL,
+                toptrader_long_short_ratio REAL,
+                global_long_short_ratio REAL,
+                taker_long_short_vol_ratio REAL,
+                PRIMARY KEY (symbol, create_time)
+            );
+            CREATE INDEX IF NOT EXISTS idx_derivatives_metrics_symbol_time
+                ON derivatives_metrics(symbol, create_time);
+
+            CREATE TABLE IF NOT EXISTS funding_rates (
+                symbol TEXT NOT NULL,
+                calc_time INTEGER NOT NULL,
+                funding_interval_hours INTEGER,
+                funding_rate REAL NOT NULL,
+                PRIMARY KEY (symbol, calc_time)
+            );
+            CREATE INDEX IF NOT EXISTS idx_funding_rates_symbol_time
+                ON funding_rates(symbol, calc_time);
+
+            CREATE TABLE IF NOT EXISTS footprint_bars (
+                symbol TEXT NOT NULL,
+                interval TEXT NOT NULL,
+                open_time INTEGER NOT NULL,
+                buy_volume REAL NOT NULL,
+                sell_volume REAL NOT NULL,
+                delta REAL NOT NULL,
+                total_volume REAL NOT NULL,
+                agg_trade_count INTEGER NOT NULL,
+                vwap REAL,
+                poc_price REAL,
+                poc_volume REAL,
+                poc_delta REAL,
+                lower_wick_volume REAL,
+                lower_wick_delta REAL,
+                upper_wick_volume REAL,
+                upper_wick_delta REAL,
+                body_volume REAL,
+                max_buy_imbalance REAL,
+                max_sell_imbalance REAL,
+                stacked_buy_levels INTEGER,
+                stacked_sell_levels INTEGER,
+                finished_low INTEGER,
+                finished_high INTEGER,
+                source_rows INTEGER NOT NULL,
+                PRIMARY KEY (symbol, interval, open_time)
+            );
+            CREATE INDEX IF NOT EXISTS idx_footprint_bars_symbol_interval_time
+                ON footprint_bars(symbol, interval, open_time);
             """
         )
 
@@ -107,7 +161,7 @@ def save_klines(symbol: str, interval: str, rows: list[list[Any]]) -> int:
         return 0
 
     parsed = [_parse_kline_row(symbol, interval, r) for r in rows]
-    with sqlite3.connect(_db_path()) as conn:
+    with closing(sqlite3.connect(_db_path())) as conn, conn:
         conn.executemany(
             """
             INSERT OR REPLACE INTO klines
@@ -122,7 +176,7 @@ def save_klines(symbol: str, interval: str, rows: list[list[Any]]) -> int:
 
 def get_last_open_time(symbol: str, interval: str) -> int | None:
     """Return the latest cached open_time for symbol/interval."""
-    with sqlite3.connect(_db_path()) as conn:
+    with closing(sqlite3.connect(_db_path())) as conn, conn:
         row = conn.execute(
             "SELECT MAX(open_time) FROM klines WHERE symbol = ? AND interval = ?",
             (symbol.upper(), interval),
@@ -177,7 +231,7 @@ def load_klines_df(symbol: str, interval: str, limit: int | None = None) -> pd.D
 
     update_cache(symbol, interval, limit=limit)
 
-    with sqlite3.connect(_db_path()) as conn:
+    with closing(sqlite3.connect(_db_path())) as conn, conn:
         df = pd.read_sql_query(
             """
             SELECT open_time, open, high, low, close, volume, close_time,
@@ -197,6 +251,178 @@ def load_klines_df(symbol: str, interval: str, limit: int | None = None) -> pd.D
     df = df.sort_values("open_time").reset_index(drop=True)
     df["open_time"] = pd.to_datetime(df["open_time"], unit="ms", utc=True)
     df["close_time"] = pd.to_datetime(df["close_time"], unit="ms", utc=True)
+    return df
+
+
+def load_cached_klines_df(
+    symbol: str,
+    interval: str,
+    start_time: int | None = None,
+    end_time: int | None = None,
+) -> pd.DataFrame:
+    """Load already-cached klines without making a network request.
+
+    Historical research must be reproducible: a backtest should never mutate its
+    input dataset while it is running.  The live-analysis loader above intentionally
+    refreshes Binance; this loader intentionally does not.
+    """
+    init_cache_db()
+    clauses = ["symbol = ?", "interval = ?"]
+    params: list[Any] = [symbol.upper(), interval]
+    if start_time is not None:
+        clauses.append("open_time >= ?")
+        params.append(int(start_time))
+    if end_time is not None:
+        clauses.append("open_time <= ?")
+        params.append(int(end_time))
+
+    with closing(sqlite3.connect(_db_path())) as conn, conn:
+        df = pd.read_sql_query(
+            f"""
+            SELECT open_time, open, high, low, close, volume, close_time,
+                   quote_volume, trades, taker_buy_base, taker_buy_quote
+            FROM klines
+            WHERE {' AND '.join(clauses)}
+            ORDER BY open_time ASC
+            """,
+            conn,
+            params=params,
+        )
+
+    if not df.empty:
+        df["open_time"] = pd.to_datetime(df["open_time"], unit="ms", utc=True)
+        df["close_time"] = pd.to_datetime(df["close_time"], unit="ms", utc=True)
+    return df
+
+
+def save_derivatives_metrics(rows: list[tuple[Any, ...]]) -> int:
+    if not rows:
+        return 0
+    init_cache_db()
+    with closing(sqlite3.connect(_db_path())) as conn, conn:
+        conn.executemany(
+            """INSERT OR REPLACE INTO derivatives_metrics
+               (symbol, create_time, sum_open_interest, sum_open_interest_value,
+                toptrader_long_short_ratio, global_long_short_ratio,
+                taker_long_short_vol_ratio)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            rows,
+        )
+    return len(rows)
+
+
+def save_funding_rates(rows: list[tuple[Any, ...]]) -> int:
+    if not rows:
+        return 0
+    init_cache_db()
+    with closing(sqlite3.connect(_db_path())) as conn, conn:
+        conn.executemany(
+            """INSERT OR REPLACE INTO funding_rates
+               (symbol, calc_time, funding_interval_hours, funding_rate)
+               VALUES (?, ?, ?, ?)""",
+            rows,
+        )
+    return len(rows)
+
+
+def load_derivatives_metrics_df(
+    symbol: str,
+    start_time: int | None = None,
+    end_time: int | None = None,
+) -> pd.DataFrame:
+    init_cache_db()
+    clauses = ["symbol=?"]
+    params: list[Any] = [symbol.upper()]
+    if start_time is not None:
+        clauses.append("create_time>=?")
+        params.append(start_time)
+    if end_time is not None:
+        clauses.append("create_time<=?")
+        params.append(end_time)
+    with closing(sqlite3.connect(_db_path())) as conn, conn:
+        df = pd.read_sql_query(
+            f"""SELECT create_time, sum_open_interest, sum_open_interest_value,
+                       toptrader_long_short_ratio, global_long_short_ratio,
+                       taker_long_short_vol_ratio
+                FROM derivatives_metrics WHERE {' AND '.join(clauses)}
+                ORDER BY create_time""",
+            conn,
+            params=params,
+        )
+    if not df.empty:
+        df["create_time"] = pd.to_datetime(df["create_time"], unit="ms", utc=True)
+    return df
+
+
+def load_funding_rates_df(
+    symbol: str,
+    start_time: int | None = None,
+    end_time: int | None = None,
+) -> pd.DataFrame:
+    init_cache_db()
+    clauses = ["symbol=?"]
+    params: list[Any] = [symbol.upper()]
+    if start_time is not None:
+        clauses.append("calc_time>=?")
+        params.append(start_time)
+    if end_time is not None:
+        clauses.append("calc_time<=?")
+        params.append(end_time)
+    with closing(sqlite3.connect(_db_path())) as conn, conn:
+        df = pd.read_sql_query(
+            f"""SELECT calc_time, funding_interval_hours, funding_rate
+                FROM funding_rates WHERE {' AND '.join(clauses)}
+                ORDER BY calc_time""",
+            conn,
+            params=params,
+        )
+    if not df.empty:
+        df["calc_time"] = pd.to_datetime(df["calc_time"], unit="ms", utc=True)
+    return df
+
+
+def save_footprint_bars(rows: list[tuple[Any, ...]]) -> int:
+    if not rows:
+        return 0
+    init_cache_db()
+    with closing(sqlite3.connect(_db_path())) as conn, conn:
+        conn.executemany(
+            """INSERT OR REPLACE INTO footprint_bars
+               (symbol, interval, open_time, buy_volume, sell_volume, delta,
+                total_volume, agg_trade_count, vwap, poc_price, poc_volume,
+                poc_delta, lower_wick_volume, lower_wick_delta, upper_wick_volume,
+                upper_wick_delta, body_volume, max_buy_imbalance,
+                max_sell_imbalance, stacked_buy_levels, stacked_sell_levels,
+                finished_low, finished_high, source_rows)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            rows,
+        )
+    return len(rows)
+
+
+def load_footprint_df(
+    symbol: str,
+    interval: str,
+    start_time: int | None = None,
+    end_time: int | None = None,
+) -> pd.DataFrame:
+    init_cache_db()
+    clauses = ["symbol=?", "interval=?"]
+    params: list[Any] = [symbol.upper(), interval]
+    if start_time is not None:
+        clauses.append("open_time>=?")
+        params.append(start_time)
+    if end_time is not None:
+        clauses.append("open_time<=?")
+        params.append(end_time)
+    with closing(sqlite3.connect(_db_path())) as conn, conn:
+        df = pd.read_sql_query(
+            f"SELECT * FROM footprint_bars WHERE {' AND '.join(clauses)} ORDER BY open_time",
+            conn,
+            params=params,
+        )
+    if not df.empty:
+        df["open_time"] = pd.to_datetime(df["open_time"], unit="ms", utc=True)
     return df
 
 

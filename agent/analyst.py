@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import sqlite3
+from contextlib import closing
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -17,6 +19,18 @@ from agent.context import TradeContext, get_context, set_context
 from agent import knowledge, metrics, setup_engine
 
 load_dotenv()
+
+VALID_TRADE_RESULTS = {"open", "win", "loss", "breakeven", "missed"}
+VALID_CLOSE_RESULTS = {"win", "loss", "breakeven"}
+VALID_DIRECTIONS = {"long", "short"}
+
+
+class TradeNotFoundError(ValueError):
+    pass
+
+
+class TradeAlreadyClosedError(ValueError):
+    pass
 
 
 @dataclass
@@ -53,7 +67,10 @@ def _sessions_db() -> Path:
 
 
 def init_sessions_db() -> None:
-    with sqlite3.connect(_sessions_db()) as conn:
+    db_path = _sessions_db()
+    with closing(sqlite3.connect(db_path)) as conn, conn:
+        conn.execute("PRAGMA busy_timeout=5000")
+        conn.execute("PRAGMA journal_mode=WAL")
         conn.executescript(
             """
             CREATE TABLE IF NOT EXISTS analyses (
@@ -93,12 +110,31 @@ def init_sessions_db() -> None:
             );
             """
         )
+        columns = {row[1] for row in conn.execute("PRAGMA table_info(trades)")}
+        missing = [name for name in ("of_pattern", "elliott_alineado") if name not in columns]
+        if missing:
+            # One recoverable snapshot before the first schema migration. It is
+            # intentionally not refreshed on later starts.
+            backup = db_path.with_suffix(".db.bak-v1")
+            if db_path.exists() and not backup.exists():
+                conn.commit()
+                with closing(sqlite3.connect(backup)) as backup_conn, backup_conn:
+                    conn.backup(backup_conn)
+            if "of_pattern" in missing:
+                conn.execute("ALTER TABLE trades ADD COLUMN of_pattern TEXT")
+            if "elliott_alineado" in missing:
+                conn.execute("ALTER TABLE trades ADD COLUMN elliott_alineado INTEGER")
+        conn.execute(
+            """CREATE INDEX IF NOT EXISTS idx_trades_research
+               ON trades(symbol, result, of_pattern, elliott_alineado)"""
+        )
+        conn.execute("PRAGMA user_version=1")
 
 
 def save_analysis(bundle: EvidenceBundle) -> int:
     """Persist analysis to sessions.db."""
     init_sessions_db()
-    with sqlite3.connect(_sessions_db()) as conn:
+    with closing(sqlite3.connect(_sessions_db())) as conn, conn:
         cursor = conn.execute(
             """
             INSERT INTO analyses (symbol, timeframe, trade_type, grade, direction, score, bundle_json, created_at)
@@ -128,7 +164,7 @@ def get_last_analysis(symbol: str, timeframe: str | None = None) -> dict[str, An
         params.append(timeframe)
     query += " ORDER BY id DESC LIMIT 1"
 
-    with sqlite3.connect(_sessions_db()) as conn:
+    with closing(sqlite3.connect(_sessions_db())) as conn, conn:
         row = conn.execute(query, params).fetchone()
     if not row:
         return None
@@ -137,7 +173,7 @@ def get_last_analysis(symbol: str, timeframe: str | None = None) -> dict[str, An
 
 def save_repl_message(role: str, content: str) -> None:
     init_sessions_db()
-    with sqlite3.connect(_sessions_db()) as conn:
+    with closing(sqlite3.connect(_sessions_db())) as conn, conn:
         conn.execute(
             "INSERT INTO repl_messages (role, content, created_at) VALUES (?, ?, ?)",
             (role, content, datetime.now(timezone.utc).isoformat()),
@@ -146,7 +182,7 @@ def save_repl_message(role: str, content: str) -> None:
 
 def get_repl_history(limit: int = 20) -> list[dict[str, str]]:
     init_sessions_db()
-    with sqlite3.connect(_sessions_db()) as conn:
+    with closing(sqlite3.connect(_sessions_db())) as conn, conn:
         rows = conn.execute(
             "SELECT role, content, created_at FROM repl_messages ORDER BY id DESC LIMIT ?",
             (limit,),
@@ -168,17 +204,29 @@ def log_trade(
     rr_real: float | None = None,
     emotion: str = "",
     notes: str = "",
+    of_pattern: str = "",
+    elliott_alineado: bool | None = None,
 ) -> int:
     """Log a trade for journaling and effectiveness tracking."""
+    direction = direction.lower().strip()
+    result = result.lower().strip()
+    if direction not in VALID_DIRECTIONS:
+        raise ValueError("direction must be long or short")
+    if result not in VALID_TRADE_RESULTS:
+        raise ValueError(f"result must be one of {sorted(VALID_TRADE_RESULTS)}")
+    for name, value in (("entry", entry), ("stop", stop), ("target", target), ("rr_planned", rr_planned), ("rr_real", rr_real)):
+        if value is not None and not math.isfinite(value):
+            raise ValueError(f"{name} must be finite")
     init_sessions_db()
     now = datetime.now(timezone.utc).isoformat()
-    with sqlite3.connect(_sessions_db()) as conn:
+    with closing(sqlite3.connect(_sessions_db())) as conn, conn:
         cursor = conn.execute(
             """
             INSERT INTO trades
             (symbol, timeframe, trade_type, direction, wave, entry, stop, target,
-             rr_planned, result, rr_real, emotion, notes, created_at, closed_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             rr_planned, result, rr_real, emotion, notes, created_at, closed_at,
+             of_pattern, elliott_alineado)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 symbol.upper(),
@@ -196,21 +244,34 @@ def log_trade(
                 notes,
                 now,
                 now if result != "open" else None,
+                of_pattern.strip() or None,
+                None if elliott_alineado is None else int(elliott_alineado),
             ),
         )
         return cursor.lastrowid or 0
 
 
-def close_trade(trade_id: int, result: str, rr_real: float | None = None, emotion: str = "") -> None:
+def close_trade(trade_id: int, result: str, rr_real: float | None = None, emotion: str = "") -> dict[str, Any]:
+    result = result.lower().strip()
+    if result not in VALID_CLOSE_RESULTS:
+        raise ValueError(f"result must be one of {sorted(VALID_CLOSE_RESULTS)}")
+    if rr_real is not None and not math.isfinite(rr_real):
+        raise ValueError("rr_real must be finite")
     init_sessions_db()
-    with sqlite3.connect(_sessions_db()) as conn:
-        conn.execute(
+    with closing(sqlite3.connect(_sessions_db())) as conn, conn:
+        cursor = conn.execute(
             """
             UPDATE trades SET result = ?, rr_real = ?, emotion = ?, closed_at = ?
-            WHERE id = ?
+            WHERE id = ? AND result = 'open'
             """,
             (result, rr_real, emotion, datetime.now(timezone.utc).isoformat(), trade_id),
         )
+        if cursor.rowcount == 0:
+            existing = conn.execute("SELECT result FROM trades WHERE id=?", (trade_id,)).fetchone()
+            if existing is None:
+                raise TradeNotFoundError(f"Trade #{trade_id} does not exist")
+            raise TradeAlreadyClosedError(f"Trade #{trade_id} is already {existing[0]}")
+    return {"id": trade_id, "result": result, "rr_real": rr_real, "closed": True}
 
 
 def get_recent_trades(limit: int = 20, symbol: str | None = None) -> list[dict[str, Any]]:
@@ -218,7 +279,8 @@ def get_recent_trades(limit: int = 20, symbol: str | None = None) -> list[dict[s
     init_sessions_db()
     query = """
         SELECT id, symbol, timeframe, trade_type, direction, wave, entry, stop, target,
-               rr_planned, result, rr_real, emotion, notes, created_at, closed_at
+               rr_planned, result, rr_real, emotion, notes, created_at, closed_at,
+               of_pattern, elliott_alineado
         FROM trades
     """
     params: list[Any] = []
@@ -228,55 +290,97 @@ def get_recent_trades(limit: int = 20, symbol: str | None = None) -> list[dict[s
     query += " ORDER BY id DESC LIMIT ?"
     params.append(limit)
 
-    with sqlite3.connect(_sessions_db()) as conn:
+    with closing(sqlite3.connect(_sessions_db())) as conn, conn:
         rows = conn.execute(query, params).fetchall()
 
     cols = [
         "id", "symbol", "timeframe", "trade_type", "direction", "wave",
         "entry", "stop", "target", "rr_planned", "result", "rr_real",
-        "emotion", "notes", "created_at", "closed_at",
+        "emotion", "notes", "created_at", "closed_at", "of_pattern", "elliott_alineado",
     ]
     return [dict(zip(cols, row)) for row in rows]
 
 
+def _cohort_stats(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Stats for executed/closed trades; missing R remains explicit, never imputed."""
+    executed = [r for r in rows if r["result"] in VALID_CLOSE_RESULTS]
+    wins = sum(r["result"] == "win" for r in executed)
+    losses = sum(r["result"] == "loss" for r in executed)
+    breakevens = sum(r["result"] == "breakeven" for r in executed)
+    total = len(executed)
+    decisive = wins + losses
+    r_values = [float(r["rr_real"]) for r in executed if r["rr_real"] is not None]
+    positive = sum(v for v in r_values if v > 0)
+    negative = -sum(v for v in r_values if v < 0)
+    return {
+        "total": total,
+        "wins": wins,
+        "losses": losses,
+        "breakevens": breakevens,
+        "decisive_trades": decisive,
+        "win_rate": round(wins / total * 100, 1) if total else 0.0,
+        "win_rate_decisive": round(wins / decisive * 100, 1) if decisive else 0.0,
+        "avg_r": round(sum(r_values) / len(r_values), 3) if r_values else None,
+        "expectancy_r": round(sum(r_values) / len(r_values), 3) if r_values else None,
+        "total_r": round(sum(r_values), 3),
+        "avg_win_r": round(sum(v for v in r_values if v > 0) / sum(v > 0 for v in r_values), 3)
+        if any(v > 0 for v in r_values) else None,
+        "avg_loss_r": round(sum(v for v in r_values if v < 0) / sum(v < 0 for v in r_values), 3)
+        if any(v < 0 for v in r_values) else None,
+        "profit_factor": round(positive / negative, 3) if negative else None,
+        "r_sample": len(r_values),
+        "missing_r": total - len(r_values),
+        "r_coverage_pct": round(len(r_values) / total * 100, 1) if total else 0.0,
+    }
+
+
+def _group_stats(rows: list[dict[str, Any]], key: str, unknown: str = "unknown") -> dict[str, Any]:
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for row in rows:
+        value = row.get(key)
+        label = unknown if value in (None, "") else str(value)
+        grouped.setdefault(label, []).append(row)
+    return {label: _cohort_stats(group) for label, group in sorted(grouped.items())}
+
+
 def journal_stats(symbol: str | None = None) -> dict[str, Any]:
-    """Return win rate, avg R, stats by wave and trade type."""
+    """Return honest execution stats, including pattern/Elliott congruence cohorts."""
     init_sessions_db()
-    query = "SELECT result, rr_real, rr_planned, wave, trade_type, direction FROM trades WHERE result != 'open'"
+    query = """SELECT result, rr_real, rr_planned, wave, trade_type, direction,
+                      of_pattern, elliott_alineado
+               FROM trades WHERE result != 'open'"""
     params: list[Any] = []
     if symbol:
         query += " AND symbol = ?"
         params.append(symbol.upper())
 
-    with sqlite3.connect(_sessions_db()) as conn:
+    with closing(sqlite3.connect(_sessions_db())) as conn, conn:
         rows = conn.execute(query, params).fetchall()
 
     if not rows:
         return {"total": 0, "message": "No closed trades logged yet"}
-
-    wins = sum(1 for r in rows if r[0] == "win")
-    losses = sum(1 for r in rows if r[0] == "loss")
-    total = len(rows)
-    rr_values = [r[1] for r in rows if r[1] is not None]
-    avg_r = round(sum(rr_values) / len(rr_values), 2) if rr_values else 0.0
-
-    by_wave: dict[str, dict[str, int]] = {}
-    for r in rows:
-        wave = r[3] or "unknown"
-        by_wave.setdefault(wave, {"win": 0, "loss": 0})
-        if r[0] == "win":
-            by_wave[wave]["win"] += 1
-        elif r[0] == "loss":
-            by_wave[wave]["loss"] += 1
-
-    return {
-        "total": total,
-        "wins": wins,
-        "losses": losses,
-        "win_rate": round(wins / total * 100, 1) if total else 0,
-        "avg_r": avg_r,
-        "by_wave": by_wave,
-    }
+    keys = ["result", "rr_real", "rr_planned", "wave", "trade_type", "direction", "of_pattern", "elliott_alineado"]
+    records = [dict(zip(keys, row)) for row in rows]
+    executed = [r for r in records if r["result"] in VALID_CLOSE_RESULTS]
+    base = _cohort_stats(executed)
+    base.update(
+        {
+            "total_records": len(records),
+            "missed": sum(r["result"] == "missed" for r in records),
+            "by_wave": _group_stats(executed, "wave"),
+            "by_trade_type": _group_stats(executed, "trade_type"),
+            "by_direction": _group_stats(executed, "direction"),
+            "by_pattern": _group_stats(executed, "of_pattern"),
+        }
+    )
+    for row in executed:
+        raw = row["elliott_alineado"]
+        row["elliott_alignment"] = "unknown" if raw is None else ("aligned" if raw else "not_aligned")
+        pattern = row["of_pattern"] or "unknown"
+        row["congruence"] = f"{pattern}|{row['elliott_alignment']}"
+    base["by_elliott_alignment"] = _group_stats(executed, "elliott_alignment")
+    base["by_congruence"] = _group_stats(executed, "congruence")
+    return base
 
 
 def run_deep_analysis(bundle: EvidenceBundle) -> str:

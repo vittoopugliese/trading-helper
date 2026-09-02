@@ -24,6 +24,7 @@ from web.schemas import (
     ChatRequest,
     ContextUpdate,
     JournalTradeCreate,
+    JournalTradeClose,
     RiskSettingsUpdate,
     WatcherStartRequest,
 )
@@ -262,8 +263,22 @@ def journal_create(body: JournalTradeCreate) -> dict[str, Any]:
         result=body.result,
         emotion=body.emotion,
         notes=body.notes,
+        of_pattern=body.of_pattern,
+        elliott_alineado=body.elliott_alineado,
     )
     return {"id": tid, "ok": True}
+
+
+@app.patch("/api/journal/trade/{trade_id}/close")
+def journal_close(trade_id: int, body: JournalTradeClose) -> dict[str, Any]:
+    from fastapi import HTTPException
+
+    try:
+        return analyst.close_trade(trade_id, body.result, body.rr_real, body.emotion)
+    except analyst.TradeNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except analyst.TradeAlreadyClosedError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @app.get("/api/settings")

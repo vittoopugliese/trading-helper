@@ -118,6 +118,25 @@ paths:
   chroma_dir: data/chroma
   context_dir: context
 
+# Research defaults. The backtester receives an immutable copy of these
+# assumptions per run; simulated trades are never mixed into sessions.db.
+history:
+  canonical_interval: 1m
+  symbols: [HYPEUSDT, BTCUSDT]
+  source: binance_usdm_klines
+
+backtest:
+  timeframes: [1m, 5m, 15m]
+  reward_risks: [2.0, 3.0]
+  volume_ratios: [1.3, 1.5, 2.0]
+  entry_timing: next_open
+  same_bar_policy: stop_first
+  one_position_at_a_time: true
+  fee_rate_per_side: 0.0005
+  slippage_rate_per_side: 0.0002
+  train_fraction: 0.70
+  output_dir: reports/backtests
+
 # Localhost web cockpit (complemento al CLI/REPL)
 web:
   host: 127.0.0.1

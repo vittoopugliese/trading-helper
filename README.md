@@ -11,6 +11,9 @@ Analisis asistido de crypto futures — Elliott Waves + Order Flow + scoring A+.
 | `python main.py mcp` | Servidor MCP para Cursor |
 | `scripts/hype_watch.py HYPEUSDT --scalp` | Watcher terminal |
 | **`python main.py web`** | **Trading Cockpit Web (localhost)** |
+| `python main.py history-download` | Historico 1m completo HYPE/BTC (resume + checksums) |
+| `python main.py history-status` | Cobertura y gaps del dataset local |
+| `python main.py backtest-suite` | Grilla de setups de volumen + export ATAS |
 
 ## Como levantar el proyecto (guia rapida)
 
@@ -139,6 +142,22 @@ para esa tarea puntual; no es dependencia de runtime.)
 
 Editar en la web o en `context/SYMBOL.yaml`. Screenshots en `context/assets/SYMBOL/chart.*`.
 
-## Cuenta
+## Backtesting de volumen
+
+El research esta separado del analisis live y del journal real:
+
+```powershell
+python main.py history-download
+python main.py history-status
+python main.py backtest-suite
+```
+
+Los resultados quedan en `reports/backtests/` con ranking y timestamps UTC para
+ATAS. Las reglas anti-lookahead y los limites de cada proxy estan documentados en
+[`notes/backtesting-methodology.md`](notes/backtesting-methodology.md).
+Los resultados del primer barrido completo estan en
+[`notes/backtest-results-2026-09-02.md`](notes/backtest-results-2026-09-02.md).
+
+## Cuenta y riesgo
 
 Ver `notes/setup-rules/risk-sizing-cuenta.md` — margen != riesgo, tope $21/trade.

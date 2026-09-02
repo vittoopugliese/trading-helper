@@ -9,7 +9,10 @@ cursor-usage-dashboard/.env
 # Local data
 data/cache.db
 data/sessions.db
+data/*.db.bak*
 data/chroma/
+data/binance_archives/
+reports/backtests/
 
 # IDE
 .idea/

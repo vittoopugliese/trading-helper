@@ -1,0 +1,1 @@
+"""Trading helper regression tests."""
