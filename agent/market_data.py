@@ -27,6 +27,11 @@ INTERVAL_MS = {
     "1d": 86_400_000,
 }
 
+# Tope de velas por request de Binance Futures y cuantos requests como maximo se
+# permiten para rellenar un hueco de cache (60 x 1500 = 90.000 velas).
+BINANCE_MAX_KLINES = 1500
+MAX_BACKFILL_REQUESTS = 60
+
 
 def _db_path() -> Path:
     cfg = get_config()
@@ -126,22 +131,42 @@ def get_last_open_time(symbol: str, interval: str) -> int | None:
 
 
 def update_cache(symbol: str, interval: str, limit: int | None = None) -> int:
-    """Fetch new klines since last cache and store them."""
+    """Fetch new klines since last cache and store them.
+
+    Un `startTime` devuelve las velas POSTERIORES a ese punto, no las ultimas: si el
+    cache quedo dias atras, una sola llamada solo avanza `limit` velas y el cache nunca
+    alcanza el presente. Por eso se pagina hasta el borde y despues se refresca la cola
+    (la vela en curso cambia con cada tick).
+    """
     init_cache_db()
     cfg = get_config()
     if limit is None:
         limit = cfg["candle_limits"].get(interval, 200)
 
-    last = get_last_open_time(symbol, interval)
-    if last is None:
-        rows = fetch_klines(symbol, interval, limit=limit)
-    else:
-        start = last + INTERVAL_MS.get(interval, 60_000)
-        rows = fetch_klines(symbol, interval, limit=limit, start_time=start)
-        if not rows:
-            rows = fetch_klines(symbol, interval, limit=limit)
+    step = INTERVAL_MS.get(interval, 60_000)
+    now = int(datetime.now(timezone.utc).timestamp() * 1000)
+    saved = 0
 
-    return save_klines(symbol, interval, rows)
+    last = get_last_open_time(symbol, interval)
+    if last is not None:
+        cursor = last + step
+        for _ in range(MAX_BACKFILL_REQUESTS):
+            # Lo que entra en el refetch de cola no hace falta paginarlo.
+            if now - cursor <= limit * step:
+                break
+            rows = fetch_klines(symbol, interval, limit=BINANCE_MAX_KLINES, start_time=cursor)
+            if not rows:
+                break
+            saved += save_klines(symbol, interval, rows)
+            newest = int(rows[-1][0])
+            if newest < cursor:  # sin avance: cortar para no colgarse
+                break
+            cursor = newest + step
+
+    # La cola siempre se refetchea: garantiza vela en curso actualizada aunque el
+    # backfill se haya cortado por el tope de requests.
+    saved += save_klines(symbol, interval, fetch_klines(symbol, interval, limit=limit))
+    return saved
 
 
 def load_klines_df(symbol: str, interval: str, limit: int | None = None) -> pd.DataFrame:

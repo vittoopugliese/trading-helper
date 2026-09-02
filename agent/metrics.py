@@ -396,7 +396,12 @@ def suggest_levels(
     cfg = get_config()
     price = float(df["close"].iloc[-1])
 
-    if trade_context and trade_context.has_poi():
+    # Contexto viejo (precio lejos del POI) = niveles ficticios. Se descarta y se cae al
+    # calculo por estructura/ATR en vez de emitir un stop del lado equivocado del entry.
+    ctx_drift = trade_context.poi_drift_pct(price) if trade_context else None
+    ctx_stale = bool(trade_context and trade_context.has_poi() and trade_context.is_stale(price))
+
+    if trade_context and trade_context.has_poi() and not ctx_stale:
         entry = trade_context.poi_mid() or price
         stop = trade_context.invalidation
         target = trade_context.targets[0] if trade_context.targets else None
@@ -452,13 +457,17 @@ def suggest_levels(
     reward = abs(target - price) if target else 0
     rr = round(reward / risk, 2) if risk > 0 else 0.0
 
-    return {
+    out: dict[str, float | None | str] = {
         "entry": round(price, 6),
         "stop": round(float(stop), 6) if stop else None,
         "target": round(float(target), 6) if target else None,
         "risk_reward": rr,
-        "source": "atr",
+        "source": "atr (contexto desactualizado)" if ctx_stale else "atr",
     }
+    if ctx_stale:
+        out["context_stale"] = True  # type: ignore[assignment]
+        out["context_drift_pct"] = round(ctx_drift, 4) if ctx_drift is not None else None
+    return out
 
 
 def compute_position_size(

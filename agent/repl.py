@@ -46,7 +46,8 @@ def _handle_command(line: str, scheduler: SchedulerService | None) -> bool:
     if line.lower() in ("help", "?"):
         console.print(
             "[bold]Commands:[/bold]\n"
-            "  analiza BTC en 4h swing\n"
+            "  analiza BTC en 4h swing            (base core: tus notas)\n"
+            "  analiza HYPE 5m scalp con libros   (suma la biblioteca)\n"
             "  analyze ETHUSDT 15m scalp\n"
             "  search onda 3 extendida\n"
             "  reindex\n"
@@ -104,9 +105,14 @@ def _handle_command(line: str, scheduler: SchedulerService | None) -> bool:
         symbol, timeframe, trade_type = parsed
         compare = "compar" in line.lower() or "compare" in line.lower()
         deep = "--deep" in line.lower() or "profundo" in line.lower()
-        console.print(f"[dim]Analyzing {symbol} {timeframe} ({trade_type})...[/dim]")
+        with_books = "libro" in line.lower() or "--books" in line.lower()
+        scope = "all" if with_books else "core"
+        base_label = "core+libros" if with_books else "core"
+        console.print(f"[dim]Analyzing {symbol} {timeframe} ({trade_type}) [base: {base_label}]...[/dim]")
         try:
-            bundle = analyst.analyze(symbol, timeframe, trade_type, deep=deep, compare_previous=compare)
+            bundle = analyst.analyze(
+                symbol, timeframe, trade_type, deep=deep, compare_previous=compare, scope=scope
+            )
             display.print_bundle(bundle)
             analyst.save_repl_message("user", line)
             analyst.save_repl_message("assistant", bundle.verdict.get("summary", ""))

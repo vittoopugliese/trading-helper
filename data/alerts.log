@@ -65,3 +65,9 @@
 [15:27:41] LONG HYPEUSDT trapped_shorts — @ 69.1810 entry 69.1810 stop 65.6600 target 67.8500
 [15:29:07] LONG HYPEUSDT trapped_shorts — @ 69.0270 entry 69.0270 stop 65.6600 target 67.8500
 [15:31:57] LONG HYPEUSDT sweep_reclaim_bottom — @ 69.0430 entry 69.0430 stop 65.6600 target 67.8500
+[17:35:01] SHORT SETUP HYPEUSDT 86% — @ 70.7030 POI 70.65-70.95 patterns=['delta_confirmation', 'cvd_bearish_divergence', 'delta_drain']
+[17:35:13] SHORT SETUP HYPEUSDT 84% — @ 70.6910 POI 70.65-70.95 patterns=['delta_confirmation']
+[17:35:14] SHORT SETUP HYPEUSDT 84% — @ 70.6910 POI 70.65-70.95 patterns=['delta_confirmation']
+[17:48:13] SHORT SETUP HYPEUSDT 87% — @ 70.8890 POI 70.65-70.95 patterns=['liquidity_sweep']
+[19:51:33] SHORT HYPEUSDT delta_flip_after_bounce — @ 82.8880 entry 82.8880 stop 71.1000 target 69.8000
+[19:51:34] SHORT HYPEUSDT delta_flip_after_bounce — @ 82.8880 entry 82.8880 stop 71.1000 target 69.8000

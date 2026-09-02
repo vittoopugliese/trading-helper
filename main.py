@@ -9,6 +9,7 @@ import typer
 from rich.console import Console
 
 from agent import analyst, context as trade_context, display, knowledge, market_data
+from agent.config import get_config
 from agent.mcp_server import run_mcp
 from agent.repl import run_repl
 from agent.scheduler import SchedulerService
@@ -28,6 +29,9 @@ def analyze(
     trade_type: str = typer.Argument("swing", help="swing o scalp"),
     deep: bool = typer.Option(False, "--deep", help="Usar Claude API para analisis profundo"),
     compare: bool = typer.Option(False, "--compare", help="Comparar con analisis anterior"),
+    books: bool = typer.Option(
+        False, "--books", help="Sumar la biblioteca de libros al retrieval (default: solo tus notas core)"
+    ),
     json_output: bool = typer.Option(False, "--json", help="Salida JSON"),
 ) -> None:
     """Analizar un par y obtener veredicto A+ setup."""
@@ -38,6 +42,7 @@ def analyze(
             trade_type.lower(),
             deep=deep,
             compare_previous=compare,
+            scope="all" if books else "core",
         )
         display.print_bundle(bundle, as_json=json_output)
     except Exception as exc:
@@ -171,9 +176,48 @@ def mcp() -> None:
     run_mcp()
 
 
+@app.command()
+def web(
+    host: str | None = typer.Option(None, help="Host (default from config.yaml)"),
+    port: int | None = typer.Option(None, help="Port (default 8780)"),
+    no_browser: bool = typer.Option(False, "--no-browser", help="No abrir browser automaticamente"),
+) -> None:
+    """Iniciar Trading Cockpit Web en localhost."""
+    import threading
+    import webbrowser
+
+    from web.server import run_server
+
+    cfg = get_config()
+    web_cfg = cfg.get("web", {})
+    h = host or web_cfg.get("host", "127.0.0.1")
+    p = port or int(web_cfg.get("port", 8780))
+    url = f"http://{h}:{p}/"
+
+    if web_cfg.get("open_browser", True) and not no_browser:
+        threading.Timer(1.2, lambda: webbrowser.open(url)).start()
+        console.print(f"[green]Abriendo[/green] {url}")
+
+    console.print(f"[cyan]Trading Cockpit[/cyan] en {url} (Ctrl+C para detener)")
+    try:
+        run_server(host=h, port=p)
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Web server stopped.[/yellow]")
+
+
 @app.callback()
 def main() -> None:
     """Trading Helper Agent."""
+    # Windows: la consola por defecto (cp1252) no puede imprimir unicode como
+    # ≥ / → / ≠ que aparecen en las notas. Forzamos UTF-8 en la salida.
+    import sys
+
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
+        except Exception:
+            pass
+
     market_data.init_cache_db()
     analyst.init_sessions_db()
 

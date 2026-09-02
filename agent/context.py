@@ -29,6 +29,7 @@ class TradeContext:
     notes: str = ""
     account_size: float | None = None
     risk_pct: float = 2.0
+    chart_image: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -43,6 +44,7 @@ class TradeContext:
             "notes": self.notes,
             "account_size": self.account_size,
             "risk_pct": self.risk_pct,
+            "chart_image": self.chart_image,
         }
 
     @classmethod
@@ -81,6 +83,7 @@ class TradeContext:
             notes=str(data.get("notes", "")),
             account_size=float(data["account_size"]) if data.get("account_size") is not None else None,
             risk_pct=float(data.get("risk_pct", 2.0)),
+            chart_image=str(data.get("chart_image", "")),
         )
 
     def has_poi(self) -> bool:
@@ -118,6 +121,30 @@ class TradeContext:
         if self.bias == "short":
             return price < self.invalidation
         return True
+
+    def poi_drift_pct(self, price: float) -> float | None:
+        """Distancia relativa del precio al borde mas cercano del POI (0.0 si esta adentro)."""
+        if not self.has_poi() or price <= 0:
+            return None
+        low = float(self.poi_low)  # type: ignore[arg-type]
+        high = float(self.poi_high)  # type: ignore[arg-type]
+        if low <= price <= high:
+            return 0.0
+        gap = low - price if price < low else price - high
+        return gap / price
+
+    def is_stale(self, price: float, max_drift_pct: float | None = None) -> bool:
+        """True cuando el precio se fue lejos del POI: el contexto guardado quedo viejo.
+
+        Los niveles (POI, invalidacion, targets) dejan de describir el mercado actual, asi
+        que cualquier entry/stop/RR derivado de ellos es ficcion. Ver notes/setup-rules.
+        """
+        drift = self.poi_drift_pct(price)
+        if drift is None:
+            return False
+        if max_drift_pct is None:
+            max_drift_pct = float(get_config()["thresholds"].get("context_stale_pct", 0.08))
+        return drift > max_drift_pct
 
     def nearest_fib(self, price: float) -> str | None:
         if not self.fib:

@@ -16,6 +16,29 @@ COLLECTION_NAME = "trading_notes"
 _collection = None
 _embedding_fn = None
 
+# Categoria de las notas destiladas de libros (notes/libros/**).
+# El scope controla si entran o no en el retrieval de un analisis.
+BOOKS_CATEGORY = "libros"
+
+
+def _scope_where(category: str | None, scope: str | None) -> dict[str, Any] | None:
+    """Traduce (category, scope) al filtro `where` de Chroma.
+
+    scope:
+      - "core"  -> tus notas (order-flow, elliott, setup-rules...), SIN libros.
+      - "books" -> solo notas de libros.
+      - "all"   -> todo (core + libros).
+    `category` explicito tiene prioridad sobre scope.
+    """
+    if category:
+        return {"category": category}
+    scope = (scope or "all").lower()
+    if scope == "core":
+        return {"category": {"$ne": BOOKS_CATEGORY}}
+    if scope == "books":
+        return {"category": BOOKS_CATEGORY}
+    return None  # all
+
 
 def _get_embedding_function():
     global _embedding_fn
@@ -208,13 +231,23 @@ def _extract_title(content: str) -> str:
     return "Untitled"
 
 
-def search_notes(query: str, top_k: int | None = None, category: str | None = None) -> list[dict[str, Any]]:
-    """Semantic search over indexed notes."""
+def search_notes(
+    query: str,
+    top_k: int | None = None,
+    category: str | None = None,
+    scope: str = "all",
+) -> list[dict[str, Any]]:
+    """Semantic search over indexed notes.
+
+    scope = "core" | "books" | "all" (ver `_scope_where`). Default "all" para no
+    cambiar el comportamiento de los buscadores explicitos (CLI/MCP `search`).
+    El pipeline de analisis pasa scope="core" por defecto.
+    """
     cfg = get_config()
     top_k = top_k or cfg["notes"]["top_k"]
     collection = _get_collection()
 
-    where = {"category": category} if category else None
+    where = _scope_where(category, scope)
 
     try:
         count = collection.count()
@@ -266,9 +299,20 @@ def build_search_query(
         f"order flow {order_flow.get('bias', 'mixed')}",
         f"volume spike {indicators.get('volume_spike', False)}",
         f"RSI {indicators.get('rsi')}",
-        "elliott wave setup",
-        "order flow absorption delta CVD",
+        "elliott wave setup reglas onda impulso correctiva",
+        "order flow absorption delta CVD sweep reclaim",
+        "wyckoff acumulacion distribucion spring upthrust fase rango",
+        "esfuerzo resultado causa efecto linea menor resistencia",
+        "triple pantalla marea confluencia divergencia momentum",
+        "psicologia disciplina probabilidades gestion riesgo sizing",
     ]
+
+    trend = str(structure.get("trend", "")).lower()
+    of_bias = str(order_flow.get("bias", "")).lower()
+    if "up" in trend or of_bias == "bullish":
+        parts.append("acumulacion spring LPS golden pocket compra")
+    if "down" in trend or of_bias == "bearish":
+        parts.append("distribucion upthrust UTAD LPSY venta")
 
     if context_dict:
         parts.extend(

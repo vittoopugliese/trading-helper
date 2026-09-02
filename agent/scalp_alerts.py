@@ -329,7 +329,29 @@ def detect_scalp_alerts(
                 )
             )
 
-    return alerts
+    return sanitize_alerts(alerts)[0]
+
+
+def levels_sane(direction: str, entry: float, stop: float, target: float) -> bool:
+    """Stop y target del lado correcto del entry.
+
+    Un short con el stop DEBAJO del entry (o un long con el stop arriba) no es un stop:
+    suele venir de un contexto viejo y el riesgo calculado sobre esa distancia es basura.
+    """
+    if direction == "long":
+        return stop < entry < target
+    if direction == "short":
+        return target < entry < stop
+    return False
+
+
+def sanitize_alerts(alerts: list[ScalpAlert]) -> tuple[list[ScalpAlert], list[ScalpAlert]]:
+    """Separa alertas con niveles coherentes de las que hay que descartar."""
+    ok: list[ScalpAlert] = []
+    dropped: list[ScalpAlert] = []
+    for a in alerts:
+        (ok if levels_sane(a.direction, a.entry, a.stop, a.target) else dropped).append(a)
+    return ok, dropped
 
 
 def format_alerts(alerts: list[ScalpAlert]) -> str:

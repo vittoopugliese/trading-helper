@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elliott Waves — Manual Avanzado</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #150708;
+    --bg2: #1c0c0d;
+    --surface: #1f0e0f;
+    --card: #240f10;
+    --border: #3a1518;
+    --border-soft: #2a1113;
+    --blood: #e8213f;
+    --blood-dim: #a91830;
+    --gold: #d4a437;
+    --gold-dim: #8a6d28;
+    --rose: #c97b8a;
+    --rose-dim: #6e424a;
+    --cream: #f2e6e1;
+    --muted: #9c7f7d;
+    --muted2: #6b5250;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Fraunces', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* subtle wave texture background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -5%, rgba(232,33,63,0.10), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 20%, rgba(212,164,55,0.06), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+
+  .container {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 56px 24px 90px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== HEADER ===== */
+  header { margin-bottom: 52px; }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-size: clamp(2.3rem, 6vw, 3.6rem);
+    font-weight: 900;
+    line-height: 1.05;
+    color: #fff;
+    margin-bottom: 14px;
+    letter-spacing: -0.01em;
+  }
+
+  h1 em {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--blood);
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15.5px;
+    max-width: 560px;
+    line-height: 1.7;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 400;
+  }
+
+  /* Wave SVG signature */
+  .wave-signature {
+    margin-top: 28px;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  /* ===== PROGRESS ===== */
+  .progress-wrap { margin-bottom: 36px; }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blood), var(--gold));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* ===== TABS ===== */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 20px;
+  }
+
+  .tab {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .tab:hover { border-color: var(--blood-dim); color: var(--rose); }
+  .tab.active { background: var(--blood); color: #fff; border-color: var(--blood); font-weight: 600; }
+
+  /* ===== PHASES ===== */
+  .phase { display: none; animation: fadeIn 0.35s ease; }
+  .phase.active { display: block; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .phase-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 22px;
+    margin-bottom: 30px;
+    padding: 26px 26px;
+    background: linear-gradient(135deg, var(--surface), var(--bg2));
+    border: 1px solid var(--border-soft);
+    border-left: 3px solid var(--phase-color, var(--blood));
+    border-radius: 4px;
+  }
+
+  .phase-num {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 46px;
+    font-weight: 600;
+    color: var(--phase-color, var(--blood));
+    opacity: 0.35;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .phase-info h2 {
+    font-size: 21px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .phase-info p {
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.7;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ===== CONCEPT CARDS ===== */
+  .concepts { display: flex; flex-direction: column; gap: 14px; }
+
+  .concept-card {
+    background: var(--card);
+    border: 1px solid var(--border-soft);
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .concept-card:hover { border-color: var(--phase-color, var(--blood-dim)); }
+  .concept-card.open { border-color: var(--phase-color, var(--blood-dim)); }
+
+  .concept-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 17px 20px;
+  }
+
+  .concept-icon { font-size: 19px; flex-shrink: 0; }
+
+  .concept-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    flex: 1;
+    font-family: 'Fraunces', serif;
+  }
+
+  .concept-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9.5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: rgba(232,33,63,0.08);
+    color: var(--rose);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: 1px solid rgba(232,33,63,0.15);
+    white-space: nowrap;
+  }
+
+  .concept-tag.gold { background: rgba(212,164,55,0.08); color: var(--gold); border-color: rgba(212,164,55,0.2); }
+  .concept-tag.of { background: rgba(120,180,220,0.08); color: #8ec5e8; border-color: rgba(120,180,220,0.2); }
+
+  .chevron {
+    font-size: 12px;
+    color: var(--muted2);
+    transition: transform 0.25s;
+    flex-shrink: 0;
+  }
+  .concept-card.open .chevron { transform: rotate(90deg); color: var(--phase-color, var(--blood)); }
+
+  .concept-body {
+    display: none;
+    padding: 0 20px 22px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .concept-card.open .concept-body { display: block; }
+
+  .concept-body p {
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 1.75;
+    margin-top: 15px;
+    margin-bottom: 15px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .concept-body p strong { color: var(--cream); }
+
+  /* Steps */
+  .steps { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+
+  .steps li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 13.5px;
+    color: var(--cream);
+    line-height: 1.6;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .step-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--gold);
+    background: rgba(212,164,55,0.1);
+    border-radius: 2px;
+    padding: 2px 7px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    white-space: nowrap;
+  }
+
+  /* Fib level pills */
+  .fib-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 14px 0;
+  }
+  .fib-pill {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: rgba(212,164,55,0.08);
+    color: var(--gold);
+    border: 1px solid rgba(212,164,55,0.25);
+  }
+  .fib-pill.hot {
+    background: var(--gold);
+    color: #1a0d05;
+    border-color: var(--gold);
+  }
+  .fib-pill.danger {
+    background: rgba(232,33,63,0.1);
+    color: var(--blood);
+    border-color: rgba(232,33,63,0.3);
+  }
+
+  /* Signals / info boxes */
+  .signals-box {
+    background: rgba(232,33,63,0.045);
+    border: 1px solid rgba(232,33,63,0.15);
+    border-radius: 3px;
+    padding: 15px 17px;
+    margin-top: 14px;
+  }
+
+  .signals-box.gold-box {
+    background: rgba(212,164,55,0.045);
+    border-color: rgba(212,164,55,0.18);
+  }
+
+  .signals-box.of-box {
+    background: rgba(120,180,220,0.04);
+    border-color: rgba(120,180,220,0.18);
+  }
+
+  .box-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--blood);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 11px;
+    font-weight: 600;
+  }
+
+  .gold-box .box-label { color: var(--gold); }
+  .of-box .box-label { color: #8ec5e8; }
+
+  .signals-box ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .signals-box ul li {
+    font-size: 13px;
+    color: var(--cream);
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.6;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .signals-box ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--blood);
+    font-size: 11px;
+  }
+
+  .gold-box ul li::before { color: var(--gold); }
+  .of-box ul li::before { color: #8ec5e8; }
+
+  .warn-box {
+    background: rgba(232,33,63,0.07);
+    border: 1px solid rgba(232,33,63,0.25);
+    border-radius: 3px;
+    padding: 13px 16px;
+    margin-top: 14px;
+    font-size: 12.5px;
+    color: #f0b8c1;
+    line-height: 1.65;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .warn-box strong { color: var(--blood); }
+
+  .uncertain-box {
+    background: rgba(212,164,55,0.06);
+    border: 1px dashed rgba(212,164,55,0.35);
+    border-radius: 3px;
+    padding: 11px 15px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--gold);
+    line-height: 1.6;
+    font-family: 'IBM Plex Mono', monospace;
+    font-style: italic;
+  }
+
+  /* Wave structure diagram (mini inline SVG containers) */
+  .structure-diagram {
+    display: flex;
+    justify-content: center;
+    margin: 16px 0;
+    padding: 12px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 4px;
+  }
+
+  /* Checklist */
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+
+  .checklist li {
+    display: flex;
+    gap: 11px;
+    align-items: flex-start;
+    font-size: 13px;
+    color: var(--cream);
+    line-height: 1.55;
+    cursor: pointer;
+    padding: 9px 11px;
+    background: rgba(255,255,255,0.015);
+    border-radius: 3px;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    user-select: none;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .checklist li:hover { border-color: var(--border); }
+
+  .checklist li.checked {
+    color: var(--muted);
+    text-decoration: line-through;
+    background: rgba(212,164,55,0.05);
+    border-color: rgba(212,164,55,0.2);
+  }
+
+  .check-box {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    transition: all 0.15s;
+  }
+
+  .checklist li.checked .check-box {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #1a0d05;
+  }
+
+  /* Comparison table for structures */
+  .struct-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+  }
+  .struct-table th {
+    text-align: left;
+    color: var(--gold);
+    font-weight: 600;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .struct-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border-soft);
+    color: var(--cream);
+  }
+  .struct-table tr:last-child td { border-bottom: none; }
+
+  /* Section divider label */
+  .divider-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted2);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 6px 0 4px;
+  }
+
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="eyebrow">// Manual de estudio — Pappe &amp; Vittorio</div>
+    <h1>Elliott Waves<br><em>y la anatomía</em> del ciclo</h1>
+    <p class="subtitle">Tus apuntes completos, ordenados por bloque de estudio. Donde tiene sentido, sumé confirmaciones de Order Flow (volumen, delta, CVD) para que tus conteos dejen de ser subjetivos.</p>
+
+    <svg class="wave-signature" viewBox="0 0 560 90" xmlns="http://www.w3.org/2000/svg">
+      <polyline points="10,65 90,20 140,55 260,8 310,42 430,3 470,30 550,15"
+        fill="none" stroke="#e8213f" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>
+      <g font-family="IBM Plex Mono" font-size="11" fill="#9c7f7d">
+        <text x="4" y="80">0</text>
+        <text x="84" y="16">1</text>
+        <text x="134" y="70">2</text>
+        <text x="254" y="4">3</text>
+        <text x="304" y="57">4</text>
+        <text x="424" y="0" fill="#d4a437">5</text>
+      </g>
+      <circle cx="90" cy="20" r="3" fill="#d4a437"/>
+      <circle cx="140" cy="55" r="3" fill="#c97b8a"/>
+      <circle cx="260" cy="8" r="3" fill="#d4a437"/>
+      <circle cx="310" cy="42" r="3" fill="#c97b8a"/>
+      <circle cx="430" cy="3" r="4" fill="#e8213f"/>
+    </svg>
+  </header>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>PROGRESO DE REPASO</span>
+      <span id="progress-pct">0%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showPhase(0)">01 · Estructura</button>
+    <button class="tab" onclick="showPhase(1)">02 · Smart Money</button>
+    <button class="tab" onclick="showPhase(2)">03 · BOS &amp; CHOCH</button>
+    <button class="tab" onclick="showPhase(3)">04 · Fibonacci</button>
+    <button class="tab" onclick="showPhase(4)">05 · Impulsos</button>
+    <button class="tab" onclick="showPhase(5)">06 · Diagonales</button>
+    <button class="tab" onclick="showPhase(6)">07 · Correctivas</button>
+    <button class="tab" onclick="showPhase(7)">✓ Checklists</button>
+  </div>
+
+  <!-- ===================== FASE 1: ESTRUCTURA ===================== -->
+  <div class="phase active" id="phase-0" style="--phase-color: #e8213f">
+    <div class="phase-header">
+      <div class="phase-num">01</div>
+      <div class="phase-info">
+        <h2>Estructura, tendencia y zonas de oferta/demanda</h2>
+        <p>La base de todo. Sin esto, cualquier conteo de ondas es puro dibujo. Siempre a favor de la tendencia — sin excepción.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🌊</span>
+          <span class="concept-title">Cómo se detecta la estructura</span>
+          <span class="concept-tag">BASE</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>La estructura se detecta y se dicta por sus <strong>altos y bajos</strong> — los extremos de los swings. Nada más. Antes de contar ondas, marcá esos extremos con claridad.</p>
+          <ul class="steps">
+            <li><span class="step-num">01</span> Marcá todos los swing highs y swing lows visibles en tu timeframe de análisis.</li>
+            <li><span class="step-num">02</span> Prestá atención al <strong>Order Book</strong>: a donde hay más órdenes acumuladas, generalmente ahí se dirige el precio.</li>
+            <li><span class="step-num">03</span> Marcá zonas de oferta y demanda con cajitas.</li>
+          </ul>
+          <div class="signals-box">
+            <div class="box-label">Oferta vs Demanda</div>
+            <ul>
+              <li><strong>Oferta</strong> → se vende → el precio baja (zona roja)</li>
+              <li><strong>Demanda</strong> → se compra → el precio sube (zona verde)</li>
+            </ul>
+          </div>
+          <div class="signals-box of-box">
+            <div class="box-label">Mejora con Order Flow</div>
+            <ul>
+              <li>El "más órdenes acumuladas" del Order Book se confirma en ATAS con <strong>Smart DOM</strong>: un nivel que se refresca sin vaciarse es una pared real, no ruido</li>
+              <li>Antes de marcar oferta/demanda a ojo, revisá el <strong>Volume Profile</strong> de esa zona — si hay POC claro, tu cajita tiene más peso</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📦</span>
+          <span class="concept-title">Detectar una zona de demanda</span>
+          <span class="concept-tag">SETUP</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Una zona de demanda se detecta con una ruptura previa <strong>con cuerpo de vela</strong> y encontrando el pullback o la pausa previa a esa ruptura. Esa zona probablemente se reteste.</p>
+          <div class="signals-box gold-box">
+            <div class="box-label">La clave</div>
+            <ul>
+              <li>Esa pausa previa a la ruptura suele ser, en sí misma, un <strong>Order Block</strong></li>
+              <li>Buscá el cuerpo de vela real que rompió — mecha sola no cuenta como ruptura válida</li>
+            </ul>
+          </div>
+          <div class="signals-box of-box">
+            <div class="box-label">Confirmación con OF</div>
+            <ul>
+              <li>En el footprint de esa vela de ruptura, el delta tiene que ser fuerte y en la dirección de la ruptura</li>
+              <li>Si el volumen de la vela de ruptura es menor al de la vela anterior, desconfiá — puede ser fakeout</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== FASE 2: SMART MONEY ===================== -->
+  <div class="phase" id="phase-1" style="--phase-color: #d4a437">
+    <div class="phase-header">
+      <div class="phase-num">02</div>
+      <div class="phase-info">
+        <h2>Smart Money: POI, Clusters y Volume Profile</h2>
+        <p>Acá conectás la teoría de ondas con dónde realmente reacciona el precio: zonas donde el mercado dejó una huella real de volumen.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🎯</span>
+          <span class="concept-title">POI — Point of Interest</span>
+          <span class="concept-tag gold">CONCEPTO CLAVE</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>El POI es la <strong>sumatoria de flujos previos</strong>. Lo que buscás es el Order Block dentro del cluster, y que ese cluster esté dentro de un POI.</p>
+          <div class="fib-row">
+            <span class="fib-pill hot">POI = C + C (+ C + ATH)</span>
+          </div>
+          <div class="signals-box gold-box">
+            <div class="box-label">Cómo se arma</div>
+            <ul>
+              <li>Primero marcás <strong>clusters</strong> (compresiones/rangos)</li>
+              <li>Luego tomás el <strong>perfil de volumen</strong> entre ese rango</li>
+              <li>Un cluster es un rango dentro de un POI</li>
+              <li>El POI es la zona donde el precio históricamente lateralizó</li>
+              <li><strong>Más validado</strong> está el POI mientras más clusters tenga acumulados</li>
+            </ul>
+          </div>
+          <div class="signals-box">
+            <div class="box-label">Comportamiento en Value Area</div>
+            <ul>
+              <li>Si el precio rebota en el <strong>VAH</strong> y vuelve, es probable que se meta nuevamente al rango</li>
+              <li>Esto anula el rebote — hay que esperar que el precio vaya a la parte baja del rango</li>
+            </ul>
+          </div>
+          <div class="uncertain-box">📝 Nota tuya: hay palabras no 100% garantizadas en el original ("compresiones/rangos", "pullback"). Si el conteo no cierra, revisá contra la fuente.</div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">💧</span>
+          <span class="concept-title">Liquidez, Imbalance y Mitigación</span>
+          <span class="concept-tag">LIQUIDEZ</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Primero detectás clusters y cajitas, después la liquidez. Una forma de detectarla: ver si hay <strong>bajos no mitigados</strong> (no tomados todavía).</p>
+          <ul class="steps">
+            <li><span class="step-num">01</span> Identificá bajos (o altos) no tomados en la estructura.</li>
+            <li><span class="step-num">02</span> Cuando esos niveles se toman, el precio tiende a explotar en la dirección contraria.</li>
+            <li><span class="step-num">03</span> Marcá el imbalance: movimiento explosivo dentro del cual existen Fair Value Gaps.</li>
+            <li><span class="step-num">04</span> Medí ese imbalance con el nivel <strong>0.5 Fib</strong>, tomando solo la vela explosiva.</li>
+            <li><span class="step-num">05</span> Colocá blocks por debajo de la liquidez (para compras) — importante marcar POIs y clusters antes.</li>
+          </ul>
+          <div class="signals-box">
+            <div class="box-label">Inducement</div>
+            <ul>
+              <li>Ocurre cuando el precio todavía no retesteó correctamente una zona (ej: solo mitigó un FVG pero faltaba un POI)</li>
+              <li>El precio "amaga" y sube/baja para inducir liquidez, la liquida, y usa esa fuerza para llegar al POI faltante</li>
+            </ul>
+          </div>
+          <div class="signals-box of-box">
+            <div class="box-label">Confirmación con OF</div>
+            <ul>
+              <li>Un bajo no mitigado real muestra en el heatmap de ATAS un nivel de stops que se acumula y no se ejecuta</li>
+              <li>Cuando se toma esa liquidez, buscá en el footprint: volumen alto en la mecha + delta que revierte = confirma toma de liquidez real (no fake sweep)</li>
+              <li>El OI bajando en ese sweep confirma que son posiciones cerrándose, no nueva tendencia</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== FASE 3: BOS & CHOCH ===================== -->
+  <div class="phase" id="phase-2" style="--phase-color: #c97b8a">
+    <div class="phase-header">
+      <div class="phase-num">03</div>
+      <div class="phase-info">
+        <h2>BOS, CHOCH y la lógica de rompimientos</h2>
+        <p>La estructura dicta la tendencia, y esto dicta el análisis. Acá es donde más se mezclan Elliott y Smart Money.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">✂️</span>
+          <span class="concept-title">Tipos de rompimiento</span>
+          <span class="concept-tag">ESTRUCTURA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Lo primero es marcar altos y bajos — esto dicta la tendencia. Después, entender que un impulso tiene <strong>2 rompimientos</strong> y una corrección, generalmente, <strong>solo 1</strong>.</p>
+          <ul class="steps">
+            <li><span class="step-num">BOS↑</span> Rompimiento de una onda 3 o 5 respecto de una onda 2 o 4 (Break of Structure)</li>
+            <li><span class="step-num">CONTEO</span> Contar 2 BOS en la onda mayor, luego los demás en las ondas 1, 3 y 5 de esa onda mayor, para después analizar el BOS de la onda 2 mayor</li>
+            <li><span class="step-num">CHOCH</span> Change of Character. Después de detectar el primer rompimiento del último bajo de la onda 5, revisar si se genera un BOS bajista</li>
+          </ul>
+          <div class="warn-box">
+            <strong>Regla crítica:</strong> El BOS es con <strong>cuerpo de vela</strong>. Si es solo con mecha, es posiblemente un CHOCH o un sweep de liquidez — no un BOS válido.
+          </div>
+          <div class="signals-box of-box">
+            <div class="box-label">Confirmación con OF — la más importante de esta sección</div>
+            <ul>
+              <li>Un BOS válido (cuerpo de vela) debe tener <strong>Vol↑ + Delta fuerte + OI↑</strong> en la dirección del rompimiento — esto es literalmente tu checklist de "breakout real" aplicado a Elliott</li>
+              <li>Si el precio rompe con cuerpo pero el volumen es menor al del rango previo y el delta es débil, tratalo como CHOCH aunque parezca BOS visualmente</li>
+              <li>Antes de confiar en un BOS, mirá el footprint: si hay absorción justo en el nivel de ruptura, el "BOS" puede ser una trampa para atrapar traders del lado equivocado</li>
+            </ul>
+          </div>
+          <div class="signals-box gold-box">
+            <div class="box-label">Cuando el conteo no es claro</div>
+            <ul>
+              <li>Enfocate en contar rupturas fijándote en porcentajes de las expansiones y flats, no en la forma visual de las velas</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== FASE 4: FIBONACCI ===================== -->
+  <div class="phase" id="phase-3" style="--phase-color: #d4a437">
+    <div class="phase-header">
+      <div class="phase-num">04</div>
+      <div class="phase-info">
+        <h2>Niveles de Fibonacci por onda</h2>
+        <p>Cada onda tiene su propia tabla de niveles. Memorizá esto — es lo que más vas a usar en el día a día.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">②</span>
+          <span class="concept-title">Retrocesos de Onda 2</span>
+          <span class="concept-tag gold">FIBONACCI</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Niveles normales a tomar por la onda 2:</p>
+          <div class="fib-row">
+            <span class="fib-pill">0.5</span>
+            <span class="fib-pill hot">0.618</span>
+            <span class="fib-pill hot">0.66</span>
+            <span class="fib-pill">0.786</span>
+          </div>
+          <p>También puede tomar (menos común):</p>
+          <div class="fib-row">
+            <span class="fib-pill">0.382 (raro, solo en onda 4)</span>
+            <span class="fib-pill danger">0.886 — peligro, quizás no sea impulso</span>
+          </div>
+          <div class="signals-box gold-box">
+            <div class="box-label">Regla general</div>
+            <ul>
+              <li>Mínimo: <strong>0.5</strong></li>
+              <li>Máximo: <strong>0.786</strong></li>
+              <li>Golden Pocket: <strong>0.618 – 0.66</strong></li>
+            </ul>
+          </div>
+          <div class="signals-box of-box">
+            <div class="box-label">Confirmación con OF en el Golden Pocket</div>
+            <ul>
+              <li>Si el precio llega al 0.618-0.66 con footprint mostrando absorción (delta que se frena) → alta probabilidad de que ahí termine la onda 2</li>
+              <li>Buscá traders atrapados en la mecha de esa zona: confirma que el "combustible" para la onda 3 ya está armado</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">③</span>
+          <span class="concept-title">Targets de Onda 3</span>
+          <span class="concept-tag gold">FIBONACCI</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Niveles normales:</p>
+          <div class="fib-row">
+            <span class="fib-pill">1.618</span>
+            <span class="fib-pill">2</span>
+            <span class="fib-pill">2.618</span>
+            <span class="fib-pill">3</span>
+            <span class="fib-pill">3.236</span>
+            <span class="fib-pill">3.618</span>
+          </div>
+          <div class="warn-box"><strong>Mínimo requerido: 1 a 1</strong> — indica que la onda 3 es, como mínimo, igual a la onda 1. Si no llega a esto, tu conteo probablemente está mal.</div>
+          <div class="signals-box of-box">
+            <div class="box-label">La regla de oro con OF</div>
+            <ul>
+              <li>La onda 3 <strong>nunca es la más chica</strong> y el volumen es mayor en esta onda — esto es literal en tus notas de OF: la onda 3 debe mostrar el mayor volumen acumulado y el delta más fuerte de todo el impulso</li>
+              <li>Si tu supuesta "onda 3" tiene menos volumen que la onda 1, dudá del conteo</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">④</span>
+          <span class="concept-title">Retrocesos de Onda 4</span>
+          <span class="concept-tag gold">FIBONACCI</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Niveles requeridos:</p>
+          <div class="fib-row">
+            <span class="fib-pill">0.236</span>
+            <span class="fib-pill hot">0.382</span>
+            <span class="fib-pill hot">0.5</span>
+          </div>
+          <p>Los más comunes son 0.382 y 0.5.</p>
+          <div class="warn-box"><strong>Invalidación:</strong> si se toca el <strong>0.618</strong>, la onda 4 queda invalidada. La regla de no overlap con onda 2 es innegociable: la onda 4 no se mete en la zona de la onda 2.</div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">⑤</span>
+          <span class="concept-title">Targets de Onda 5 — 3 métodos</span>
+          <span class="concept-tag gold">FIBONACCI</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="divider-label">Método 1 — Impulso de Fibonacci</div>
+          <ul class="steps">
+            <li><span class="step-num">01</span> Desde el bajo de 1</li>
+            <li><span class="step-num">02</span> Hasta el alto de 3</li>
+            <li><span class="step-num">03</span> Terminando en el bajo de 4</li>
+          </ul>
+          <div class="fib-row"><span class="fib-pill">0.618</span><span class="fib-pill hot">0.786</span></div>
+
+          <div class="divider-label">Método 2 — Retroceso de Fibonacci</div>
+          <ul class="steps">
+            <li><span class="step-num">01</span> Agarrar alto de 3</li>
+            <li><span class="step-num">02</span> Agarrar bajo de 4</li>
+          </ul>
+          <div class="fib-row"><span class="fib-pill hot">1.618</span><span class="fib-pill">2.618</span><span class="fib-pill">mínimo 1.236</span></div>
+
+          <div class="divider-label">Método 3 — Impulso de Fibonacci alternativo</div>
+          <ul class="steps">
+            <li><span class="step-num">01</span> Bajo de 1</li>
+            <li><span class="step-num">02</span> Alto de 1</li>
+            <li><span class="step-num">03</span> Bajo de 4</li>
+          </ul>
+          <div class="fib-row"><span class="fib-pill">1</span><span class="fib-pill">1.236</span><span class="fib-pill hot">1.618</span></div>
+
+          <div class="signals-box of-box">
+            <div class="box-label">Confirmación de fin de onda 5 con OF</div>
+            <ul>
+              <li>Debe haber <strong>divergencia de volumen</strong> entre la onda 3 y la onda 5: el volumen en 5 debe ser menor</li>
+              <li>Esto es exactamente tu concepto de <strong>Exhaustion</strong> — footprint adelgazándose al final de la onda 5 confirma que el impulso se agota justo donde el Fibonacci lo predice</li>
+              <li>Sumale CVD divergence: si el precio hace nuevo máximo en la 5 pero el CVD no acompaña, es la señal más fuerte de fin de impulso y posible trader atrapado</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">⏱️</span>
+          <span class="concept-title">Tiempos de Fibonacci (todas las ondas)</span>
+          <span class="concept-tag gold">TIEMPOS</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">2</span> Trend based fib time: tocar inicio de onda 1 y luego 2 veces el final de la onda 1. Mínimo 0.382. Siguientes niveles: 0.618 y 1. Máximo: 4.</li>
+            <li><span class="step-num">4</span> Marcar desde el alto de 1, hasta el bottom de 2, y luego al final de 3. Normalmente, la onda 4 tarda entre 1 y 1 vez más que la onda 2.</li>
+            <li><span class="step-num">1 y 5</span> Agarrar el bottom de 1, el top de 1 y luego hasta el bottom de 4. Los niveles normales de la onda 5 terminan entre <strong>1.618</strong> y <strong>0.618</strong>.</li>
+          </ul>
+          <div class="uncertain-box">📝 Nota tuya: los tiempos de Fib NO invalidan el conteo, son solo orientativos. La invalidación siempre es por precio/estructura.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== FASE 5: IMPULSOS ===================== -->
+  <div class="phase" id="phase-4" style="--phase-color: #e8213f">
+    <div class="phase-header">
+      <div class="phase-num">05</div>
+      <div class="phase-info">
+        <h2>Impulsos: tradicional, 1 extendida, 5 extendida</h2>
+        <p>Tres variantes del impulso de 5 ondas. Cada una tiene su propia tabla de Fibonacci y de volumen.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📐</span>
+          <span class="concept-title">Impulso tradicional</span>
+          <span class="concept-tag">5 ONDAS</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">R1</span> La onda 3 nunca es la más chica</li>
+            <li><span class="step-num">R2</span> El volumen es mayor en la onda 3</li>
+            <li><span class="step-num">R3</span> La onda 4 no hace overlap con la onda 2</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">1️⃣</span>
+          <span class="concept-title">Impulso con onda 1 extendida</span>
+          <span class="concept-tag">VARIANTE</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">01</span> La onda 3 <strong>siempre</strong> debe estar en el medio, nunca ser la más chica</li>
+            <li><span class="step-num">02</span> La onda 4 no hace overlap con la 2</li>
+            <li><span class="step-num">03</span> Retroceso de 2: 0.236, 0.382 (típico), 0.5 y 0.618 (raro)</li>
+            <li><span class="step-num">04</span> Impulso en 3: NO puede llegar al 1 a 1 — si llega, no estás ante una onda 1 extendida</li>
+            <li><span class="step-num">05</span> Retroceso en 4: se calcula desde el bajo de 3 hasta su alto. El target común es 0.236 como el 0.382</li>
+            <li><span class="step-num">06</span> Impulso en 5: no puede llegar al 1 a 1 de la onda 3. Llega al 0.786 y 0.886</li>
+          </ul>
+          <div class="signals-box gold-box">
+            <div class="box-label">Tiempos</div>
+            <ul>
+              <li>Retroceso en 2: mínimo 0.382 veces la onda 1, target común entre 1 y 1.618</li>
+              <li>Retroceso en 4: igual, solo un poco más largo</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">5️⃣</span>
+          <span class="concept-title">Impulso con onda 5 extendida</span>
+          <span class="concept-tag">VARIANTE</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">01</span> Mismas reglas de volumen y largos de ondas que el tradicional</li>
+            <li><span class="step-num">02</span> Mismos retrocesos en la onda 2</li>
+            <li><span class="step-num">03</span> La onda 3 <strong>sí o sí</strong> pasa el 1 a 1</li>
+            <li><span class="step-num">04</span> Retrocesos en 4: 0.236 como común, sin overlap con la onda 2</li>
+            <li><span class="step-num">05</span> Target de 5 "overshooted": con impulso de Fibonacci agarrando toda la onda 3 (desde bottom de 2, hasta top de 3 y bottom de 4), marcar el <strong>1.618</strong> como target</li>
+          </ul>
+          <div class="signals-box of-box">
+            <div class="box-label">Volumen — la clave de esta variante</div>
+            <ul>
+              <li>En tiempos, la onda 4 debe ser 1 a 1 más grande que la onda 2</li>
+              <li>La onda 5 tiene <strong>MÁS</strong> volumen que la onda 3 (al revés que en el impulso tradicional)</li>
+              <li>Esto es tu única excepción a la regla de exhaustion: acá el CVD debería seguir acompañando fuerte en la onda 5, no divergir. Si divergiera, dudá que sea realmente una 5 extendida</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== FASE 6: DIAGONALES ===================== -->
+  <div class="phase" id="phase-5" style="--phase-color: #c97b8a">
+    <div class="phase-header">
+      <div class="phase-num">06</div>
+      <div class="phase-info">
+        <h2>Diagonales: Leading &amp; Contracting</h2>
+        <p>La excepción a la regla del "no overlap". Se confunden fácil con nested structures — acá la diferencia clave.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">◈</span>
+          <span class="concept-title">Contracting / Leading Diagonal</span>
+          <span class="concept-tag">DIAGONAL</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">01</span> Existe overlap entre la onda 2 y la onda 4 (a diferencia del impulso normal)</li>
+            <li><span class="step-num">02</span> Las <strong>leading diagonals</strong> ocurren en las ondas A o 1 de un impulso</li>
+            <li><span class="step-num">03</span> Estructura normal: 5-3-5-3-5. Pero pueden ser todas zigzags: 3-3-3-3-3</li>
+            <li><span class="step-num">04</span> Las leading diagonals <strong>solo</strong> pueden ser 3-3-3-3-3</li>
+          </ul>
+          <div class="warn-box">
+            <strong>Diferencia clave con nested structure:</strong> la diagonal SIEMPRE toma el ATH (all-time high / el extremo). Las ondas 4 dentro de una nested structure son complejas y chatas — una seguidilla de 4-5, 4-5, 4-5 es zona de distribución donde el precio ranguea antes de iniciar un bear market.
+          </div>
+          <div class="signals-box gold-box">
+            <div class="box-label">Targets</div>
+            <ul>
+              <li>La tercer onda tiende a ser MENOR que la primera (al revés que en impulso normal)</li>
+              <li>Targets de reversión: 0.786, 0.886 y 1</li>
+              <li>La onda 5 sí o sí debe ser menor al 1 a 1 (medido con Fib trend desde bottom de 2, top de 3, hasta bottom de 4)</li>
+            </ul>
+          </div>
+          <div class="signals-box gold-box">
+            <div class="box-label">Fibonacci específico de diagonal</div>
+            <ul>
+              <li>Onda 2 (primer correctiva): mismos targets que una onda 2 normal</li>
+              <li>Onda 4 (segunda correctiva): NO va de 0.5 a 0.786 — pasa a ser 0.382, con golden pocket en 0.618-0.66</li>
+              <li>Si es nested, no hay reglas fijas — se usan otros niveles</li>
+              <li>Canalizando la leading diagonal desde 0 hasta 1: la onda 4 no debe tocar la parte baja del canal</li>
+            </ul>
+          </div>
+          <div class="signals-box of-box">
+            <div class="box-label">Confirmación con OF</div>
+            <ul>
+              <li>El volumen debe ir a la <strong>baja</strong> en cada impulso sucesivo (cada uno más chico que el anterior) — es exhaustion progresivo, no puntual</li>
+              <li>Esto es literalmente una secuencia de "footprint adelgazándose" repetida 3 veces (en 1, 3 y 5)</li>
+            </ul>
+          </div>
+          <div class="signals-box">
+            <div class="box-label">Tiempos</div>
+            <ul>
+              <li>La primera onda tarda menos de 1 vez en hacer el alto</li>
+              <li>Igual criterio para la siguiente onda, midiéndola respecto a la anterior</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== FASE 7: CORRECTIVAS ===================== -->
+  <div class="phase" id="phase-6" style="--phase-color: #d4a437">
+    <div class="phase-header">
+      <div class="phase-num">07</div>
+      <div class="phase-info">
+        <h2>Estructuras correctivas: ABC, Flats y WXY</h2>
+        <p>El terreno más subjetivo de Elliott. Estas reglas + volumen son lo que te va a sacar de la ambigüedad.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🗺️</span>
+          <span class="concept-title">Mapa de estructuras — memorizar esto primero</span>
+          <span class="concept-tag gold">REFERENCIA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <table class="struct-table">
+            <tr><th>Estructura</th><th>Patrón de ondas</th></tr>
+            <tr><td>ABC / Zigzag</td><td>5-3-5</td></tr>
+            <tr><td>WXY</td><td>3-3-3</td></tr>
+            <tr><td>Flats (Expanding / Regular / Running)</td><td>3-3-5</td></tr>
+            <tr><td>Triángulos</td><td>3-3-3-3-3</td></tr>
+          </table>
+          <div class="warn-box"><strong>Regla de oro:</strong> dentro de un WXY NO se buscan WXY internos — solo ABC, ZZ o flats. Por eso en las 3 estructuras de un WXYxZ podés tener flats.</div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">⚡</span>
+          <span class="concept-title">Zigzag (ABC) — 5-3-5</span>
+          <span class="concept-tag">CORRECTIVA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>El patrón correctivo más común y más simple. Debe respetar su estructura: si en A hay 5 ondas, en C también debe haber 5 ondas.</p>
+          <ul class="steps">
+            <li><span class="step-num">01</span> En un 1-2 o A-B, la diferenciación se ve en la onda 3 o C: si el volumen es ascendente, es más probable que sea onda 3</li>
+            <li><span class="step-num">02</span> Los ABC son más comunes en la onda 2, pero también aparecen en la 4, solo que como sub-estructura</li>
+            <li><span class="step-num">03</span> Generalmente las ondas B de una corrección ya detectada son zigzags</li>
+            <li><span class="step-num">04</span> El único caso con 3 ondas válido es un flat</li>
+          </ul>
+          <div class="signals-box gold-box">
+            <div class="box-label">Fibonacci de B</div>
+            <ul>
+              <li>Área común de retroceso de B: la misma que los Fibs de onda 2</li>
+              <li>Si pasa el 0.786, es preferible contar esa "2" como B — más aún si toma el 0.886</li>
+              <li>Target común de B: <strong>0.382</strong> en todos los casos</li>
+            </ul>
+          </div>
+          <div class="signals-box gold-box">
+            <div class="box-label">Tiempos y target de C</div>
+            <ul>
+              <li>Para descartar una posible onda 2: es corta en tiempo y "sharp" en precio</li>
+              <li>Tiempo mínimo de B: 0.382, máximo 5</li>
+              <li>Target normal de C: entre 1-1.236 al 1.618, mínimo 0.618</li>
+              <li>Si hay un triángulo en la B del ABC: el target cambia — 0.618 pasa a ser el común, y 1-1.236 pasa a ser lo raro</li>
+              <li>Tiempo de C: del 1 al 1.618, midiendo con los 3 puntos 0-A-B</li>
+            </ul>
+          </div>
+          <div class="signals-box of-box">
+            <div class="box-label">Confirmación con OF</div>
+            <ul>
+              <li>El volumen de C aparece recién en su <strong>final</strong> — a diferencia de la onda 3 donde el volumen está distribuido en toda la onda</li>
+              <li>En el footprint, esto se ve como clusters chicos al inicio de C y un salto de volumen fuerte solo al cierre — usalo para confirmar que estás en la fase final de C</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📊</span>
+          <span class="concept-title">Expanding Flat — 3-3-5</span>
+          <span class="concept-tag">CORRECTIVA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Ocurre cuando B y C toman el bajo/alto de A. No confundir con ABC/ZZ normales.</p>
+          <div class="signals-box gold-box">
+            <div class="box-label">Cómo distinguirlo de un ZZ</div>
+            <ul>
+              <li>Pista clave: la primer estructura (A) es <strong>correctiva de 3 ondas</strong>, no 5 como en el ZZ</li>
+              <li>Generalmente antes viene un ABC ZZ</li>
+              <li>En A no se permiten triángulos, ni A puede ser de 5 ondas</li>
+              <li>A ≠ C</li>
+            </ul>
+          </div>
+          <ul class="steps">
+            <li><span class="step-num">B</span> Se calcula con retroceso de toda la onda A (inicio a fin). Marcar 1.236 y 0.382. El 1.618 es raro y da la pauta de que es un flat. En B, lo más común es WZZ — no buscar triángulos ahí, aunque puedan pasar</li>
+            <li><span class="step-num">C</span> Se toma con impulso de toda la onda A, proyectando al alto de B. Nivel: 1.618. Con retroceso se agarra todo B: marcar 1.618 y 1.382 — la zona común está entre esos dos 618's</li>
+          </ul>
+          <div class="signals-box">
+            <div class="box-label">Notas adicionales</div>
+            <ul>
+              <li>Target mínimo de B: tomar el alto de A ya la considera completa (siempre medir la estructura también)</li>
+              <li>Un flat puede suceder en A y B, pero NO en C — C siempre son 5 ondas</li>
+            </ul>
+          </div>
+          <div class="signals-box of-box">
+            <div class="box-label">Tiempos y volumen</div>
+            <ul>
+              <li>El volumen aparece en el final de C, ya que se liquidan bajos — mismo patrón que en el ZZ: buscá el salto de volumen al cierre de C para confirmar</li>
+              <li>Mínimo de B: 0.382; puede ir hasta 0.618 y 1.618</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📐</span>
+          <span class="concept-title">Regular Flat — 3-3-5</span>
+          <span class="concept-tag">CORRECTIVA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Parecido al expanding flat, solo que el alto/bajo se toma con menos grado — menos impulsivo.</p>
+          <div class="signals-box gold-box">
+            <div class="box-label">Cómo identificarlo</div>
+            <ul>
+              <li>Contá la onda A: si son 3 ondas, ya sabés que estás en un flat (en vez de 5-3, tenés 3-3, por eso se usan los Fibs de flat)</li>
+              <li>Si tu onda B (3 ondas) pasa el 0.786 y A tiene 3 ondas → muy baja probabilidad de que C sea 3 ondas (las WXY/X no pasan el 0.786) → es un flat</li>
+              <li>Si A tiene 3 ondas y B llega al 0.886 → muy probable que sea un flat, por eso C tiene 5 ondas</li>
+            </ul>
+          </div>
+          <div class="signals-box gold-box">
+            <div class="box-label">Cálculo de C</div>
+            <ul>
+              <li>Se mide igual que en los expanding flats</li>
+              <li>Targets comunes: entre 1 y 1.236</li>
+              <li>Medir B con retroceso: marcar 0.886 y 1.05</li>
+              <li>Si el conteo interno termina dentro del retroceso, tomarlo como completado — C no debe tomar el nivel obligatoriamente</li>
+            </ul>
+          </div>
+          <div class="signals-box of-box">
+            <div class="box-label">Volumen</div>
+            <ul>
+              <li>En las ondas B de flats, el volumen suele subir porque toma niveles de A</li>
+              <li>En C, sube porque son impulsos — esto te sirve para diferenciar un B (volumen moderado, sube y baja) de un C (volumen creciente y sostenido)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🏃</span>
+          <span class="concept-title">Running Flat — 3-3-5</span>
+          <span class="concept-tag">CORRECTIVA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="warn-box"><strong>Invalidación:</strong> el running flat NO debe tomar el bajo (a diferencia del expanding, que sí lo toma sí o sí, y del regular, donde el bajo es necesario).</div>
+          <div class="signals-box gold-box">
+            <div class="box-label">Comportamiento</div>
+            <ul>
+              <li>Running flat significa que solo toma un nivel — el de A, y lo respeta</li>
+              <li>Normalmente el Running Flat va a la zona del 1.236 y 1.382</li>
+              <li>El Expanding va a 1.382 · el Running va a 1.236</li>
+              <li>Retroceso para medir C: del 0.618 al 1 (impulso desde 0-A-B)</li>
+              <li>B debe tomar el alto/bajo — target mínimo a superar: 1 y 1.05</li>
+              <li>Si B overshootea, estás en un expanded o running (no regular)</li>
+            </ul>
+          </div>
+          <div class="signals-box of-box">
+            <div class="box-label">Volumen y tiempos</div>
+            <ul>
+              <li>El volumen aparece solo al final, con spikes en C</li>
+              <li>Tiempos: entre 0.618, 1, 1.18 y 2 — a partir de ahí, peligro de invalidación</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== FASE 8: CHECKLISTS ===================== -->
+  <div class="phase" id="phase-7" style="--phase-color: #e8213f">
+    <div class="phase-header">
+      <div class="phase-num">✓</div>
+      <div class="phase-info">
+        <h2>Checklists de validación combinando EW + Order Flow</h2>
+        <p>Usá esto antes de confiar en un conteo. Si no completás el mínimo, tu onda es solo una hipótesis — no operes sobre ella.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">✅</span>
+          <span class="concept-title">Checklist: ¿Es realmente una onda 3?</span>
+          <span class="concept-tag">CHECKLIST</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="checklist" id="w3-list">
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> No es la onda más chica del impulso (mínimo 1 a 1 vs onda 1)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Tiene el volumen más alto de todo el impulso (footprint más "grueso")</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Delta consistentemente fuerte en la dirección del impulso</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> El BOS que la originó fue con cuerpo de vela (no mecha)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> OI en aumento durante el desarrollo de la onda (posiciones nuevas, no cierres)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">✅</span>
+          <span class="concept-title">Checklist: ¿Está terminando la onda 5?</span>
+          <span class="concept-tag">CHECKLIST</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="checklist" id="w5-list">
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Precio en zona de Fibonacci target (0.618-0.786 método 1, o 1.618 método 2/3)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Volumen de la onda 5 es MENOR al de la onda 3 (divergencia esperada)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Footprint mostrando exhaustion — clusters cada vez más chicos</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> CVD divergence: nuevo máximo/mínimo de precio sin acompañamiento del CVD</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Señales de traders atrapados en la mecha final (volumen en la mecha, no en el cuerpo)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">✅</span>
+          <span class="concept-title">Checklist: ¿Es un POI válido para operar?</span>
+          <span class="concept-tag">CHECKLIST</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="checklist" id="poi-list">
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Está en onda 4 de 3 (prioridad) o 4 de A</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Tiene múltiples clusters acumulados (más clusters = más validado)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Volume Profile muestra POC claro dentro de la zona</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Order Block dentro del cluster tiene volumen mayor a velas vecinas</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Delta fuerte y consistente en la vela del Order Block</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Vela del OB: mecha simétrica a ambos lados + cuerpo pequeño</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">✅</span>
+          <span class="concept-title">Checklist: BOS real vs CHOCH/sweep</span>
+          <span class="concept-tag">CHECKLIST</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="checklist" id="bos-list">
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ Ruptura con cuerpo de vela (no solo mecha)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ Volumen mayor al de las velas del rango previo</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ Delta fuerte en la dirección de la ruptura</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> OI en aumento (no cierre de posiciones)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Sin absorción visible justo en el nivel de ruptura</li>
+          </ul>
+          <div class="warn-box" style="margin-top:12px">Si falla cualquiera de los 3 marcados con ⭐, tratalo como CHOCH o sweep de liquidez — no como BOS válido para continuar el conteo.</div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🗂️</span>
+          <span class="concept-title">Tabla rápida de referencia — todos los Fibonacci</span>
+          <span class="concept-tag gold">REFERENCIA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <table class="struct-table">
+            <tr><th>Onda</th><th>Niveles clave</th></tr>
+            <tr><td>2 (normal)</td><td>0.5 – 0.618 – 0.66 – 0.786</td></tr>
+            <tr><td>2 (con 1 extendida)</td><td>0.236 – 0.382 (típico) – 0.5 – 0.618</td></tr>
+            <tr><td>3</td><td>1.618 – 2 – 2.618 – 3 – 3.236 – 3.618 (mín. 1a1)</td></tr>
+            <tr><td>4</td><td>0.236 – 0.382 – 0.5 (invál. en 0.618)</td></tr>
+            <tr><td>5 (método 1)</td><td>0.618 – 0.786</td></tr>
+            <tr><td>5 (método 2)</td><td>1.618 – 2.618 (mín. 1.236)</td></tr>
+            <tr><td>5 extendida</td><td>1.618 (overshoot)</td></tr>
+            <tr><td>Diagonal — onda 4</td><td>0.382 – golden pocket 0.618-0.66</td></tr>
+            <tr><td>B (Zigzag)</td><td>target común 0.382</td></tr>
+            <tr><td>C (Zigzag)</td><td>1-1.236 a 1.618 (mín. 0.618)</td></tr>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function showPhase(n) {
+    document.querySelectorAll('.phase').forEach((p, i) => {
+      p.classList.toggle('active', i === n);
+    });
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', i === n);
+    });
+  }
+
+  function toggleCard(card) {
+    card.classList.toggle('open');
+  }
+
+  function toggleCheck(li) {
+    li.classList.toggle('checked');
+    const box = li.querySelector('.check-box');
+    box.textContent = li.classList.contains('checked') ? '✓' : '';
+    updateProgress();
+  }
+
+  document.querySelectorAll('.checklist li').forEach(li => {
+    li.addEventListener('click', e => e.stopPropagation());
+  });
+
+  function updateProgress() {
+    const all = document.querySelectorAll('.checklist li');
+    const done = document.querySelectorAll('.checklist li.checked');
+    const pct = all.length ? Math.round((done.length / all.length) * 100) : 0;
+    document.getElementById('progress-pct').textContent = pct + '%';
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }
+
+  document.querySelectorAll('.phase').forEach(phase => {
+    const first = phase.querySelector('.concept-card');
+    if (first) first.classList.add('open');
+  });
+</script>
+</body>
+</html>

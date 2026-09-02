@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MASTER — Order Flow × Elliott × Sistema</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0a0e;
+    --bg2: #12101a;
+    --surface: #16131e;
+    --card: #1a1624;
+    --border: #2b2438;
+    --border-soft: #221c30;
+    --red: #e8213f;
+    --red-dim: #8f1428;
+    --gold: #d4a437;
+    --cyan: #23c8de;
+    --green: #52d273;
+    --cream: #ece7f2;
+    --muted: #8f86a3;
+    --muted2: #5d5570;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Fraunces', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 800px 460px at 8% -5%, rgba(232,33,63,0.09), transparent 60%),
+      radial-gradient(ellipse 700px 420px at 95% 5%, rgba(35,200,222,0.06), transparent 60%),
+      radial-gradient(ellipse 600px 400px at 50% 110%, rgba(212,164,55,0.05), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 52px 24px 90px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== HEADER ===== */
+  header { margin-bottom: 44px; }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .eyebrow span:nth-child(1) { color: var(--cyan); }
+  .eyebrow span:nth-child(2) { color: var(--red); }
+  .eyebrow span:nth-child(3) { color: var(--gold); }
+
+  h1 {
+    font-size: clamp(2.2rem, 6vw, 3.5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    color: #fff;
+    margin-bottom: 14px;
+    letter-spacing: -0.01em;
+  }
+  h1 em { font-style: italic; font-weight: 500; color: var(--red); }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 620px;
+    line-height: 1.7;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ===== TABS ===== */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 34px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 18px;
+  }
+
+  .tab {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 8px 13px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .tab:hover { border-color: var(--red-dim); color: var(--cream); }
+  .tab.active { background: var(--red); color: #fff; border-color: var(--red); font-weight: 600; }
+
+  /* ===== PHASES ===== */
+  .phase { display: none; animation: fadeIn 0.35s ease; }
+  .phase.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .phase-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 28px;
+    padding: 24px 26px;
+    background: linear-gradient(135deg, var(--surface), var(--bg2));
+    border: 1px solid var(--border-soft);
+    border-left: 3px solid var(--phase-color, var(--red));
+    border-radius: 4px;
+  }
+
+  .phase-num {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 42px;
+    font-weight: 600;
+    color: var(--phase-color, var(--red));
+    opacity: 0.35;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .phase-info h2 { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 8px; line-height: 1.3; }
+  .phase-info p { color: var(--muted); font-size: 13px; line-height: 1.7; font-family: 'IBM Plex Mono', monospace; }
+
+  /* ===== CARDS ===== */
+  .concepts { display: flex; flex-direction: column; gap: 13px; }
+
+  .concept-card {
+    background: var(--card);
+    border: 1px solid var(--border-soft);
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .concept-card:hover, .concept-card.open { border-color: var(--phase-color, var(--red-dim)); }
+
+  .concept-header { display: flex; align-items: center; gap: 13px; padding: 16px 19px; }
+  .concept-icon { font-size: 18px; flex-shrink: 0; }
+  .concept-title { font-size: 15px; font-weight: 600; color: #fff; flex: 1; }
+
+  .concept-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9.5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    background: rgba(232,33,63,0.08);
+    color: #f0899a;
+    border: 1px solid rgba(232,33,63,0.18);
+  }
+  .concept-tag.gold { background: rgba(212,164,55,0.08); color: var(--gold); border-color: rgba(212,164,55,0.2); }
+  .concept-tag.of { background: rgba(35,200,222,0.08); color: var(--cyan); border-color: rgba(35,200,222,0.2); }
+  .concept-tag.green { background: rgba(82,210,115,0.08); color: var(--green); border-color: rgba(82,210,115,0.2); }
+
+  .chevron { font-size: 12px; color: var(--muted2); transition: transform 0.25s; flex-shrink: 0; }
+  .concept-card.open .chevron { transform: rotate(90deg); color: var(--phase-color, var(--red)); }
+
+  .concept-body { display: none; padding: 0 19px 20px; border-top: 1px solid var(--border-soft); }
+  .concept-card.open .concept-body { display: block; }
+
+  .concept-body p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.75;
+    margin: 14px 0;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .concept-body p strong { color: var(--cream); }
+
+  /* Steps */
+  .steps { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .steps li {
+    display: flex; gap: 12px; align-items: flex-start;
+    font-size: 13px; color: var(--cream); line-height: 1.6;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .step-num {
+    font-size: 10px; font-weight: 600; color: var(--gold);
+    background: rgba(212,164,55,0.1); border-radius: 2px;
+    padding: 2px 7px; flex-shrink: 0; margin-top: 1px; white-space: nowrap;
+  }
+
+  /* Boxes */
+  .box {
+    border-radius: 3px;
+    padding: 14px 16px;
+    margin-top: 13px;
+  }
+  .box-red { background: rgba(232,33,63,0.05); border: 1px solid rgba(232,33,63,0.16); }
+  .box-gold { background: rgba(212,164,55,0.05); border: 1px solid rgba(212,164,55,0.18); }
+  .box-cyan { background: rgba(35,200,222,0.04); border: 1px solid rgba(35,200,222,0.16); }
+  .box-green { background: rgba(82,210,115,0.04); border: 1px solid rgba(82,210,115,0.16); }
+
+  .box-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 10px; font-weight: 600;
+  }
+  .box-red .box-label { color: var(--red); }
+  .box-gold .box-label { color: var(--gold); }
+  .box-cyan .box-label { color: var(--cyan); }
+  .box-green .box-label { color: var(--green); }
+
+  .box ul { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .box ul li {
+    font-size: 12.5px; color: var(--cream); padding-left: 15px;
+    position: relative; line-height: 1.6;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .box ul li::before { content: '→'; position: absolute; left: 0; font-size: 11px; }
+  .box-red ul li::before { color: var(--red); }
+  .box-gold ul li::before { color: var(--gold); }
+  .box-cyan ul li::before { color: var(--cyan); }
+  .box-green ul li::before { color: var(--green); }
+
+  .warn {
+    background: rgba(232,33,63,0.07);
+    border: 1px solid rgba(232,33,63,0.28);
+    border-radius: 3px; padding: 13px 16px; margin-top: 13px;
+    font-size: 12.5px; color: #f0b8c1; line-height: 1.65;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .warn strong { color: var(--red); }
+
+  /* Flow diagram */
+  .flow-steps { display: flex; flex-direction: column; gap: 0; margin-top: 10px; }
+  .flow-node {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px 18px;
+    position: relative;
+  }
+  .flow-node + .flow-node { margin-top: 26px; }
+  .flow-node + .flow-node::before {
+    content: '▼';
+    position: absolute;
+    top: -22px; left: 50%;
+    transform: translateX(-50%);
+    color: var(--red);
+    font-size: 13px;
+  }
+  .flow-node h3 {
+    font-size: 14px; font-weight: 700; color: #fff;
+    margin-bottom: 6px; display: flex; align-items: center; gap: 10px;
+  }
+  .flow-node h3 .fn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: 20px;
+  }
+  .fn-cyan { background: rgba(35,200,222,0.12); color: var(--cyan); }
+  .fn-red { background: rgba(232,33,63,0.12); color: #f0899a; }
+  .fn-gold { background: rgba(212,164,55,0.12); color: var(--gold); }
+  .fn-green { background: rgba(82,210,115,0.12); color: var(--green); }
+  .flow-node p { font-size: 12.5px; color: var(--muted); line-height: 1.65; font-family: 'IBM Plex Mono', monospace; }
+  .flow-node p strong { color: var(--cream); }
+
+  /* Checklist */
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .checklist li {
+    display: flex; gap: 11px; align-items: flex-start;
+    font-size: 12.5px; color: var(--cream); line-height: 1.55;
+    cursor: pointer; padding: 9px 11px;
+    background: rgba(255,255,255,0.015); border-radius: 3px;
+    border: 1px solid transparent; transition: all 0.15s;
+    user-select: none;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .checklist li:hover { border-color: var(--border); }
+  .checklist li.checked {
+    color: var(--muted); text-decoration: line-through;
+    background: rgba(82,210,115,0.04); border-color: rgba(82,210,115,0.2);
+  }
+  .check-box {
+    width: 16px; height: 16px;
+    border: 1.5px solid var(--border); border-radius: 3px;
+    flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; transition: all 0.15s;
+  }
+  .checklist li.checked .check-box { background: var(--green); border-color: var(--green); color: #06210d; }
+
+  /* Tables */
+  .t {
+    width: 100%; border-collapse: collapse; margin-top: 13px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  }
+  .t th {
+    text-align: left; color: var(--gold); font-weight: 600;
+    padding: 8px 10px; border-bottom: 1px solid var(--border);
+    font-size: 10.5px; letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .t td { padding: 8px 10px; border-bottom: 1px solid var(--border-soft); color: var(--cream); }
+  .t tr:last-child td { border-bottom: none; }
+  .t .pos { color: var(--green); font-weight: 600; }
+  .t .neg { color: var(--red); font-weight: 600; }
+  .t .neu { color: var(--gold); font-weight: 600; }
+
+  /* Calculator */
+  .calc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 22px;
+    margin-top: 14px;
+  }
+  .calc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .calc-field label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: var(--muted);
+    letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .calc-field input {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--cream);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    padding: 9px 11px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .calc-field input:focus { border-color: var(--cyan); }
+
+  .calc-results {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .calc-stat {
+    background: var(--bg2);
+    border: 1px solid var(--border-soft);
+    border-radius: 4px;
+    padding: 14px 16px;
+  }
+  .calc-stat .cs-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9.5px; color: var(--muted);
+    letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .calc-stat .cs-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 19px; font-weight: 700; color: #fff;
+  }
+  .calc-stat .cs-value.pos { color: var(--green); }
+  .calc-stat .cs-value.neg { color: var(--red); }
+  .calc-stat .cs-value.neu { color: var(--gold); }
+  .calc-stat .cs-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px; color: var(--muted2); margin-top: 4px; line-height: 1.5;
+  }
+
+  .verdict {
+    margin-top: 16px;
+    padding: 14px 17px;
+    border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+  .verdict.v-pos { background: rgba(82,210,115,0.06); border: 1px solid rgba(82,210,115,0.25); color: #a8ecbb; }
+  .verdict.v-neg { background: rgba(232,33,63,0.07); border: 1px solid rgba(232,33,63,0.3); color: #f0b8c1; }
+  .verdict.v-neu { background: rgba(212,164,55,0.06); border: 1px solid rgba(212,164,55,0.28); color: #e8d195; }
+
+  .divider-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: var(--muted2);
+    letter-spacing: 2px; text-transform: uppercase;
+    margin: 18px 0 4px;
+  }
+
+  .disclaimer {
+    margin-top: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted2);
+    line-height: 1.7;
+    border-top: 1px solid var(--border-soft);
+    padding-top: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="eyebrow"><span>ORDER FLOW</span><span>× ELLIOTT WAVES</span><span>× SISTEMA</span></div>
+    <h1>Manual Maestro<br><em>de análisis y ejecución</em></h1>
+    <p class="subtitle">Todas tus notas unificadas: ATAS Order Flow, Elliott Waves avanzado (Pappe &amp; Vittorio), patrones de entrada en POIs y el sistema SUP de 5 fases. Un solo flujo de decisión, de HTF a la ejecución.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showPhase(0)">⚡ FLUJO MAESTRO</button>
+    <button class="tab" onclick="showPhase(1)">🌊 ELLIOTT + CONTEXTO</button>
+    <button class="tab" onclick="showPhase(2)">📊 ORDER FLOW</button>
+    <button class="tab" onclick="showPhase(3)">🟢 PATRONES DE ENTRADA</button>
+    <button class="tab" onclick="showPhase(4)">🔴 RED FLAGS</button>
+    <button class="tab" onclick="showPhase(5)">🏗️ SISTEMA SUP</button>
+    <button class="tab" onclick="showPhase(6)">💰 ESTRATEGIA $500</button>
+    <button class="tab" onclick="showPhase(7)">✓ CHECKLIST PRE-TRADE</button>
+  </div>
+
+  <!-- ============ 0: FLUJO MAESTRO ============ -->
+  <div class="phase active" id="phase-0" style="--phase-color: #e8213f">
+    <div class="phase-header">
+      <div class="phase-num">⚡</div>
+      <div class="phase-info">
+        <h2>El flujo completo: de HTF al click de entrada</h2>
+        <p>Este es el pipeline que une TODO. Cada trade tuyo debería pasar por estos 6 pasos en orden. Si un paso falla, no hay trade — "no operar también es una posición".</p>
+      </div>
+    </div>
+
+    <div class="flow-steps">
+      <div class="flow-node">
+        <h3><span class="fn fn-gold">PASO 1</span> Bias en HTF — Elliott + Estructura</h3>
+        <p>En 4H/Daily: marcá altos y bajos → dictan la tendencia. Contá ondas: ¿dónde estás del ciclo? ¿Impulso (1-3-5) o corrección (2-4-ABC)? <strong>Nunca short en soporte, nunca long en resistencia. Siempre a favor de la tendencia.</strong> No cambiás bias sin signo de debilidad + confirmación en HTF. Volume Profile en HTF siempre activo.</p>
+      </div>
+      <div class="flow-node">
+        <h3><span class="fn fn-gold">PASO 2</span> Marcar POIs — dónde vas a esperar</h3>
+        <p>Los POIs viven en las <strong>ondas 4 de 3</strong> (prioridad) y <strong>4 de A</strong>. Buscá clusters acumulados (POI = C + C + C), Order Blocks dentro del cluster, y validá con Volume Profile (POC claro). Marcá también la liquidez: bajos/altos no mitigados. Sin POI marcado, no existe trade — <strong>"no operan en el aire"</strong>.</p>
+      </div>
+      <div class="flow-node">
+        <h3><span class="fn fn-gold">PASO 3</span> Targets Fibonacci — dónde debería frenar</h3>
+        <p>Onda 2: golden pocket 0.618–0.66 (máx 0.786). Onda 4: 0.382–0.5 (inválida en 0.618). Onda 3: mínimo 1a1, targets 1.618–2.618. Onda 5: 3 métodos de proyección. Si tu POI coincide con un nivel Fib de la onda esperada → <strong>confluencia doble</strong>.</p>
+      </div>
+      <div class="flow-node">
+        <h3><span class="fn fn-cyan">PASO 4</span> Esperar al precio en el POI — con ATAS abierto</h3>
+        <p>El precio llega a tu zona. Ahora NO entrás por tocar el nivel: abrís footprint (Bid×Ask), delta y CVD, y esperás que aparezca un <strong>Green Flag</strong>: absorción con traders atrapados, drenaje de delta, toma de liquidez con volumen sobre la media, o retest de OB con confirmación. Precio + volumen SIEMPRE juntos.</p>
+      </div>
+      <div class="flow-node">
+        <h3><span class="fn fn-red">PASO 5</span> Filtrar Red Flags — el veto</h3>
+        <p>Antes de ejecutar, revisá lo que NO querés ver: Finished Auction cerca (imán de precio), toma de liquidez sin incremento de volumen (liquidez falsa), delta leading en contra infectando la zona. <strong>Una sola red flag activa = no hay trade.</strong></p>
+      </div>
+      <div class="flow-node">
+        <h3><span class="fn fn-green">PASO 6</span> Ejecutar + Gestionar</h3>
+        <p>SL donde se invalida la teoría (definido ANTES de entrar), máximo 2% de la cuenta. TP: liquidez más cercana del otro lado / target Fib de la onda siguiente. Mínimo 3:1. TP1 rápido para descomprimir la psicología. Journal del trade completo: setup, confluencia, emoción, resultado.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 1: ELLIOTT ============ -->
+  <div class="phase" id="phase-1" style="--phase-color: #d4a437">
+    <div class="phase-header">
+      <div class="phase-num">🌊</div>
+      <div class="phase-info">
+        <h2>Elliott Waves — contexto y niveles</h2>
+        <p>Resumen operativo de tu manual completo. Para el detalle de cada estructura correctiva (flats, diagonales), consultá la web de Elliott dedicada.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📏</span>
+          <span class="concept-title">Reglas de oro del impulso</span>
+          <span class="concept-tag gold">NÚCLEO</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">R1</span> La onda 3 nunca es la más chica y tiene el mayor volumen del impulso</li>
+            <li><span class="step-num">R2</span> La onda 4 no hace overlap con la zona de la onda 2</li>
+            <li><span class="step-num">R3</span> Divergencia de volumen obligatoria entre 3 y 5: la onda 5 debe tener menos volumen (excepto 5 extendida, donde tiene más)</li>
+            <li><span class="step-num">R4</span> En un impulso hay 2 rompimientos; en una corrección, generalmente 1</li>
+            <li><span class="step-num">R5</span> BOS con cuerpo de vela. Solo mecha = probable CHOCH o sweep de liquidez</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🔢</span>
+          <span class="concept-title">Tabla Fibonacci completa por onda</span>
+          <span class="concept-tag gold">REFERENCIA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <table class="t">
+            <tr><th>Onda</th><th>Niveles clave</th><th>Invalidación / Nota</th></tr>
+            <tr><td>2 normal</td><td>0.5 · <strong>0.618–0.66</strong> · 0.786</td><td>0.886 = peligro, quizás no es impulso</td></tr>
+            <tr><td>2 (1 ext.)</td><td>0.236 · <strong>0.382</strong> · 0.5</td><td>0.618 raro</td></tr>
+            <tr><td>3</td><td>1.618 · 2 · 2.618 · 3 · 3.618</td><td>Mínimo 1a1 vs onda 1</td></tr>
+            <tr><td>4</td><td><strong>0.382 · 0.5</strong> · 0.236</td><td>Tocar 0.618 = invalidada</td></tr>
+            <tr><td>5 (mét. 1)</td><td>0.618 · 0.786 (impulso 0-3-4)</td><td>—</td></tr>
+            <tr><td>5 (mét. 2)</td><td>1.618 · 2.618 (retroceso 3→4)</td><td>Mínimo 1.236</td></tr>
+            <tr><td>5 ext.</td><td>1.618 overshoot</td><td>Onda 5 con MÁS volumen que 3</td></tr>
+            <tr><td>B (ZZ)</td><td>0.382 común</td><td>B &gt; 0.786 → contá esa "2" como B</td></tr>
+            <tr><td>C (ZZ)</td><td>1–1.236 al 1.618</td><td>Mínimo 0.618; con triángulo en B: 0.618 común</td></tr>
+            <tr><td>Diagonal o.4</td><td>0.382 · GP 0.618-0.66</td><td>No toca parte baja del canal 0→1</td></tr>
+          </table>
+          <div class="box box-gold">
+            <div class="box-label">Estructuras — memoria rápida</div>
+            <ul>
+              <li>ABC / Zigzag = 5-3-5 · WXY = 3-3-3 · Flats = 3-3-5 · Triángulos = 3-3-3-3-3</li>
+              <li>Running flat NO toma el bajo · Regular lo toma por poquito · Expanding lo toma sí o sí</li>
+              <li>Volumen de C: aparece recién al final (a diferencia de la 3, que lo tiene en toda la onda)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🎯</span>
+          <span class="concept-title">POIs, Clusters y dónde buscar el trade</span>
+          <span class="concept-tag gold">SMART MONEY</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">POI</span> Sumatoria de flujos previos. Suele ser onda 4 o 2, o rangos. Más clusters = más validado</li>
+            <li><span class="step-num">VENTA</span> Prioridad: onda 4 de 3 (está más alta, mejor venta). Alternativa: 4 de A. Al revés para compras</li>
+            <li><span class="step-num">OB</span> Se busca dentro del POI, alrededor de un cluster. Vela "perfecta": mecha simétrica + cuerpo pequeño</li>
+            <li><span class="step-num">LIQ</span> Bajos no mitigados = liquidez. Al tomarse, el precio tiende a explotar al alza. Blocks debajo de la liquidez para compras</li>
+            <li><span class="step-num">IND</span> Inducement: el precio "amaga" para inducir liquidez restante y usarla de fuerza hasta el POI faltante</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 2: ORDER FLOW ============ -->
+  <div class="phase" id="phase-2" style="--phase-color: #23c8de">
+    <div class="phase-header">
+      <div class="phase-num">📊</div>
+      <div class="phase-info">
+        <h2>Order Flow — el microscopio en ATAS</h2>
+        <p>Lo que ves cuando el precio llega a tu POI. Setup: Footprint Bid×Ask + Delta + CVD + Volume Profile + OI.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🧮</span>
+          <span class="concept-title">La tríada: Volumen + Delta + Open Interest</span>
+          <span class="concept-tag of">BASE</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <table class="t">
+            <tr><th>Lectura</th><th>Vol</th><th>OI</th><th>Delta</th><th>Conclusión</th></tr>
+            <tr><td class="pos">Bullish real</td><td>↑</td><td>↑</td><td>+</td><td>Tendencia con posiciones nuevas</td></tr>
+            <tr><td class="neg">Bearish real</td><td>↑</td><td>↑</td><td>−</td><td>Tendencia con posiciones nuevas</td></tr>
+            <tr><td class="neu">Fakeout</td><td>↓</td><td>↓</td><td>contrario</td><td>Cierre de posiciones, trampa probable</td></tr>
+          </table>
+          <div class="box box-cyan">
+            <div class="box-label">Conexión con Elliott</div>
+            <ul>
+              <li>BOS válido = esta misma tabla: Vol↑ + OI↑ + Delta a favor. Si no, tratalo como CHOCH/sweep</li>
+              <li>Onda 3 = la tríada bullish/bearish sostenida en el tiempo</li>
+              <li>Fin de onda 5 = la tríada se rompe: precio sube pero Vol↓ y CVD diverge</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🧲</span>
+          <span class="concept-title">Absorción vs Exhaustion — no confundirlas</span>
+          <span class="concept-tag of">LECTURA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <table class="t">
+            <tr><th></th><th>Absorción</th><th>Exhaustion</th></tr>
+            <tr><td class="neu">Qué pasa</td><td>Muro de límites bloquea activamente</td><td>Se acaban los agresores, nadie bloquea</td></tr>
+            <tr><td class="neu">Footprint</td><td>Clusters ENORMES, precio quieto</td><td>Clusters cada vez MÁS CHICOS</td></tr>
+            <tr><td class="neu">Delta</td><td>Alto pero el precio no responde</td><td>Decreciente (1900→600→neg)</td></tr>
+            <tr><td class="neu">Dónde</td><td>En niveles clave / POIs</td><td>Al final de impulsos (onda 5!)</td></tr>
+            <tr><td class="neu">Señal</td><td>Reversal brusco al agotarse un lado</td><td>Reversal lento o rango</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📈</span>
+          <span class="concept-title">CVD Divergences — traders atrapados a nivel sesión</span>
+          <span class="concept-tag of">SEÑAL FUERTE</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">BULL</span> Precio: Higher Lows · CVD: Lower Lows → shorts empujando sin éxito → short squeeze cuando se agoten</li>
+            <li><span class="step-num">BEAR</span> Precio: Lower Lows · CVD: Higher Lows → longs atrapados → long squeeze inminente</li>
+            <li><span class="step-num">CONF</span> Delta negativo en vela alcista (o viceversa) = los agresores chocaron contra un muro de límites. La señal más fuerte</li>
+          </ul>
+          <div class="box box-cyan">
+            <div class="box-label">Uso con Elliott</div>
+            <ul>
+              <li>CVD divergence en zona de target Fib de onda 5 = combo de mayor probabilidad para anticipar el techo/piso del impulso completo</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 3: GREEN FLAGS ============ -->
+  <div class="phase" id="phase-3" style="--phase-color: #52d273">
+    <div class="phase-header">
+      <div class="phase-num">🟢</div>
+      <div class="phase-info">
+        <h2>Green Flags — patrones de entrada (siempre en POIs)</h2>
+        <p>Tus 5 patrones de entrada transcritos y sistematizados. Regla madre: SIEMPRE precio + volumen. No operar a ciegas con ninguno.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card open" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🪤</span>
+          <span class="concept-title">1 · Absorción + Traders Atrapados</span>
+          <span class="concept-tag green">PATRÓN A+</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Los sellers intentan romper un nivel pero quedan mal posicionados: muchas market orders contra institucionales colocando límites que absorben la presión. El mercado los castiga yendo rápido en la dirección contraria.</p>
+          <div class="box box-cyan">
+            <div class="box-label">Cómo identificarlo en el Order Flow</div>
+            <ul>
+              <li><strong>Delta negativo incrementando:</strong> muchas ventas intentando romper el soporte (números rojos altos en el footprint)</li>
+              <li><strong>Mecha y cierre:</strong> pese a la presión vendedora, la vela cierra por fuera del soporte</li>
+              <li><strong>POC atrapado:</strong> el volumen más fuerte queda en la mecha inferior → sellers atrapados confirmados</li>
+            </ul>
+          </div>
+          <div class="box box-green">
+            <div class="box-label">Formas de entry</div>
+            <ul>
+              <li><strong>Agresiva:</strong> en el retest del POC de la vela de absorción. Fast entry, pero no siempre ocurre</li>
+              <li><strong>Conservadora:</strong> esperar el cierre de la siguiente vela con cambio a delta positivo (buyers tomaron control) → ejecutar</li>
+            </ul>
+          </div>
+          <div class="box box-gold">
+            <div class="box-label">Gestión</div>
+            <ul>
+              <li>SL: por debajo de la zona de absorción</li>
+              <li>TP: liquidez más cercana hacia el otro lado</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🩸</span>
+          <span class="concept-title">2 · Drenaje de Delta</span>
+          <span class="concept-tag green">PATRÓN</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Falta de interés comprador → posible reversal. El precio sigue subiendo hacia tu POI, pero el delta deja de crecer o disminuye: el movimiento se agota.</p>
+          <div class="box box-cyan">
+            <div class="box-label">Cómo identificarlo</div>
+            <ul>
+              <li>Deltas que pierden consistencia: 1900, 2000, 1700... y de golpe 400, 600, incluso negativos</li>
+              <li><strong>Resistencia en el Delta:</strong> se forma un "doble techo" visual en las velas del delta — aunque el precio suba, no hay compradores agresivos dispuestos a pagar más. Desajuste precio/volumen</li>
+            </ul>
+          </div>
+          <div class="box box-green">
+            <div class="box-label">Entry (3 condiciones en orden)</div>
+            <ul>
+              <li>1. Identificar el falso rompimiento (fakeout) en el POI: el precio intenta superar el nivel y falla</li>
+              <li>2. Esperar el cambio de delta confirmado: de positivo a negativo — precio y volumen "de acuerdo" en que el movimiento terminó</li>
+              <li>3. Ejecutar cuando ambos confirman. <strong>No entrar a la zona a ciegas — nunca operar en el aire, siempre dentro de un POI</strong></li>
+            </ul>
+          </div>
+          <div class="box box-gold">
+            <div class="box-label">Conexión Elliott</div>
+            <ul>
+              <li>El drenaje de delta ES la firma de order flow del final de onda 5 (o de onda C): exhaustion + divergencia de volumen 3-vs-5 de tu manual</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">💧</span>
+          <span class="concept-title">3 · Toma de Liquidez (Sweep)</span>
+          <span class="concept-tag green">PATRÓN</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Movimiento que busca activar stops (debajo de mínimos / encima de máximos) para luego revertir. <strong>Foco principal: el volumen. Sin volumen no hay sweeps óptimos.</strong></p>
+          <div class="box box-cyan">
+            <div class="box-label">Regla de oro</div>
+            <ul>
+              <li>Al alcanzar el nivel, el volumen debe ser <strong>más alto que la media</strong> — confirma que las órdenes fueron absorbidas/liquidadas ahí</li>
+              <li>Chequear que el POI acompañe con volumen</li>
+            </ul>
+          </div>
+          <div class="box box-green">
+            <div class="box-label">Entry</div>
+            <ul>
+              <li>⊗ <strong>Confirmación del precio:</strong> nunca operar solo por volumen. Esperar el rechazo confirmado de la zona tras el pico de volumen</li>
+              <li>⊗ <strong>No operar a ciegas:</strong> volumen sobre la media + confirmación de precio = la validez</li>
+            </ul>
+          </div>
+          <div class="box box-gold">
+            <div class="box-label">Checklist SFP de tus notas (mín. 4/5)</div>
+            <ul>
+              <li>OI disminuye en el sweep · Delta contrario al sweep · Aparecen agresores del lado opuesto · Atrapados visibles en footprint · Volumen en la mecha, no en el cuerpo</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🏁</span>
+          <span class="concept-title">4 · Finished / Unfinished Auction</span>
+          <span class="concept-tag green">PATRÓN</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Disminución de órdenes hacia los highs/lows = no hay interés en tratar esa zona. Si además hay un "FA", puede indicar reversal. Mirás que la punta del POC sea 0.</p>
+          <div class="box box-cyan">
+            <div class="box-label">En ATAS</div>
+            <ul>
+              <li>Unfinished Auction: la vela termina en un extremo con volumen todavía alto (subasta incompleta) → el precio suele volver a "terminar el trabajo"</li>
+              <li>Finished Auction: volumen decae a casi 0 en el extremo → la subasta terminó ahí, no queda interés</li>
+            </ul>
+          </div>
+          <div class="warn"><strong>Nota de tu manuscrito:</strong> la parte "punta del POC sea 0 (?)" estaba dudosa en la foto original. El concepto estándar: en un Finished Auction el volumen del extremo tiende a cero. Revisalo contra tu fuente.</div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📦</span>
+          <span class="concept-title">5 · Retroceso — Retest de Order Blocks</span>
+          <span class="concept-tag green">PATRÓN</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Bloque de órdenes = mucho volumen. Se usa para entradas de reversal, posicionando los SL por respeto de las áreas.</p>
+          <ul class="steps">
+            <li><span class="step-num">01</span> Detectás el OB (dentro de un POI, alrededor de un cluster — vela con mecha simétrica y cuerpo pequeño)</li>
+            <li><span class="step-num">02</span> Marcás con caja TODO el OB</li>
+            <li><span class="step-num">03</span> Al retest, entrás — con confirmación de OF (delta, absorción, volumen)</li>
+            <li><span class="step-num">04</span> SL respetando el área del OB</li>
+          </ul>
+          <div class="warn"><strong>SIEMPRE: precio + volumen. No operar a ciegas con esto.</strong></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 4: RED FLAGS ============ -->
+  <div class="phase" id="phase-4" style="--phase-color: #e8213f">
+    <div class="phase-header">
+      <div class="phase-num">🔴</div>
+      <div class="phase-info">
+        <h2>Red Flags — lo que NO queremos ver</h2>
+        <p>El veto del Paso 5. Cualquiera de estas señales activa = el setup queda descartado, aunque todo lo demás esté perfecto.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card open" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🚫</span>
+          <span class="concept-title">Las 3 red flags de tus notas</span>
+          <span class="concept-tag">VETO</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="box box-red">
+            <div class="box-label">1 · Finished Auction cercano</div>
+            <ul>
+              <li>Funciona como <strong>imán para el precio</strong>. Si hubo lows en un precio, es probable que se vuelvan a tomar (retest posible)</li>
+              <li>Si tu TP está antes de un FA, o tu SL después de uno, replanteá la gestión</li>
+            </ul>
+          </div>
+          <div class="box box-red">
+            <div class="box-label">2 · Toma de liquidez SIN incremento de volumen</div>
+            <ul>
+              <li>Si el volumen no incrementa en el sweep, el precio tiende a volver ahí — no había interés genuino</li>
+              <li><strong>Liquidez falsa</strong> = no es señal de entrada, es trampa</li>
+            </ul>
+          </div>
+          <div class="box box-red">
+            <div class="box-label">3 · Delta "leading" en contra</div>
+            <ul>
+              <li>El precio llega a tu POI pero la zona se "infecta" con mucha agresión de delta en contra de tu dirección</li>
+              <li>Si el delta líder viene fuerte contra tu zona, el POI probablemente no aguante</li>
+            </ul>
+          </div>
+          <div class="warn"><strong>Nota:</strong> la página original de esta sección estaba fotografiada rotada y con poca luz — las últimas líneas del "delta leading" quedaron cortadas en tu transcripción ("el precio en cuanto lo ve, retrocede triple, conecta..."). Revisala contra el manuscrito original para completar la regla exacta.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 5: SISTEMA SUP ============ -->
+  <div class="phase" id="phase-5" style="--phase-color: #d4a437">
+    <div class="phase-header">
+      <div class="phase-num">🏗️</div>
+      <div class="phase-info">
+        <h2>Sistema SUP — de Punto A a rentable</h2>
+        <p>Las 5 fases del curso. La meta: salir del trading discrecional y que el sistema señale las posiciones, no las emociones.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🪜</span>
+          <span class="concept-title">Las 5 fases</span>
+          <span class="concept-tag gold">PROCESO</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">F1</span> <strong>Entrenamiento:</strong> entender cómo se analiza el mercado — acción de precio (EW) y lectura de volumen (Order Flow)</li>
+            <li><span class="step-num">F2</span> <strong>Sistema (la más importante):</strong> generar un sistema consistente. Salir del discrecional, dejar que el sistema señale</li>
+            <li><span class="step-num">F3</span> <strong>Backtesting:</strong> solo se construye confianza con buenas estadísticas. Sistema negativo → generar otro. Positivo → seguir</li>
+            <li><span class="step-num">F4</span> <strong>Campo:</strong> con sample de al menos <strong>100 trades</strong> backtesteados, operar SOLO ese sistema. Un sistema a la vez + journaling de todo</li>
+            <li><span class="step-num">F5</span> <strong>Mejoras:</strong> monthly review de operativa, psicología y gestión, leyendo los journals</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📓</span>
+          <span class="concept-title">Journal — formato de tus notas</span>
+          <span class="concept-tag gold">JOURNAL</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <table class="t">
+            <tr><th>Día</th><th>Asset</th><th>Bias</th><th>Setup</th><th>Confluence</th><th>Entry</th><th>TF</th><th>TPs</th><th>R%</th><th>R final</th></tr>
+            <tr><td>5/8 16:30</td><td>BTC</td><td>Long</td><td>VWAP C</td><td>Anchor VWAP</td><td>Engulf candle</td><td>M5</td><td>TP1+BE Sí</td><td>1%</td><td class="pos">2,33R ✓</td></tr>
+          </table>
+          <div class="box box-gold">
+            <div class="box-label">Estadísticas de cuenta (ejemplo de tus notas)</div>
+            <ul>
+              <li>Capital inicial $1000 · Profit +$327 · 44 trades · WR 61,4% · RR 32,7</li>
+              <li>El journal habla de: operativa, psicología y gestión de riesgo — las tres, siempre</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🧠</span>
+          <span class="concept-title">Risk Management y Psicología</span>
+          <span class="concept-tag gold">MINDSET</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">2%</span> Máximo 2% de la cuenta total en SL por posición</li>
+            <li><span class="step-num">SL</span> Siempre SL, definido ANTES de entrar, donde se invalida la teoría</li>
+            <li><span class="step-num">👁</span> Ver dónde están los SL de los demás traders (dónde se hará la mecha para liquidarlos) y tratar de NO ser parte</li>
+            <li><span class="step-num">TP1</span> Tip anti-emocional: TP1 rápido y dejás de preocuparte</li>
+            <li><span class="step-num">📊</span> Foco en charts y setups, NO en la plata. Small wins for a long period of time</li>
+            <li><span class="step-num">ALL</span> Con sistema armado, tomar TODOS los trades que señale — si elegís, las emociones entran peor</li>
+            <li><span class="step-num">TF</span> Trend within trend: seguir el timeframe de la estrategia, no moverse de TFs</li>
+          </ul>
+          <div class="warn">"El mercado hará lo que quiere, no lo que queremos que haga." Aceptar el riesgo desde la entrada — una ballena puede hacer market order e invalidar tu análisis. Es parte de la profesión.</div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🧭</span>
+          <span class="concept-title">Manual de Bias — HTF</span>
+          <span class="concept-tag gold">TENDENCIA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">01</span> Priorizar y seguir la tendencia. Longs en soporte, shorts en resistencia — <strong>nunca</strong> al revés</li>
+            <li><span class="step-num">02</span> Si vas contra tendencia, bookear TP rápido para proteger</li>
+            <li><span class="step-num">03</span> No cambiar bias sin signo de debilidad o confirmación en HTF</li>
+            <li><span class="step-num">04</span> Longs en HTF supports</li>
+            <li><span class="step-num">05</span> Ruptura del último higher high = indicio de cambio, pero lo correcto sigue siendo operar con la tendencia</li>
+            <li><span class="step-num">06</span> Tip: Volume Profile en HTF, siempre</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 6: ESTRATEGIA $500 ============ -->
+  <div class="phase" id="phase-6" style="--phase-color: #52d273">
+    <div class="phase-header">
+      <div class="phase-num">💰</div>
+      <div class="phase-info">
+        <h2>Estrategia de cuenta: $500 → objetivo +$250</h2>
+        <p>Los números reales de tu plan, sin humo. Primero la matemática dura, después el simulador interactivo para que pruebes escenarios.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card open" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">⚠️</span>
+          <span class="concept-title">La verdad matemática de tu plan (leer primero)</span>
+          <span class="concept-tag">CRÍTICO</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Tu plan: 3:1 mínimo con 25% de winrate. Hagamos la cuenta con tu propia regla de riesgo (2% = $10 por trade):</p>
+          <table class="t">
+            <tr><th>Escenario (cada 4 trades)</th><th>Resultado</th></tr>
+            <tr><td>1 ganado × 3R</td><td class="pos">+$30</td></tr>
+            <tr><td>3 perdidos × 1R</td><td class="neg">−$30</td></tr>
+            <tr><td><strong>Total</strong></td><td class="neu">$0 — breakeven exacto</td></tr>
+          </table>
+          <div class="warn">
+            <strong>25% WR con 3:1 es exactamente breakeven.</strong> Y con comisiones + funding de futuros a 10x, es levemente negativo. La fórmula: WR de equilibrio = 1 / (RR + 1) = 1/4 = 25%. Estás parado justo en la línea. Para ganar necesitás que al menos UNA de estas dos cosas sea mejor: el winrate o el ratio.
+          </div>
+          <div class="box box-green">
+            <div class="box-label">Las 3 palancas reales (elegí al menos una)</div>
+            <ul>
+              <li><strong>Subir el WR:</strong> si el filtro "solo A+ setups" funciona (POI + Fib + green flag + sin red flags), tu WR debería estar en 35-45%, no 25%. Con 35% y 3:1 → +0.4R promedio por trade</li>
+              <li><strong>Subir el RR:</strong> mantené runners. Si tu TP promedio real es 4:1 en vez de 3:1, con 25% WR → +0.25R por trade</li>
+              <li><strong>TP1 + Breakeven:</strong> tu propio sistema lo dice — TP1 rápido convierte muchas pérdidas de -1R en -0.5R o 0R, lo que baja el WR de equilibrio</li>
+            </ul>
+          </div>
+          <div class="box box-gold">
+            <div class="box-label">Sobre el objetivo +$250 (50% mensual)</div>
+            <ul>
+              <li>$250 = 25R con riesgo de $10. Con expectativa de +0.5R/trade necesitás ~50 trades A+ en el mes (2-3 por día). Los setups A+ reales no aparecen con esa frecuencia</li>
+              <li>Un objetivo coherente con tu sistema: <strong>8-15% mensual</strong> (4-7R). El 50% mensual empuja a sobreoperar, que es exactamente lo que tu Fase 4 prohíbe</li>
+              <li>Alternativa realista: apuntar a +$250 en un <strong>trimestre</strong>, compounding el 2% sobre el capital creciente</li>
+            </ul>
+          </div>
+          <div class="box box-cyan">
+            <div class="box-label">Sobre el 10x de palanca</div>
+            <ul>
+              <li>La palanca NO cambia tu riesgo si el sizing es correcto: tu riesgo lo define la distancia al SL × tamaño de posición, no el leverage. El 10x solo reduce el margen que inmovilizás</li>
+              <li>El peligro real del 10x: SL de ~10% de movimiento del precio te liquida. Con SLs ajustados de scalping (0.5-1.5%) estás lejos de liquidación, pero <strong>nunca</strong> uses "precio de liquidación" como SL — eso es perder 100% en vez de 2%</li>
+              <li>Racha estadística a 25% WR: la probabilidad de 10 pérdidas seguidas en 50 trades es alta (~real). 10 pérdidas = -20% de cuenta. Tenés que poder tolerarlo sin romper el sistema</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card open" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🧮</span>
+          <span class="concept-title">Simulador interactivo — probá tus números</span>
+          <span class="concept-tag green">CALCULADORA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body" onclick="event.stopPropagation()">
+          <div class="calc">
+            <div class="calc-grid">
+              <div class="calc-field"><label>Capital ($)</label><input type="number" id="c-cap" value="500" oninput="calc()"></div>
+              <div class="calc-field"><label>Riesgo por trade (%)</label><input type="number" id="c-risk" value="2" step="0.5" oninput="calc()"></div>
+              <div class="calc-field"><label>Winrate (%)</label><input type="number" id="c-wr" value="25" oninput="calc()"></div>
+              <div class="calc-field"><label>Ratio R:R</label><input type="number" id="c-rr" value="3" step="0.5" oninput="calc()"></div>
+              <div class="calc-field"><label>Trades por mes</label><input type="number" id="c-n" value="20" oninput="calc()"></div>
+              <div class="calc-field"><label>Objetivo mensual ($)</label><input type="number" id="c-goal" value="250" oninput="calc()"></div>
+            </div>
+            <div class="calc-results">
+              <div class="calc-stat">
+                <div class="cs-label">Riesgo por trade</div>
+                <div class="cs-value" id="r-risk">$10</div>
+                <div class="cs-sub">1R en dólares</div>
+              </div>
+              <div class="calc-stat">
+                <div class="cs-label">Expectativa por trade</div>
+                <div class="cs-value" id="r-ev">$0</div>
+                <div class="cs-sub" id="r-ev-r">0R promedio</div>
+              </div>
+              <div class="calc-stat">
+                <div class="cs-label">Proyección mensual</div>
+                <div class="cs-value" id="r-month">$0</div>
+                <div class="cs-sub" id="r-month-pct">0% de la cuenta</div>
+              </div>
+              <div class="calc-stat">
+                <div class="cs-label">WR de equilibrio</div>
+                <div class="cs-value neu" id="r-be">25%</div>
+                <div class="cs-sub">Debajo de esto, perdés</div>
+              </div>
+              <div class="calc-stat">
+                <div class="cs-label">Trades para el objetivo</div>
+                <div class="cs-value" id="r-need">∞</div>
+                <div class="cs-sub" id="r-need-sub">con esta expectativa</div>
+              </div>
+              <div class="calc-stat">
+                <div class="cs-label">Ganados / Perdidos (mes)</div>
+                <div class="cs-value" id="r-wl">5W / 15L</div>
+                <div class="cs-sub">distribución esperada</div>
+              </div>
+            </div>
+            <div class="verdict v-neu" id="r-verdict">—</div>
+          </div>
+
+          <div class="divider-label">Escenarios de referencia (riesgo 2% · $500)</div>
+          <table class="t">
+            <tr><th>WR</th><th>RR</th><th>EV/trade</th><th>20 trades/mes</th><th>Veredicto</th></tr>
+            <tr><td>25%</td><td>3:1</td><td class="neu">$0.00</td><td class="neu">$0</td><td>Breakeven — negativo con fees</td></tr>
+            <tr><td>25%</td><td>5:1</td><td class="pos">+$5.00</td><td class="pos">+$100</td><td>Viable si aguantás runners</td></tr>
+            <tr><td>35%</td><td>3:1</td><td class="pos">+$4.00</td><td class="pos">+$80</td><td>Realista con filtro A+ funcionando</td></tr>
+            <tr><td>40%</td><td>3:1</td><td class="pos">+$6.00</td><td class="pos">+$120</td><td>Muy buen sistema</td></tr>
+            <tr><td>40%</td><td>4:1</td><td class="pos">+$10.00</td><td class="pos">+$200</td><td>Élite — cerca de tu objetivo</td></tr>
+            <tr><td>20%</td><td>3:1</td><td class="neg">−$2.00</td><td class="neg">−$40</td><td>Cuenta muriendo lento</td></tr>
+          </table>
+
+          <div class="box box-green" style="margin-top:16px">
+            <div class="box-label">El plan que sí cierra con tus propias reglas</div>
+            <ul>
+              <li><strong>Mes 1-2:</strong> backtesting de tu sistema (100 trades mínimo, Fase 3 SUP) para conocer tu WR REAL — no asumir 25%</li>
+              <li><strong>Mes 3:</strong> capital real, 2% riesgo, solo A+ (los 6 pasos del Flujo Maestro). Meta: expectativa positiva, no monto</li>
+              <li><strong>Con WR real ≥35% y 3:1:</strong> ~$80-120/mes sobre $500 (16-24%). El compounding hace el resto: a ese ritmo, +$250 acumulado llega en 2-3 meses sin sobreoperar</li>
+              <li><strong>TP1 rápido + SL a BE</strong> después de TP1: baja el costo emocional y mejora la expectativa neta, tal como dice tu curso</li>
+            </ul>
+          </div>
+
+          <div class="disclaimer">Nota: no soy asesor financiero y esto no es asesoramiento de inversión — es la matemática de expectativa aplicada a los parámetros que vos definiste, para que tomes tus propias decisiones. El trading apalancado de futuros conlleva riesgo de pérdida total del capital.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 7: CHECKLIST FINAL ============ -->
+  <div class="phase" id="phase-7" style="--phase-color: #52d273">
+    <div class="phase-header">
+      <div class="phase-num">✓</div>
+      <div class="phase-info">
+        <h2>Checklist Pre-Trade — el filtro A+ definitivo</h2>
+        <p>Integra las tres fuentes. Regla: los 5 obligatorios (⭐) + mínimo 3 de confluencia. Si no llega, NO es un setup A+ y tu plan exige solo A+.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+      <div class="concept-card open" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🎯</span>
+          <span class="concept-title">Obligatorios — sin excepción</span>
+          <span class="concept-tag green">⭐ CORE</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="checklist">
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ Trade A FAVOR de la tendencia HTF (long en soporte / short en resistencia)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ El precio está DENTRO de un POI marcado antes (no operar en el aire)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ Hay un Green Flag confirmado (absorción / drenaje / sweep con volumen / retest OB / FA)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ CERO red flags activas (FA imán, liquidez falsa, delta leading en contra)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ SL definido donde se invalida la teoría, riesgo ≤2%, RR ≥3:1</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="concept-card open" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">➕</span>
+          <span class="concept-title">Confluencias — mínimo 3</span>
+          <span class="concept-tag gold">BONUS</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="checklist">
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> El POI coincide con onda 4 de 3 (o 4 de A / onda 2)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Nivel Fibonacci de la onda esperada en la zona (GP 0.618-0.66, etc.)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Order Block con vela perfecta dentro del cluster</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Tríada alineada: Vol + Delta + OI en la dirección del trade</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> CVD divergence a favor (atrapados del otro lado)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Liquidez tomada recientemente con volumen sobre la media</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> TP apunta a liquidez cercana / target Fib de la onda siguiente</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Volume Profile HTF respalda la zona (POC / VAH / VAL)</li>
+          </ul>
+          <div class="box box-green" style="margin-top:14px">
+            <div class="box-label">Post-entrada</div>
+            <ul>
+              <li>TP1 rápido → SL a breakeven → dejás de preocuparte</li>
+              <li>Journal inmediato: día, asset, bias, setup, confluence, entry, TF, TPs, R%, R final, emoción</li>
+              <li>Revisión semanal + monthly review (Fase 5)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function showPhase(n) {
+    document.querySelectorAll('.phase').forEach((p, i) => p.classList.toggle('active', i === n));
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
+  }
+  function toggleCard(card) { card.classList.toggle('open'); }
+  function toggleCheck(li) {
+    li.classList.toggle('checked');
+    li.querySelector('.check-box').textContent = li.classList.contains('checked') ? '✓' : '';
+  }
+  document.querySelectorAll('.checklist li').forEach(li => li.addEventListener('click', e => e.stopPropagation()));
+
+  function calc() {
+    const cap = parseFloat(document.getElementById('c-cap').value) || 0;
+    const riskPct = parseFloat(document.getElementById('c-risk').value) || 0;
+    const wr = (parseFloat(document.getElementById('c-wr').value) || 0) / 100;
+    const rr = parseFloat(document.getElementById('c-rr').value) || 0;
+    const n = parseFloat(document.getElementById('c-n').value) || 0;
+    const goal = parseFloat(document.getElementById('c-goal').value) || 0;
+
+    const risk = cap * riskPct / 100;
+    const evR = wr * rr - (1 - wr);           // expectancy in R
+    const ev = evR * risk;                     // expectancy in $
+    const month = ev * n;
+    const be = 100 / (rr + 1);
+    const wins = Math.round(n * wr);
+    const losses = n - wins;
+
+    const f = x => (x >= 0 ? '+' : '−') + '$' + Math.abs(x).toFixed(2);
+
+    document.getElementById('r-risk').textContent = '$' + risk.toFixed(2);
+    const evEl = document.getElementById('r-ev');
+    evEl.textContent = f(ev);
+    evEl.className = 'cs-value ' + (ev > 0.01 ? 'pos' : ev < -0.01 ? 'neg' : 'neu');
+    document.getElementById('r-ev-r').textContent = (evR >= 0 ? '+' : '') + evR.toFixed(2) + 'R promedio por trade';
+
+    const mEl = document.getElementById('r-month');
+    mEl.textContent = f(month);
+    mEl.className = 'cs-value ' + (month > 0.01 ? 'pos' : month < -0.01 ? 'neg' : 'neu');
+    document.getElementById('r-month-pct').textContent = (cap ? (month / cap * 100).toFixed(1) : 0) + '% de la cuenta / mes';
+
+    document.getElementById('r-be').textContent = be.toFixed(1) + '%';
+
+    const needEl = document.getElementById('r-need');
+    if (ev > 0.01) {
+      const need = Math.ceil(goal / ev);
+      needEl.textContent = need;
+      needEl.className = 'cs-value ' + (need <= n ? 'pos' : 'neu');
+      document.getElementById('r-need-sub').textContent = need <= n ? 'alcanzable este mes' : Math.ceil(need / n) + ' meses al ritmo actual';
+    } else {
+      needEl.textContent = '∞';
+      needEl.className = 'cs-value neg';
+      document.getElementById('r-need-sub').textContent = 'expectativa no positiva';
+    }
+
+    document.getElementById('r-wl').textContent = wins + 'W / ' + losses + 'L';
+
+    const v = document.getElementById('r-verdict');
+    if (evR > 0.3) {
+      v.className = 'verdict v-pos';
+      v.textContent = '✓ Sistema con expectativa sólida (+' + evR.toFixed(2) + 'R/trade). Con ' + n + ' trades/mes generás ~' + f(month) + '. Objetivo de ' + f(goal).replace('+','') + ': ' + (month >= goal ? 'alcanzable este mes.' : 'lo alcanzás en ~' + Math.ceil(goal / month) + ' meses con compounding.');
+    } else if (evR > 0.01) {
+      v.className = 'verdict v-neu';
+      v.textContent = '△ Expectativa positiva pero fina (+' + evR.toFixed(2) + 'R/trade). Las comisiones y el slippage pueden comértela. Buscá subir WR con el filtro A+ o estirar el RR con runners.';
+    } else if (evR > -0.01) {
+      v.className = 'verdict v-neu';
+      v.textContent = '⚠ Breakeven exacto: con estos números no ganás ni perdés antes de fees — y con fees, perdés lento. Este es justamente el caso 25% WR / 3:1. Necesitás mejorar una de las dos variables.';
+    } else {
+      v.className = 'verdict v-neg';
+      v.textContent = '✗ Expectativa NEGATIVA (' + evR.toFixed(2) + 'R/trade). Con estos números la cuenta se drena. Volvé a la Fase 3 (backtesting) antes de arriesgar capital real.';
+    }
+  }
+  calc();
+</script>
+</body>
+</html>

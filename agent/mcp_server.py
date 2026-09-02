@@ -12,9 +12,19 @@ mcp = FastMCP("Trading Helper Agent")
 
 
 @mcp.tool()
-def analyze_pair(symbol: str, timeframe: str = "4h", trade_type: str = "swing", deep: bool = False) -> str:
-    """Analyze a Binance Futures pair and return A+ setup evidence bundle as JSON."""
-    bundle = analyst.analyze(symbol.upper(), timeframe, trade_type, deep=deep)
+def analyze_pair(
+    symbol: str,
+    timeframe: str = "4h",
+    trade_type: str = "swing",
+    deep: bool = False,
+    scope: str = "core",
+) -> str:
+    """Analyze a Binance Futures pair and return A+ setup evidence bundle as JSON.
+
+    scope: "core" (default, tus notas order-flow/elliott/setup), "all" (suma la
+    biblioteca de libros Wyckoff/Elliott/psicologia), o "books" (solo libros).
+    """
+    bundle = analyst.analyze(symbol.upper(), timeframe, trade_type, deep=deep, scope=scope)
     return json.dumps(bundle.to_dict(), indent=2, default=str)
 
 
@@ -32,8 +42,12 @@ def analyze_with_levels(
     notes: str = "",
     deep: bool = False,
     persist: bool = True,
+    scope: str = "core",
 ) -> str:
-    """Analyze with Elliott/Fib levels from chat. targets = comma-separated prices (e.g. '69.4,69.23')."""
+    """Analyze with Elliott/Fib levels from chat. targets = comma-separated prices (e.g. '69.4,69.23').
+
+    scope: "core" (default), "all" (suma libros), "books" (solo libros).
+    """
     target_list = [float(t.strip()) for t in targets.split(",") if t.strip()]
     bundle = analyst.analyze_with_levels(
         symbol.upper(),
@@ -48,6 +62,7 @@ def analyze_with_levels(
         notes=notes,
         deep=deep,
         persist=persist,
+        scope=scope,
     )
     return json.dumps(bundle.to_dict(), indent=2, default=str)
 
@@ -102,9 +117,12 @@ def get_market_snapshot(symbol: str, timeframe: str = "4h", trade_type: str = "s
 
 
 @mcp.tool()
-def search_notes(query: str, top_k: int = 5, category: str | None = None) -> str:
-    """Semantic search over indexed trading notes."""
-    results = knowledge.search_notes(query, top_k=top_k, category=category)
+def search_notes(query: str, top_k: int = 5, category: str | None = None, scope: str = "all") -> str:
+    """Semantic search over indexed trading notes.
+
+    scope: "all" (default), "core" (sin libros), "books" (solo libros).
+    """
+    results = knowledge.search_notes(query, top_k=top_k, category=category, scope=scope)
     return json.dumps(results, indent=2, ensure_ascii=False)
 
 

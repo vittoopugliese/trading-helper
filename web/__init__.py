@@ -1,0 +1,1 @@
+"""Trading Cockpit Web package."""

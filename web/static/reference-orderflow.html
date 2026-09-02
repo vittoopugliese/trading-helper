@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATAS Roadmap Order Flow</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0c10;
+            --surface: #10141c;
+            --border: #1e2530;
+            --accent: #00e5ff;
+            --accent2: #ff6b35;
+            --accent3: #7fff6b;
+            --accent4: #ffcc00;
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --card: #141924;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Syne', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 48px 24px 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            margin-bottom: 56px;
+            border-left: 3px solid var(--accent);
+            padding-left: 20px;
+        }
+
+        .label {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            color: var(--accent);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 800;
+            line-height: 1.1;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 15px;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        /* Phase tabs */
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            padding: 7px 14px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s;
+            letter-spacing: 1px;
+        }
+
+        .tab:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* Phase content */
+        .phase {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .phase.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Phase header */
+        .phase-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            margin-bottom: 28px;
+            padding: 24px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .phase-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--phase-color, var(--accent));
+        }
+
+        .phase-num {
+            font-family: 'Space Mono', monospace;
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--phase-color, var(--accent));
+            opacity: 0.25;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .phase-info h2 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .phase-info p {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .phase-duration {
+            margin-left: auto;
+            flex-shrink: 0;
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            color: var(--phase-color, var(--accent));
+            background: rgba(0, 229, 255, 0.08);
+            padding: 6px 12px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+
+        /* Concept cards */
+        .concepts {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .concept-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .concept-card:hover {
+            border-color: var(--phase-color, var(--accent));
+        }
+
+        .concept-card.open {
+            border-color: var(--phase-color, var(--accent));
+        }
+
+        .concept-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 20px;
+        }
+
+        .concept-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .concept-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            flex: 1;
+        }
+
+        .concept-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .chevron {
+            font-size: 12px;
+            color: var(--muted);
+            transition: transform 0.25s;
+            flex-shrink: 0;
+        }
+
+        .concept-card.open .chevron {
+            transform: rotate(90deg);
+            color: var(--phase-color, var(--accent));
+        }
+
+        .concept-body {
+            display: none;
+            padding: 0 20px 20px;
+            border-top: 1px solid var(--border);
+            margin-top: 0;
+        }
+
+        .concept-card.open .concept-body {
+            display: block;
+        }
+
+        .concept-body p {
+            color: var(--muted);
+            font-size: 13.5px;
+            line-height: 1.7;
+            margin-top: 14px;
+            margin-bottom: 14px;
+        }
+
+        /* Steps list */
+        .steps {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .steps li {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            font-size: 13.5px;
+            color: var(--text);
+            line-height: 1.55;
+        }
+
+        .step-num {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            color: var(--phase-color, var(--accent));
+            background: rgba(0, 229, 255, 0.1);
+            border-radius: 2px;
+            padding: 2px 7px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .checklist li {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.5;
+            cursor: pointer;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 4px;
+            border: 1px solid transparent;
+            transition: all 0.15s;
+            user-select: none;
+        }
+
+        .checklist li:hover {
+            border-color: var(--border);
+        }
+
+        .checklist li.checked {
+            color: var(--muted);
+            text-decoration: line-through;
+            background: rgba(0, 229, 255, 0.04);
+            border-color: rgba(0, 229, 255, 0.15);
+        }
+
+        .check-box {
+            width: 16px;
+            height: 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 3px;
+            flex-shrink: 0;
+            margin-top: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            transition: all 0.15s;
+        }
+
+        .checklist li.checked .check-box {
+            background: var(--accent3);
+            border-color: var(--accent3);
+            color: #000;
+        }
+
+        /* Signals box */
+        .signals-box {
+            background: rgba(0, 229, 255, 0.04);
+            border: 1px solid rgba(0, 229, 255, 0.15);
+            border-radius: 4px;
+            padding: 14px 16px;
+            margin-top: 14px;
+        }
+
+        .signals-box .box-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            color: var(--accent);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .signals-box ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .signals-box ul li {
+            font-size: 13px;
+            color: var(--text);
+            padding-left: 14px;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .signals-box ul li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-size: 11px;
+        }
+
+        .warn-box {
+            background: rgba(255, 107, 53, 0.06);
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin-top: 14px;
+            font-size: 12.5px;
+            color: #ff9977;
+            line-height: 1.6;
+        }
+
+        .warn-box strong {
+            color: var(--accent2);
+        }
+
+        /* Progress bar */
+        .progress-wrap {
+            margin-bottom: 40px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent3));
+            border-radius: 2px;
+            transition: width 0.4s ease;
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
+        }
+
+        /* Tag pill */
+        .tag-pill {
+            display: inline-block;
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            margin: 3px 3px 3px 0;
+            letter-spacing: 0.5px;
+        }
+
+        .tag-atas {
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+        }
+
+        .tag-time {
+            background: rgba(255, 204, 0, 0.1);
+            color: var(--accent4);
+            border: 1px solid rgba(255, 204, 0, 0.2);
+        }
+
+        .tag-concept {
+            background: rgba(127, 255, 107, 0.08);
+            color: var(--accent3);
+            border: 1px solid rgba(127, 255, 107, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <header>
+            <div class="label">// Tu framework de aprendizaje</div>
+            <h1>ATAS Order Flow<br><span>Roadmap Personal</span></h1>
+            <p class="subtitle">Guía práctica basada en tus notas. Seguila en orden, sin saltear fases. Un concepto a la
+                vez.</p>
+        </header>
+
+        <div class="progress-wrap">
+            <div class="progress-label">
+                <span>PROGRESO GENERAL</span>
+                <span id="progress-pct">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showPhase(0)">FASE 1 - BASE</button>
+            <button class="tab" onclick="showPhase(1)">FASE 2 - FOOTPRINT</button>
+            <button class="tab" onclick="showPhase(2)">FASE 3 - SEÑALES</button>
+            <button class="tab" onclick="showPhase(3)">FASE 4 - SISTEMA</button>
+            <button class="tab" onclick="showPhase(4)">CHECKLISTS</button>
+        </div>
+
+        <!-- FASE 1 -->
+        <div class="phase active" id="phase-0" style="--phase-color: #00e5ff">
+            <div class="phase-header">
+                <div class="phase-num">01</div>
+                <div class="phase-info">
+                    <h2>Configuración y conceptos base en ATAS</h2>
+                    <p>Antes de leer una sola vela, tu plataforma tiene que estar bien configurada y tenés que entender
+                        qué muestra cada herramienta.</p>
+                </div>
+                <div class="phase-duration">⏱ Semanas 1–2</div>
+            </div>
+
+            <div class="concepts">
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">⚙️</span>
+                        <span class="concept-title">Setup inicial de ATAS</span>
+                        <span class="concept-tag">PLATAFORMA</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <p>Configurá ATAS antes de analizar cualquier chart. Estos pasos son la base de todo lo que
+                            sigue.</p>
+                        <ul class="steps">
+                            <li><span class="step-num">01</span> Abrí un chart de BTC/USDT Perps (Binance o Bybit). BTC
+                                es ideal porque en ATAS tenés todos los indicadores de OF disponibles.</li>
+                            <li><span class="step-num">02</span> Activa el <strong>Footprint</strong> con Shift+K (o
+                                arrastrando el mouse en la escala de tiempo). Elegí el modo <strong>Bid × Ask</strong>.
+                            </li>
+                            <li><span class="step-num">03</span> Agregá el <strong>Delta indicator</strong> como
+                                indicador separado debajo del chart.</li>
+                            <li><span class="step-num">04</span> Agregá el <strong>CVD (Cumulative Volume
+                                    Delta)</strong> como otro panel separado.</li>
+                            <li><span class="step-num">05</span> Activá el <strong>Volume Profile</strong> (sesión y
+                                fixed range) desde el menú de indicadores.</li>
+                            <li><span class="step-num">06</span> Guardá ese layout como Template. Lo vas a usar siempre.
+                            </li>
+                        </ul>
+                        <div class="signals-box">
+                            <div class="box-label">Timeframes sugeridos para empezar</div>
+                            <ul>
+                                <li>HTF análisis de contexto: <strong>4H / Daily</strong></li>
+                                <li>Ejecución y lectura de OF: <strong>5min / 15min</strong></li>
+                                <li>Confirmación de entrada: <strong>1min / 3min</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">📊</span>
+                        <span class="concept-title">Volumen, Delta y Open Interest</span>
+                        <span class="concept-tag">CONCEPTOS</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <p>Los tres pilares que mencionás en tus notas. Antes de leer footprints, tenés que reconocerlos
+                            automáticamente.</p>
+                        <ul class="steps">
+                            <li><span class="step-num">VOL</span> Órdenes totales (compras + ventas). Sin volumen, el
+                                precio no se mueve.</li>
+                            <li><span class="step-num">DELTA</span> Diferencia entre compras y ventas a mercado. Muestra
+                                la intención.</li>
+                            <li><span class="step-num">OI</span> Posiciones entrando vs saliendo. OI↑ = nueva posición;
+                                OI↓ = cierre.</li>
+                        </ul>
+                        <div class="signals-box">
+                            <div class="box-label">Las combinaciones que definís en tus notas</div>
+                            <ul>
+                                <li><strong style="color:#7fff6b">BULLISH:</strong> +Vol + +OI + Delta Positivo →
+                                    tendencia real</li>
+                                <li><strong style="color:#ff6b35">BEARISH:</strong> +Vol + +OI + Delta Negativo →
+                                    tendencia real</li>
+                                <li><strong style="color:#ffcc00">FAKEOUT:</strong> +Precio pero Vol bajo + OI↓ + Delta
+                                    contrario → trampa</li>
+                            </ul>
+                        </div>
+                        <div class="warn-box"><strong>Ejercicio diario:</strong> Mirá los últimos 20 movimientos de BTC
+                            en 15min. Para cada uno anotá: ¿fue bullish/bearish/fakeout según Vol+Delta+OI? Hacelo 7
+                            días seguidos antes de pasar a la siguiente fase.</div>
+                    </div>
+                </div>
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">📐</span>
+                        <span class="concept-title">Auction Market Theory + Volume Profile</span>
+                        <span class="concept-tag">CONTEXTO</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <p>Las 5 reglas de tu manual. Siempre empezás por acá antes de mirar cualquier señal de OF.</p>
+                        <ul class="steps">
+                            <li><span class="step-num">R1</span> Precio dentro del balance → rota entre VAH y VAL.</li>
+                            <li><span class="step-num">R2</span> En extremos del balance, se espera reacción.</li>
+                            <li><span class="step-num">R3</span> Rompe balance → busca nuevo balance (VAH/VAL/POC
+                                histórico).</li>
+                            <li><span class="step-num">R4</span> Reacción fuerte en POC puede invalidar R1.</li>
+                            <li><span class="step-num">R5</span> Compresión de vol/tiempo cerca de un extremo → probable
+                                ruptura en esa dirección.</li>
+                        </ul>
+                        <div class="signals-box">
+                            <div class="box-label">En ATAS: cómo verlo</div>
+                            <ul>
+                                <li>Poné un <strong>Volume Profile de sesión</strong> en 4H/Daily</li>
+                                <li>Marcá VAH, VAL y POC con líneas horizontales</li>
+                                <li>Los Naked POC (sin tocar) son imanes futuros del precio</li>
+                                <li>Usá <strong>Fixed Range Profile</strong> para analizar rangos específicos</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- FASE 2 -->
+        <div class="phase" id="phase-1" style="--phase-color: #ff6b35">
+            <div class="phase-header">
+                <div class="phase-num">02</div>
+                <div class="phase-info">
+                    <h2>Leer el Footprint Chart como un libro</h2>
+                    <p>Acá aprendés a "entrar dentro de la vela". Usá el Market Replay de ATAS para entrenar sin
+                        arriesgar capital.</p>
+                </div>
+                <div class="phase-duration">⏱ Semanas 3–5</div>
+            </div>
+
+            <div class="concepts">
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">🔬</span>
+                        <span class="concept-title">Anatomía del cluster Bid × Ask</span>
+                        <span class="concept-tag">FOOTPRINT</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <p>El footprint es tu rayos X. Cada celda te dice exactamente qué pasó en cada precio dentro de
+                            la vela.</p>
+                        <ul class="steps">
+                            <li><span class="step-num">IZQ</span> Columna izquierda (rojo): órdenes de <strong>venta a
+                                    mercado</strong> ejecutadas contra límites de compra.</li>
+                            <li><span class="step-num">DER</span> Columna derecha (verde): órdenes de <strong>compra a
+                                    mercado</strong> ejecutadas contra límites de venta.</li>
+                            <li><span class="step-num">POC</span> El nivel con mayor volumen dentro de la vela. Es el
+                                punto de control interno.</li>
+                            <li><span class="step-num">COLOR</span> Verde intenso = dominan compradores. Rojo intenso =
+                                dominan vendedores.</li>
+                        </ul>
+                        <div class="signals-box">
+                            <div class="box-label">Lo que dicen tus notas: traders atrapados</div>
+                            <ul>
+                                <li>Volumen de venta en la <strong>parte baja</strong> de la vela = vendedores atrapados
+                                    (bueno para longs)</li>
+                                <li>Volumen de compra en la <strong>parte alta</strong> de la vela = compradores
+                                    atrapados (bueno para shorts)</li>
+                            </ul>
+                        </div>
+                        <div class="warn-box"><strong>Ejercicio clave:</strong> Usá Market Replay en ATAS (Ctrl+R).
+                            Pausa cada vela y predecí antes de verla cerrar: ¿hay compradores o vendedores atrapados en
+                            la mecha? Hacé 30 velas por día durante 2 semanas.</div>
+                    </div>
+                </div>
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">🧲</span>
+                        <span class="concept-title">Absorción - cómo identificarla</span>
+                        <span class="concept-tag">ABSORCIÓN</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <p>Un gran jugador pasivo absorbe toda la agresión del mercado sin dejar mover el precio. Es la
+                            señal de que hay una ballena detrás.</p>
+                        <ul class="steps">
+                            <li><span class="step-num">01</span> Precio sube (o baja) con fuerza, clusters grandes de
+                                compra.</li>
+                            <li><span class="step-num">02</span> Pero el precio <strong>no se mueve</strong> o avanza
+                                muy lento. Cuerpos de vela pequeños.</li>
+                            <li><span class="step-num">03</span> El POC de la vela está en la zona de absorción (en la
+                                mecha, no en el cuerpo).</li>
+                            <li><span class="step-num">04</span> Delta empieza a virar aunque el volumen sigue alto.
+                            </li>
+                        </ul>
+                        <div class="signals-box">
+                            <div class="box-label">Señal de absorción en ATAS</div>
+                            <ul>
+                                <li>Clusters ask (compra) enormes → precio no avanza → reversal inminente</li>
+                                <li>Imbalances diagonales &gt;350% en la zona de frenada</li>
+                                <li>Delta negativo en vela alcista = absorbieron compradores</li>
+                                <li>Smart DOM: nivel que se refresca constantemente sin vaciarse</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">💨</span>
+                        <span class="concept-title">Exhaustion - cuando el combustible se acaba</span>
+                        <span class="concept-tag">AGOTAMIENTO</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <p>A diferencia de la absorción, acá no hay un muro en contra. Simplemente se quedan sin
+                            compradores (o vendedores). El momentum muere solo.</p>
+                        <ul class="steps">
+                            <li><span class="step-num">01</span> El footprint se va "adelgazando": cada vela tiene menos
+                                volumen que la anterior.</li>
+                            <li><span class="step-num">02</span> El precio hace nuevos máximos/mínimos pero con clusters
+                                cada vez más chicos.</li>
+                            <li><span class="step-num">03</span> En tu chart verás: muy pocas órdenes en los extremos de
+                                precio (casi 0).</li>
+                            <li><span class="step-num">04</span> El CVD deja de acompañar el movimiento del precio
+                                (divergencia).</li>
+                        </ul>
+                        <div class="signals-box">
+                            <div class="box-label">Diferencia clave Absorción vs Exhaustion</div>
+                            <ul>
+                                <li><strong>Absorción:</strong> hay un gran muro de órdenes límite bloqueando
+                                    activamente</li>
+                                <li><strong>Exhaustion:</strong> simplemente no llegan más órdenes nuevas, el mercado se
+                                    queda vacío</li>
+                                <li>Exhaustion = el footprint se vuelve "delgado y pequeño" al final de un impulso</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">🪤</span>
+                        <span class="concept-title">Traders Atrapados - tu ventaja real</span>
+                        <span class="concept-tag">TRAMPAS</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <p>Los traders atrapados son los que entraron en la dirección equivocada y ahora deben salir.
+                            Esa salida forzada accelera el movimiento a tu favor.</p>
+                        <ul class="steps">
+                            <li><span class="step-num">01</span> Identificás una zona donde el precio subió rápido
+                                (sweep de liquidez).</li>
+                            <li><span class="step-num">02</span> El footprint muestra clusters de compra enormes en la
+                                mecha superior.</li>
+                            <li><span class="step-num">03</span> La vela cierra muy por debajo de esos clusters →
+                                compradores atrapados en la mecha.</li>
+                            <li><span class="step-num">04</span> Delta se vuelve negativo aunque el precio todavía
+                                parece alcista.</li>
+                            <li><span class="step-num">05</span> El OI baja → se están cerrando esas posiciones
+                                perdedoras (son el combustible de la caída).</li>
+                        </ul>
+                        <div class="signals-box">
+                            <div class="box-label">Del SFP en tus notas → checklist de confirmación</div>
+                            <ul>
+                                <li>Open Interest disminuye</li>
+                                <li>Delta negativo (en sweep alcista)</li>
+                                <li>Incremento de OT contrario (aparecen vendedores)</li>
+                                <li>Volumen concentrado en la mecha (no en el cuerpo)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- FASE 3 -->
+        <div class="phase" id="phase-2" style="--phase-color: #7fff6b">
+            <div class="phase-header">
+                <div class="phase-num">03</div>
+                <div class="phase-info">
+                    <h2>Señales avanzadas y setups completos</h2>
+                    <p>Ahora combinás todo: CVD, Order Blocks con OF, FVGs validados y la estrategia de rangos.</p>
+                </div>
+                <div class="phase-duration">⏱ Semanas 6–10</div>
+            </div>
+
+            <div class="concepts">
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">📈</span>
+                        <span class="concept-title">CVD Divergences - los setups más fuertes</span>
+                        <span class="concept-tag">CVD</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <p>Las divergencias del CVD son la señal más confiable para detectar traders atrapados a nivel
+                            de sesión completa.</p>
+                        <ul class="steps">
+                            <li><span class="step-num">BULL</span> Precio hace <strong>Higher Lows</strong> pero CVD
+                                hace <strong>Lower Lows</strong> → hay más shorts intentando empujar sin éxito → cuando
+                                se queden sin nafta, short squeeze explosivo.</li>
+                            <li><span class="step-num">BEAR</span> Precio hace <strong>Lower Lows</strong> pero CVD hace
+                                <strong>Higher Lows</strong> → longs atrapados vendiéndose → long squeeze inminente.
+                            </li>
+                            <li><span class="step-num">CONF</span> Confirmación: volumen del primer pico mayor que el
+                                segundo + vela bajista con mucho vol y CVD cayendo fuerte.</li>
+                        </ul>
+                        <div class="warn-box"><strong>Tu nota:</strong> "En cripto los participantes agresivos (Market
+                            Orders) no suelen estar del lado correcto, por eso el CVD sirve como benchmark para ver
+                            traders atrapados." Tomalo como: CVD ≠ dirección del precio, CVD = combustible para el
+                            próximo squeeze.</div>
+                    </div>
+                </div>
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">🧱</span>
+                        <span class="concept-title">Order Blocks validados con OF</span>
+                        <span class="concept-tag">ORDER BLOCKS</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <p>El OB sin volumen es una señal débil. Con OF podés filtrar los buenos de los falsos, tal como
+                            explicás en tus notas.</p>
+                        <div class="signals-box">
+                            <div class="box-label">OB válido - checklist de tus notas</div>
+                            <ul>
+                                <li>Forma un Swing Low/High real</li>
+                                <li>Está en zona de soporte/resistencia relevante (cluster histórico)</li>
+                                <li>Vela del OB tiene volumen MAYOR a velas anteriores</li>
+                                <li>Delta fuerte (negativo en bearish OB, positivo en bullish OB)</li>
+                                <li>Posiciones fuertes saliendo del OB (delta alto en velas siguientes)</li>
+                                <li>Precio cierra por encima/debajo del 50% del OB para confirmación</li>
+                            </ul>
+                        </div>
+                        <div class="signals-box">
+                            <div class="box-label">OB inválido - descartar si...</div>
+                            <ul>
+                                <li>Volumen bajo en la vela del OB</li>
+                                <li>Delta flojo / mixto en la vela del OB</li>
+                                <li>Las velas siguientes al OB no tienen fuerza (delta débil)</li>
+                                <li>Velas anteriores tienen MÁS volumen que el OB → no hay institucionales</li>
+                            </ul>
+                        </div>
+                        <p>En ATAS: abrí el footprint sobre la vela del OB y fijate si el POC está bien definido y si el
+                            delta es consistente. Luego chequeá el volume profile de la zona.</p>
+                    </div>
+                </div>
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">⚡</span>
+                        <span class="concept-title">FVGs y Single Prints - imbalances válidos</span>
+                        <span class="concept-tag">IMBALANCES</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <p>No todos los FVGs son iguales. El OF te dice cuáles realmente van a ser respetados.</p>
+                        <ul class="steps">
+                            <li><span class="step-num">01</span> Marcá el FVG desde la estructura de precio (3 velas,
+                                mecha-mecha).</li>
+                            <li><span class="step-num">02</span> En ATAS anclá un <strong>Fixed Range Volume
+                                    Profile</strong> sobre el movimiento que creó el FVG.</li>
+                            <li><span class="step-num">03</span> Si en esa zona hay un <strong>vacío de volumen</strong>
+                                (Low Volume Node) → FVG válido como imán.</li>
+                            <li><span class="step-num">04</span> Si hay <strong>Stacked Imbalances</strong> en el
+                                footprint de esas velas → zona de alta convicción.</li>
+                            <li><span class="step-num">05</span> Single Prints en TPO confirman que el movimiento fue
+                                demasiado rápido → hueco real.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">🎯</span>
+                        <span class="concept-title">Delta Ranges Strategy - rangos con OF</span>
+                        <span class="concept-tag">RANGOS</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <p>Esta es la estrategia que describís en tus notas para tradear dentro de rangos usando delta
+                            en los extremos.</p>
+                        <ul class="steps">
+                            <li><span class="step-num">01</span> Identificá el rango: precio lateraliza, VAH y VAL
+                                claros en el Volume Profile.</li>
+                            <li><span class="step-num">02</span> En el <strong>range high</strong>: buscás delta
+                                negativo (vendedores) + volumen creciente = posible short.</li>
+                            <li><span class="step-num">03</span> En el <strong>range low</strong>: buscás delta positivo
+                                (compradores) + volumen creciente = posible long.</li>
+                            <li><span class="step-num">04</span> Para definir la ruptura real: Vol↑ + OI↑ + Delta en la
+                                dirección del break = breakout válido.</li>
+                            <li><span class="step-num">05</span> Break con Vol bajo vs. lo tradeado en el rango =
+                                fakeout probable.</li>
+                        </ul>
+                        <div class="signals-box">
+                            <div class="box-label">Alineación completa para entrada</div>
+                            <ul>
+                                <li>Precio en extremo del rango (VAH o VAL)</li>
+                                <li>Vol + Delta + OI alineados en la dirección correcta</li>
+                                <li>CVD haciendo divergencia (atrapados del otro lado)</li>
+                                <li>Footprint muestra absorción o exhaustion en el extremo</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- FASE 4 -->
+        <div class="phase" id="phase-3" style="--phase-color: #ffcc00">
+            <div class="phase-header">
+                <div class="phase-num">04</div>
+                <div class="phase-info">
+                    <h2>Sistema, Backtesting y Journal</h2>
+                    <p>Exactamente lo que describís en tus fases 2–5. Acá todo lo visual se convierte en un sistema
+                        mecánico.</p>
+                </div>
+                <div class="phase-duration">⏱ Mes 3 en adelante</div>
+            </div>
+
+            <div class="concepts">
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">🔁</span>
+                        <span class="concept-title">Rutina diaria de entrenamiento</span>
+                        <span class="concept-tag">PROCESO</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <ul class="steps">
+                            <li><span class="step-num">PRE</span> <strong>Antes de la sesión:</strong> Marcá en 4H/Daily
+                                los VAH, VAL, POC, Naked POCs y OBs relevantes. Identificá el bias HTF (Elliott + AMT).
+                            </li>
+                            <li><span class="step-num">LIVE</span> <strong>Durante:</strong> En 5min, observá footprint
+                                en niveles clave. No entrés sin Ver Vol+Delta+OI alineados.</li>
+                            <li><span class="step-num">POST</span> <strong>Después:</strong> Journal de cada trade:
+                                setup, entry, SL, resultado, emociones.</li>
+                            <li><span class="step-num">WEEK</span> <strong>Semanal:</strong> Revisión de journal. ¿El
+                                patrón que tradeaste se repite? ¿Cuál tiene mejor winrate?</li>
+                        </ul>
+                        <div class="warn-box"><strong>Tu regla:</strong> Arriesgar máximo 2% por trade. Un trade bien
+                            ejecutado con pérdida sigue siendo buen trading. La consistencia es el objetivo, no cada
+                            trade individual.</div>
+                    </div>
+                </div>
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">📓</span>
+                        <span class="concept-title">Template de Journal para OF trades</span>
+                        <span class="concept-tag">JOURNAL</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <p>Para cada trade anotá estos campos. Después de 50 trades vas a ver qué setups funcionan y
+                            cuáles descartar.</p>
+                        <ul class="steps">
+                            <li><span class="step-num">01</span> <strong>Setup:</strong> ¿Qué patrón fue? (Absorción /
+                                Exhaustion / CVD Div / OB / Delta Range)</li>
+                            <li><span class="step-num">02</span> <strong>Contexto HTF:</strong> ¿Estaba en balance o
+                                imbalance? ¿Cerca de qué nivel (VAH/VAL/POC/OB)?</li>
+                            <li><span class="step-num">03</span> <strong>Confirmación OF:</strong> ¿Vol + Delta + OI
+                                alineados? ¿Había traders atrapados?</li>
+                            <li><span class="step-num">04</span> <strong>Entrada / SL / TP:</strong> Donde se invalida
+                                la teoría → ahí va el SL (siempre antes de entrar).</li>
+                            <li><span class="step-num">05</span> <strong>Resultado y emoción:</strong> ¿Seguiste el
+                                plan? ¿Cortaste el SL? ¿Por qué?</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- FASE 5: Checklists -->
+        <div class="phase" id="phase-4" style="--phase-color: #c084fc">
+            <div class="phase-header">
+                <div class="phase-num">✓</div>
+                <div class="phase-info">
+                    <h2>Checklists pre-trade interactivos</h2>
+                    <p>Usá esto antes de entrar a cualquier operación. Tildá cada punto. Si no completás el mínimo, no
+                        entrés.</p>
+                </div>
+                <div class="phase-duration">⏱ Siempre</div>
+            </div>
+
+            <div class="concepts">
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">🔍</span>
+                        <span class="concept-title">Checklist SFP / Toma de Liquidez</span>
+                        <span class="concept-tag">CHECKLIST</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <p>De tus propias notas: el "santo grial para confirmar un SFP". Necesitás al menos 4/5 para
+                            entrar.</p>
+                        <ul class="checklist" id="sfp-list">
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> Open Interest disminuye en
+                                el sweep</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> Delta negativo (en sweep
+                                alcista) / positivo (en sweep bajista)</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> Incremento de volumen
+                                contrario (aparecen agresores del lado opuesto)</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> Traders atrapados visibles
+                                en el footprint (clusters en la mecha)</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> Volumen concentrado en la
+                                mecha, NO en el cuerpo de la vela</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">🧱</span>
+                        <span class="concept-title">Checklist Order Block válido</span>
+                        <span class="concept-tag">CHECKLIST</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <p>Necesitás los 3 primeros obligatorios + al menos 2 de los siguientes.</p>
+                        <ul class="checklist" id="ob-list">
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ Forma un Swing Low/High
+                                real</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ Volumen de la vela OB
+                                mayor al de las anteriores</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ Delta fuerte y consistente
+                                en la vela del OB</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> Zona coincide con
+                                soporte/resistencia HTF</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> Velas posteriores al OB
+                                tienen delta fuerte (fuerza institucional saliendo)</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> Hay un FVG o imbalance
+                                generado por ese OB</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> Retest con absorción visible
+                                en el footprint</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">📉</span>
+                        <span class="concept-title">Checklist Breakout Real vs Fakeout</span>
+                        <span class="concept-tag">CHECKLIST</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <ul class="checklist" id="break-list">
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> Volumen del break MAYOR que
+                                el volumen tradeado en el rango</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> Delta positivo/negativo
+                                fuerte en la dirección del break</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> OI aumenta (nueva posición,
+                                no cierre)</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> CVD acompaña el movimiento
+                                (sin divergencia)</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> No hay absorción inmediata
+                                después del break</li>
+                        </ul>
+                        <div class="warn-box" style="margin-top:12px"><strong>Fakeout signals:</strong> Vol bajo en el
+                            break + Delta contrario a la dirección + OI↓ (cierran posiciones) = SFP inminente, buscá el
+                            reversal.</div>
+                    </div>
+                </div>
+
+                <div class="concept-card" onclick="toggleCard(this)">
+                    <div class="concept-header">
+                        <span class="concept-icon">💡</span>
+                        <span class="concept-title">Principios de tus notas para no olvidar</span>
+                        <span class="concept-tag">MINDSET</span>
+                        <span class="chevron">▶</span>
+                    </div>
+                    <div class="concept-body">
+                        <ul class="checklist" id="mind-list">
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> "No tradear también es una
+                                posición" - si no está todo alineado, paso</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> SL definido ANTES de entrar,
+                                siempre donde se invalida la teoría</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> Máximo 2% del capital en
+                                riesgo por trade</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> Un sistema a la vez. No
+                                cambiar de TF durante la operativa</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> Foco en el setup, no en el
+                                dinero que podría ganar</li>
+                            <li onclick="toggleCheck(this)"><span class="check-box"></span> Journaling de TODOS los
+                                trades, ganadores y perdedores</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function showPhase(n) {
+            document.querySelectorAll('.phase').forEach((p, i) => {
+                p.classList.toggle('active', i === n);
+            });
+            document.querySelectorAll('.tab').forEach((t, i) => {
+                t.classList.toggle('active', i === n);
+            });
+        }
+
+        function toggleCard(card) {
+            // Don't close if clicking inside checklist items
+            card.classList.toggle('open');
+        }
+
+        function toggleCheck(li) {
+            li.stopPropagationNeeded = true;
+            li.classList.toggle('checked');
+            const box = li.querySelector('.check-box');
+            box.textContent = li.classList.contains('checked') ? '✓' : '';
+            updateProgress();
+        }
+
+        // Stop propagation for checklist clicks
+        document.querySelectorAll('.checklist li').forEach(li => {
+            li.addEventListener('click', e => e.stopPropagation());
+        });
+
+        function updateProgress() {
+            const all = document.querySelectorAll('.checklist li');
+            const done = document.querySelectorAll('.checklist li.checked');
+            const pct = all.length ? Math.round((done.length / all.length) * 100) : 0;
+            document.getElementById('progress-pct').textContent = pct + '%';
+            document.getElementById('progress-fill').style.width = pct + '%';
+        }
+
+        // Open first card of each phase by default
+        document.querySelectorAll('.phase').forEach(phase => {
+            const first = phase.querySelector('.concept-card');
+            if (first) first.classList.add('open');
+        });
+    </script>
+</body>
+
+</html>

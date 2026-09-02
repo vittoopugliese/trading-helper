@@ -213,6 +213,32 @@ def close_trade(trade_id: int, result: str, rr_real: float | None = None, emotio
         )
 
 
+def get_recent_trades(limit: int = 20, symbol: str | None = None) -> list[dict[str, Any]]:
+    """Return most recent trades from journal."""
+    init_sessions_db()
+    query = """
+        SELECT id, symbol, timeframe, trade_type, direction, wave, entry, stop, target,
+               rr_planned, result, rr_real, emotion, notes, created_at, closed_at
+        FROM trades
+    """
+    params: list[Any] = []
+    if symbol:
+        query += " WHERE symbol = ?"
+        params.append(symbol.upper())
+    query += " ORDER BY id DESC LIMIT ?"
+    params.append(limit)
+
+    with sqlite3.connect(_sessions_db()) as conn:
+        rows = conn.execute(query, params).fetchall()
+
+    cols = [
+        "id", "symbol", "timeframe", "trade_type", "direction", "wave",
+        "entry", "stop", "target", "rr_planned", "result", "rr_real",
+        "emotion", "notes", "created_at", "closed_at",
+    ]
+    return [dict(zip(cols, row)) for row in rows]
+
+
 def journal_stats(symbol: str | None = None) -> dict[str, Any]:
     """Return win rate, avg R, stats by wave and trade type."""
     init_sessions_db()
@@ -276,7 +302,7 @@ Elliott/Fib context (user-defined — this is the primary bias):
     notes_section = ""
     if bundle.relevant_notes:
         snippets = []
-        for n in bundle.relevant_notes[:5]:
+        for n in bundle.relevant_notes[:6]:
             snippets.append(f"- [{n.get('title')}] ({n.get('source_file')}): {(n.get('content') or '')[:400]}")
         notes_section = "Relevant notes from knowledge base:\n" + "\n".join(snippets)
 
@@ -324,8 +350,17 @@ def analyze(
     compare_previous: bool = False,
     context_override: dict[str, Any] | None = None,
     persist_context: bool = False,
+    scope: str = "core",
 ) -> EvidenceBundle:
-    """Full analysis pipeline with optional Elliott context."""
+    """Full analysis pipeline with optional Elliott context.
+
+    scope controla la base de conocimiento que se recupera:
+      - "core" (default): tus guidelines (order flow + elliott + setup-rules), SIN libros.
+        Analisis rapido y enfocado en volumen + tu patron.
+      - "all": suma la biblioteca de libros (Wyckoff/Elliott/psicologia) para un pase
+        de estudio mas profundo de confluencias.
+      - "books": solo la biblioteca de libros.
+    """
     ctx = get_context(symbol, override=context_override)
     if persist_context and context_override:
         ctx = set_context(symbol, context_override)
@@ -334,7 +369,7 @@ def analyze(
     verdict = setup_engine.evaluate_setup(snapshot, trade_context=ctx)
 
     query = knowledge.build_search_query(snapshot.to_dict(), ctx.to_dict() if ctx else None)
-    notes = knowledge.search_notes(query)
+    notes = knowledge.search_notes(query, scope=scope)
 
     bundle = EvidenceBundle(
         symbol=symbol.upper(),
@@ -388,6 +423,7 @@ def analyze_with_levels(
     notes: str = "",
     deep: bool = False,
     persist: bool = True,
+    scope: str = "core",
 ) -> EvidenceBundle:
     """Analyze with ephemeral Elliott levels from chat; optionally persist to context file."""
     override = {
@@ -406,4 +442,5 @@ def analyze_with_levels(
         deep=deep,
         context_override=override,
         persist_context=persist,
+        scope=scope,
     )

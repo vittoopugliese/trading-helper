@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trading Cockpit — Order Flow × Elliott</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/cockpit.css">
+<style>
+  :root {
+    --bg: #0b0a0e; --bg2: #12101a; --surface: #16131e; --card: #1a1624;
+    --border: #2b2438; --border-soft: #221c30;
+    --red: #e8213f; --gold: #d4a437; --cyan: #23c8de; --green: #52d273;
+    --cream: #ece7f2; --muted: #8f86a3;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--cream);
+    font-family: 'Fraunces', serif; min-height: 100vh;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 800px 460px at 8% -5%, rgba(232,33,63,0.09), transparent 60%),
+      radial-gradient(ellipse 700px 420px at 95% 5%, rgba(35,200,222,0.06), transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; position: relative; z-index: 1; }
+  header { margin-bottom: 28px; }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    letter-spacing: 3px; text-transform: uppercase; color: var(--cyan); margin-bottom: 10px;
+  }
+  h1 { font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 900; color: #fff; line-height: 1.05; }
+  h1 em { font-style: italic; color: var(--red); font-weight: 500; }
+  .subtitle { color: var(--muted); font-size: 13px; font-family: 'IBM Plex Mono', monospace; margin-top: 8px; }
+  .tab {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 8px 13px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+    cursor: pointer; border-radius: 2px;
+  }
+  .tab:hover { border-color: var(--red); color: var(--cream); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="eyebrow">TRADING HELPER — LOCALHOST</div>
+    <h1>Trading <em>Cockpit</em></h1>
+    <p class="subtitle">Complemento visual al CLI/REPL. Order flow live, veredicto A+, watcher, contexto Elliott.</p>
+  </header>
+
+  <nav class="app-nav">
+    <button class="tab app-tab active" data-view="cockpit">COCKPIT</button>
+    <button class="tab app-tab" data-view="manual">MANUAL</button>
+    <button class="tab app-tab" data-view="reference">REFERENCIA</button>
+    <button class="tab app-tab" data-view="chat">CHAT</button>
+    <button class="tab app-tab" data-view="settings">SETTINGS</button>
+  </nav>
+
+  <!-- COCKPIT -->
+  <section class="app-view active" id="view-cockpit">
+    <div class="cp-toolbar">
+      <div class="cp-field"><label>Símbolo</label><input id="symbol-input" value="HYPEUSDT" placeholder="HYPEUSDT"></div>
+      <div class="cp-field"><label>TF</label>
+        <select id="tf-select"><option>1m</option><option selected>15m</option><option>5m</option><option>1h</option><option>4h</option></select>
+      </div>
+      <div class="cp-field"><label>Tipo</label>
+        <select id="trade-type"><option value="scalp" selected>scalp</option><option value="swing">swing</option></select>
+      </div>
+      <button class="cp-btn primary" id="refresh-btn">Refresh</button>
+    </div>
+
+    <div class="live-bar">
+      <span class="price" id="live-price">—</span>
+      <span id="btc-banner" style="display:none"></span>
+    </div>
+
+    <div class="cockpit-grid">
+      <div class="cp-card">
+        <h3>Veredicto</h3>
+        <div class="verdict-grade notrade" id="verdict-grade">—</div>
+        <div class="mechanical" id="verdict-mechanical" style="display:none"></div>
+        <p id="verdict-summary" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin:8px 0"></p>
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--cyan)">Patterns: <span id="verdict-patterns">—</span></p>
+        <ul class="cond-list" id="verdict-conditions"></ul>
+      </div>
+
+      <div class="cp-card">
+        <h3>Watcher</h3>
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;margin-bottom:10px" id="watcher-status">OFF</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <select id="watcher-bias" class="cp-field" style="padding:8px"><option value="both">both</option><option value="long">long</option><option value="short">short</option></select>
+          <input id="watcher-interval" type="number" value="30" min="10" max="300" style="width:70px;padding:8px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)">
+          <button class="cp-btn success" id="watcher-start">Start</button>
+          <button class="cp-btn danger" id="watcher-stop">Stop</button>
+        </div>
+        <div class="alert-feed" id="alert-feed"></div>
+      </div>
+
+      <div class="cp-card">
+        <h3>Sizing</h3>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.8">
+          Entry <strong id="sizing-entry">—</strong> · SL <strong id="sizing-sl">—</strong> · TP1 <strong id="sizing-tp">—</strong><br>
+          Riesgo <strong id="sizing-risk">—</strong> · Margen <strong id="sizing-margin">—</strong> · Notional <strong id="sizing-notional">—</strong>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <input id="calc-entry" placeholder="entry" style="width:80px;padding:6px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)">
+          <input id="calc-sl" placeholder="SL" style="width:80px;padding:6px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)">
+          <input id="calc-cap" value="300" style="width:60px;padding:6px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)">
+          <input id="calc-risk-pct" value="7" style="width:40px;padding:6px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)">
+          <input id="calc-lev" value="10" style="width:40px;padding:6px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)">
+          <button class="cp-btn" id="calc-sizing-btn">Calc</button>
+        </div>
+        <p id="calc-result" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);margin-top:8px"></p>
+      </div>
+
+      <div class="cp-card">
+        <h3>Multi-TF</h3>
+        <table class="mtf-table"><thead><tr><th>TF</th><th>Close</th><th>Trend</th><th>Buy</th><th>Δ8</th><th>RSI</th></tr></thead><tbody id="mtf-body"></tbody></table>
+      </div>
+    </div>
+
+    <div class="cp-card" style="margin-bottom:14px">
+      <h3>Contexto Elliott</h3>
+      <div class="context-grid">
+        <div>
+          <img id="chart-preview" class="chart-preview" alt="Chart" style="display:none">
+          <input type="file" id="chart-upload" accept="image/*" style="margin-top:8px;font-size:11px">
+        </div>
+        <div class="context-form">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <div><label>Bias</label><select id="ctx-bias" style="width:100%;padding:6px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)"><option>long</option><option>short</option><option>none</option></select></div>
+            <div><label>POI low</label><input id="ctx-poi-low" style="width:100%;padding:6px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)"></div>
+            <div><label>POI high</label><input id="ctx-poi-high" style="width:100%;padding:6px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)"></div>
+            <div><label>Invalidación</label><input id="ctx-inv" style="width:100%;padding:6px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)"></div>
+          </div>
+          <label>Onda / wave</label><input id="ctx-wave" style="width:100%;padding:6px;background:var(--bg2);border:1px solid var(--border);color:var(--cream);margin-bottom:8px">
+          <label>Targets (coma)</label><input id="ctx-targets" style="width:100%;padding:6px;background:var(--bg2);border:1px solid var(--border);color:var(--cream);margin-bottom:8px">
+          <label>Notas</label><textarea id="ctx-notes"></textarea>
+          <button class="cp-btn primary" id="save-ctx-btn" style="margin-top:10px">Guardar contexto</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cp-card gatillo-compact">
+      <h3>Gatillo — 4 señales (LONG en POI)</h3>
+      <ol>
+        <li>Precio toca tu línea/POI</li>
+        <li>Mecha pincha y cierra del otro lado (sweep/absorción)</li>
+        <li>Volumen MUY por encima de la media en la mecha</li>
+        <li>Delta flip: rojo → verde (buy_ratio &gt; ~0.55)</li>
+      </ol>
+      <p style="margin-top:8px;color:var(--red)">Sin las 4 en el POI = NO operar. Ver tab MANUAL para checklist A+ completo.</p>
+    </div>
+
+    <div class="cp-card" style="margin-top:14px">
+      <h3>Journal (read-only)</h3>
+      <p id="journal-stats" style="font-family:'IBM Plex Mono',monospace;font-size:12px;margin-bottom:8px">—</p>
+      <div id="journal-recent" class="alert-feed"></div>
+    </div>
+  </section>
+
+  <!-- MANUAL -->
+  <section class="app-view" id="view-manual">
+    <iframe class="ref-frame" src="/manual.html" title="Manual maestro"></iframe>
+  </section>
+
+  <!-- REFERENCIA -->
+  <section class="app-view" id="view-reference">
+    <div class="app-nav" style="margin-bottom:12px">
+      <button class="tab" onclick="document.getElementById('ref-frame').src='/reference-orderflow.html'">Order Flow</button>
+      <button class="tab" onclick="document.getElementById('ref-frame').src='/reference-elliott.html'">Elliott</button>
+    </div>
+    <iframe class="ref-frame" id="ref-frame" src="/reference-orderflow.html" title="Referencia"></iframe>
+  </section>
+
+  <!-- CHAT -->
+  <section class="app-view" id="view-chat">
+    <div class="chat-panel">
+      <div class="chat-log" id="chat-log"><div class="chat-msg assistant">Bot: Configura tu API key en Settings. Usa los botones rápidos o escribe libremente.</div></div>
+      <div class="chat-quick">
+        <button class="cp-btn" data-quick="analyze_15m">Analiza 15m</button>
+        <button class="cp-btn" data-quick="ready">Estoy ready</button>
+        <button class="cp-btn" data-quick="sizing">Calcular sizing</button>
+        <button class="cp-btn" data-quick="register_trade">Registrar trade</button>
+        <button class="cp-btn" data-quick="analyze_books" title="Análisis de confluencias con la biblioteca de libros">📚 Con libros</button>
+      </div>
+      <div class="chat-input-row">
+        <textarea id="chat-input" placeholder="Mensaje..."></textarea>
+        <button class="cp-btn primary" id="chat-send">Enviar</button>
+      </div>
+      <label class="chat-books-toggle" title="Suma la biblioteca (Elliott/Wyckoff/psicología) al contexto. Default: solo tus notas core.">
+        <input type="checkbox" id="chat-books"> 📚 Incluir base de libros en el análisis
+      </label>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="app-view" id="view-settings">
+    <div class="settings-grid">
+      <div class="cp-card">
+        <h3>Cuenta / Riesgo</h3>
+        <div class="cp-field"><label>Capital $</label><input id="set-account" type="number"></div>
+        <div class="cp-field" style="margin-top:8px"><label>Leverage</label><input id="set-leverage" type="number"></div>
+        <div class="cp-field" style="margin-top:8px"><label>Max riesgo $</label><input id="set-max-risk" type="number"></div>
+        <button class="cp-btn primary" id="save-risk-btn" style="margin-top:12px">Guardar</button>
+      </div>
+      <div class="cp-card">
+        <h3>Claude API (BYOK)</h3>
+        <p id="set-key-status" style="font-family:'IBM Plex Mono',monospace;font-size:12px;margin-bottom:8px">—</p>
+        <input id="set-api-key" type="password" placeholder="sk-ant-..." style="width:100%;padding:8px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)">
+        <button class="cp-btn primary" id="save-key-btn" style="margin-top:10px">Guardar en .env local</button>
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:10px">Solo localhost. Nunca sale de tu PC.</p>
+      </div>
+    </div>
+  </section>
+</div>
+<script src="/cockpit.js"></script>
+</body>
+</html>

@@ -32,10 +32,14 @@ class SetupVerdict:
     summary: str = ""
     at_poi: bool = False
     of_patterns: list[str] = field(default_factory=list)
+    context_stale: bool = False
+    context_drift_pct: float | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "grade": self.grade,
+            "context_stale": self.context_stale,
+            "context_drift_pct": self.context_drift_pct,
             "score": round(self.score, 4),
             "direction": self.direction,
             "trade_type": self.trade_type,
@@ -350,6 +354,9 @@ def evaluate_setup(
     at_poi = bool(ctx and ctx.has_poi() and ctx.price_in_poi(snapshot.price, tolerance))
     pattern_info = metrics.detect_of_pattern_at_poi(snapshot.order_flow, direction, at_poi)
 
+    context_stale = bool(ctx and ctx.has_poi() and ctx.is_stale(snapshot.price))
+    context_drift = ctx.poi_drift_pct(snapshot.price) if ctx and ctx.has_poi() else None
+
     checks = [
         _check_trend_alignment(snapshot, direction),
         _check_delta_cvd(snapshot, direction),
@@ -384,12 +391,23 @@ def evaluate_setup(
     else:
         grade = "NO_TRADE"
 
+    if context_stale:
+        grade = "NO_TRADE"
+
     passed_count = sum(1 for c in checks if c.passed)
     wave_info = f" | {ctx.wave}" if ctx and ctx.wave else ""
     poi_info = " @ POI" if at_poi else ""
+    stale_info = ""
+    if context_stale and ctx:
+        stale_info = (
+            f" CONTEXTO DESACTUALIZADO: precio {snapshot.price} esta a "
+            f"{(context_drift or 0.0):.1%} del POI [{ctx.poi_low}, {ctx.poi_high}] — "
+            f"rehace el conteo en context/{snapshot.symbol}.yaml. "
+            f"Los niveles mostrados salen de estructura/ATR, NO del contexto."
+        )
     summary = (
         f"{grade} - {direction.upper()} {trade_type} on {snapshot.symbol} {snapshot.timeframe}{poi_info}{wave_info}. "
-        f"Score {weighted_score:.0%} ({passed_count}/{len(checks)} conditions met)."
+        f"Score {weighted_score:.0%} ({passed_count}/{len(checks)} conditions met).{stale_info}"
     )
 
     return SetupVerdict(
@@ -403,4 +421,6 @@ def evaluate_setup(
         summary=summary,
         at_poi=at_poi,
         of_patterns=pattern_info.get("patterns", []),
+        context_stale=context_stale,
+        context_drift_pct=round(context_drift, 4) if context_drift is not None else None,
     )
