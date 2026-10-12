@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ULTRA GUÍA — Scalping HYPE (4 setups backtesteadas)</title>
+<!-- ARCHIVO GENERADO por scripts/build_guia_hype.py desde guia-hype.template.html — no editar a mano el .html final -->
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #150708;
+    --bg2: #1c0c0d;
+    --surface: #1f0e0f;
+    --card: #240f10;
+    --border: #3a1518;
+    --border-soft: #2a1113;
+    --blood: #e8213f;
+    --blood-dim: #a91830;
+    --gold: #d4a437;
+    --gold-dim: #8a6d28;
+    --green: #52d273;
+    --rose: #c97b8a;
+    --rose-dim: #6e424a;
+    --cream: #f2e6e1;
+    --muted: #9c7f7d;
+    --muted2: #6b5250;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Fraunces', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -5%, rgba(232,33,63,0.10), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 20%, rgba(212,164,55,0.06), transparent 60%),
+      radial-gradient(ellipse 600px 400px at 50% 110%, rgba(82,210,115,0.05), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 56px 24px 90px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== HEADER ===== */
+  header { margin-bottom: 44px; }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-size: clamp(2.3rem, 6vw, 3.6rem);
+    font-weight: 900;
+    line-height: 1.05;
+    color: #fff;
+    margin-bottom: 14px;
+    letter-spacing: -0.01em;
+  }
+
+  h1 em { font-style: italic; font-weight: 500; color: var(--blood); }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 620px;
+    line-height: 1.7;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 400;
+  }
+
+  /* ===== PROGRESS ===== */
+  .progress-wrap { margin: 30px 0 34px; }
+  .progress-label {
+    display: flex; justify-content: space-between;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--muted); margin-bottom: 8px; letter-spacing: 1px;
+  }
+  .progress-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--blood), var(--gold)); border-radius: 2px; transition: width 0.4s ease; }
+
+  /* ===== TABS ===== */
+  .tabs {
+    display: flex; gap: 6px; margin-bottom: 32px; flex-wrap: wrap;
+    border-bottom: 1px solid var(--border-soft); padding-bottom: 20px;
+  }
+  .tab {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 8px 14px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+    cursor: pointer; border-radius: 2px; transition: all 0.2s; letter-spacing: 0.5px;
+  }
+  .tab:hover { border-color: var(--blood-dim); color: var(--rose); }
+  .tab.active { background: var(--blood); color: #fff; border-color: var(--blood); font-weight: 600; }
+
+  /* ===== PHASES ===== */
+  .phase { display: none; animation: fadeIn 0.35s ease; }
+  .phase.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .phase-header {
+    display: flex; align-items: flex-start; gap: 22px; margin-bottom: 30px;
+    padding: 26px 26px; background: linear-gradient(135deg, var(--surface), var(--bg2));
+    border: 1px solid var(--border-soft); border-left: 3px solid var(--phase-color, var(--blood));
+    border-radius: 4px;
+  }
+  .phase-num {
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 46px; font-weight: 600;
+    color: var(--phase-color, var(--blood)); opacity: 0.35; line-height: 1; flex-shrink: 0;
+  }
+  .phase-info h2 { font-size: 21px; font-weight: 700; color: #fff; margin-bottom: 8px; line-height: 1.3; }
+  .phase-info p { color: var(--muted); font-size: 13.5px; line-height: 1.7; font-family: 'IBM Plex Mono', monospace; }
+
+  /* ===== CONCEPT CARDS ===== */
+  .concepts { display: flex; flex-direction: column; gap: 14px; }
+  .concept-card {
+    background: var(--card); border: 1px solid var(--border-soft); border-radius: 4px;
+    overflow: hidden; cursor: pointer; transition: border-color 0.2s;
+  }
+  .concept-card:hover { border-color: var(--phase-color, var(--blood-dim)); }
+  .concept-card.open { border-color: var(--phase-color, var(--blood-dim)); }
+  .concept-header { display: flex; align-items: center; gap: 14px; padding: 17px 20px; }
+  .concept-icon { font-size: 19px; flex-shrink: 0; }
+  .concept-title { font-size: 15px; font-weight: 600; color: #fff; flex: 1; font-family: 'Fraunces', serif; }
+  .concept-tag {
+    font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; padding: 3px 9px; border-radius: 20px;
+    background: rgba(232,33,63,0.08); color: var(--rose); letter-spacing: 1px; text-transform: uppercase;
+    border: 1px solid rgba(232,33,63,0.15); white-space: nowrap;
+  }
+  .concept-tag.gold { background: rgba(212,164,55,0.08); color: var(--gold); border-color: rgba(212,164,55,0.2); }
+  .concept-tag.of { background: rgba(120,180,220,0.08); color: #8ec5e8; border-color: rgba(120,180,220,0.2); }
+  .concept-tag.green { background: rgba(82,210,115,0.08); color: var(--green); border-color: rgba(82,210,115,0.22); }
+  .chevron { font-size: 12px; color: var(--muted2); transition: transform 0.25s; flex-shrink: 0; }
+  .concept-card.open .chevron { transform: rotate(90deg); color: var(--phase-color, var(--blood)); }
+  .concept-body { display: none; padding: 0 20px 22px; border-top: 1px solid var(--border-soft); }
+  .concept-card.open .concept-body { display: block; }
+  .concept-body p { color: var(--muted); font-size: 13.5px; line-height: 1.75; margin: 15px 0; font-family: 'IBM Plex Mono', monospace; }
+  .concept-body p strong { color: var(--cream); }
+
+  /* Steps */
+  .steps { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .steps li { display: flex; gap: 12px; align-items: flex-start; font-size: 13.5px; color: var(--cream); line-height: 1.6; font-family: 'IBM Plex Mono', monospace; }
+  .step-num {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 600; color: var(--gold);
+    background: rgba(212,164,55,0.1); border-radius: 2px; padding: 2px 7px; flex-shrink: 0; margin-top: 1px; white-space: nowrap;
+  }
+
+  /* Boxes */
+  .signals-box { background: rgba(232,33,63,0.045); border: 1px solid rgba(232,33,63,0.15); border-radius: 3px; padding: 15px 17px; margin-top: 14px; }
+  .signals-box.gold-box { background: rgba(212,164,55,0.045); border-color: rgba(212,164,55,0.18); }
+  .signals-box.of-box { background: rgba(120,180,220,0.04); border-color: rgba(120,180,220,0.18); }
+  .signals-box.green-box { background: rgba(82,210,115,0.05); border-color: rgba(82,210,115,0.18); }
+  .box-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--blood); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 11px; font-weight: 600; }
+  .gold-box .box-label { color: var(--gold); }
+  .of-box .box-label { color: #8ec5e8; }
+  .green-box .box-label { color: var(--green); }
+  .signals-box ul { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .signals-box ul li { font-size: 13px; color: var(--cream); padding-left: 16px; position: relative; line-height: 1.6; font-family: 'IBM Plex Mono', monospace; }
+  .signals-box ul li::before { content: '→'; position: absolute; left: 0; color: var(--blood); font-size: 11px; }
+  .gold-box ul li::before { color: var(--gold); }
+  .of-box ul li::before { color: #8ec5e8; }
+  .green-box ul li::before { color: var(--green); }
+  .warn-box { background: rgba(232,33,63,0.07); border: 1px solid rgba(232,33,63,0.25); border-radius: 3px; padding: 13px 16px; margin-top: 14px; font-size: 12.5px; color: #f0b8c1; line-height: 1.65; font-family: 'IBM Plex Mono', monospace; }
+  .warn-box strong { color: var(--blood); }
+  .uncertain-box { background: rgba(212,164,55,0.06); border: 1px dashed rgba(212,164,55,0.35); border-radius: 3px; padding: 11px 15px; margin-top: 12px; font-size: 12px; color: var(--gold); line-height: 1.6; font-family: 'IBM Plex Mono', monospace; font-style: italic; }
+
+  /* Tables */
+  .struct-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; }
+  .struct-table th { text-align: left; color: var(--gold); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; }
+  .struct-table td { padding: 8px 10px; border-bottom: 1px solid var(--border-soft); color: var(--cream); }
+  .struct-table tr:last-child td { border-bottom: none; }
+  .struct-table td.pos { color: var(--green); }
+  .struct-table td.neg { color: var(--blood); }
+  .struct-table td.neu { color: var(--gold); }
+
+  .divider-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted2); letter-spacing: 2px; text-transform: uppercase; margin: 6px 0 4px; }
+
+  /* Charts */
+  .chartbox { margin: 16px 0 6px; background: rgba(0,0,0,0.28); border: 1px solid var(--border-soft); border-radius: 6px; padding: 10px; overflow-x: auto; }
+  .chartbox svg { width: 100%; min-width: 580px; height: auto; display: block; }
+  .chart-facts { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 2px; }
+  .fact { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; padding: 4px 9px; border-radius: 3px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--cream); }
+  .fact.win { color: var(--green); border-color: rgba(82,210,115,0.3); background: rgba(82,210,115,0.06); }
+  .fact.loss { color: var(--blood); border-color: rgba(232,33,63,0.3); background: rgba(232,33,63,0.06); }
+  .chart-cap { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.55; }
+
+  /* Calculator */
+  .calc { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 18px; margin-top: 16px; }
+  .calc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 12px; }
+  .calc-field { display: flex; flex-direction: column; gap: 5px; }
+  .calc-field label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+  .calc-field input { background: var(--bg2); border: 1px solid var(--border); border-radius: 3px; padding: 8px 10px; color: var(--cream); font-family: 'IBM Plex Mono', monospace; font-size: 13px; width: 100%; }
+  .calc-field input:focus { outline: none; border-color: #8ec5e8; }
+  .calc-results { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 10px; margin-top: 16px; }
+  .calc-stat { background: var(--bg2); border: 1px solid var(--border-soft); border-radius: 4px; padding: 10px 12px; }
+  .cs-label { font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+  .cs-value { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 600; color: var(--cream); }
+  .cs-value.pos { color: var(--green); } .cs-value.neg { color: var(--blood); } .cs-value.neu { color: var(--gold); }
+  .cs-sub { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted2); margin-top: 3px; }
+  .verdict { margin-top: 14px; padding: 12px 14px; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; text-align: center; }
+  .verdict.v-pos { background: rgba(82,210,115,0.1); color: var(--green); border: 1px solid rgba(82,210,115,0.3); }
+  .verdict.v-neg { background: rgba(232,33,63,0.1); color: var(--blood); border: 1px solid rgba(232,33,63,0.3); }
+  .verdict.v-neu { background: rgba(212,164,55,0.1); color: var(--gold); border: 1px solid rgba(212,164,55,0.3); }
+  hr.divider { height: 1px; background: var(--border-soft); margin: 22px 0; border: none; }
+
+  /* Checklist */
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .checklist li { display: flex; gap: 11px; align-items: flex-start; font-size: 13px; color: var(--cream); line-height: 1.55; cursor: pointer; padding: 9px 11px; background: rgba(255,255,255,0.015); border-radius: 3px; border: 1px solid transparent; transition: all 0.15s; user-select: none; font-family: 'IBM Plex Mono', monospace; }
+  .checklist li:hover { border-color: var(--border); }
+  .checklist li.checked { color: var(--muted); text-decoration: line-through; background: rgba(82,210,115,0.05); border-color: rgba(82,210,115,0.2); }
+  .check-box { width: 16px; height: 16px; border: 1.5px solid var(--border); border-radius: 3px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 10px; transition: all 0.15s; }
+  .checklist li.checked .check-box { background: var(--green); border-color: var(--green); color: #0c2414; }
+
+  .callout { font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--muted); line-height:1.6; margin-top:10px; padding-left:14px; border-left:2px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="eyebrow">// Guía asistente — Vittorio · datos reales del backtest</div>
+    <h1>Scalping HYPE<br><em>las 4 setups</em> que sobrevivieron</h1>
+    <p class="subtitle">Tus 4 estrategias mecánicas con mayor win rate, sacadas del backtest sobre velas reales de HYPE. Cada una: la mecánica exacta, cómo se ve en el footprint, entry/gestión con tu marco de riesgo, y ejemplos reales graficados (ganadores Y perdedores). El objetivo no es que "confíes": es que las aprendas, las forward-testees en el journal, y recién ahí decidas.</p>
+  </header>
+
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>PROGRESO DEL CHECKLIST A+</span>
+      <span id="progress-pct">0%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showPhase(0)">00 · Método</button>
+    <button class="tab" onclick="showPhase(1)">01 · Order Block</button>
+    <button class="tab" onclick="showPhase(2)">02 · CVD Divergence</button>
+    <button class="tab" onclick="showPhase(3)">03 · Sweep + Reclaim</button>
+    <button class="tab" onclick="showPhase(4)">04 · Absorción</button>
+    <button class="tab" onclick="showPhase(5)">05 · Gestión &amp; Sizing</button>
+    <button class="tab" onclick="showPhase(6)">✓ Checklist A+</button>
+  </div>
+
+  <!-- ===================== 00 · MÉTODO ===================== -->
+  <div class="phase active" id="phase-0" style="--phase-color: #d4a437">
+    <div class="phase-header">
+      <div class="phase-num">00</div>
+      <div class="phase-info">
+        <h2>Cómo leer esta guía (y qué NO es)</h2>
+        <p>Dos capas: Elliott te da el sesgo (dónde y en qué dirección), el Order Flow te da el gatillo (cuándo). El backtest sólo mide la capa mecánica del gatillo. Elliott sigue siendo tuyo, discrecional.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🧭</span>
+          <span class="concept-title">El sistema de 2 capas</span>
+          <span class="concept-tag gold">BASE</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Todo setup válido vive <strong>dentro de un POI</strong> — nunca se opera en el aire. Elliott + estructura marcan la zona y el sesgo HTF; el order flow confirma el gatillo en el LTF (15m/1m).</p>
+          <ul class="steps">
+            <li><span class="step-num">CAPA 1</span> <strong>Elliott / estructura (discrecional):</strong> conteo de ondas, POI, invalidación. Esto NO se puede backtestear porque el conteo es subjetivo y re-etiquetable — lo ponés vos a mano en <span class="mono">context/HYPEUSDT.yaml</span>.</li>
+            <li><span class="step-num">CAPA 2</span> <strong>Order Flow (mecánico):</strong> volumen, delta, CVD, sweep, absorción. Esto SÍ es determinista → es lo que se backtesteó y lo que ves en las 4 pestañas siguientes.</li>
+          </ul>
+          <div class="signals-box gold-box">
+            <div class="box-label">La respuesta a tu pregunta original</div>
+            <ul>
+              <li>Medís win rate sobre los gatillos de volumen/order flow (estas 4)</li>
+              <li>Acompañás con Elliott de forma discrecional como filtro de zona y dirección</li>
+              <li>El backtest te da la hipótesis; el journal te da la verdad</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🔬</span>
+          <span class="concept-title">Cómo se corrió el backtest (para que confíes en los números)</span>
+          <span class="concept-tag of">METODOLOGÍA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">DATA</span> Velas reales de HYPE en <span class="mono">data/cache.db</span> (1m completo desde 2025-05-30). Los timeframes mayores se resamplean del 1m.</li>
+            <li><span class="step-num">ENTRY</span> La señal se estampa al cierre de la vela de confirmación y se entra al <strong>open de la vela siguiente</strong> (sin mirar el futuro).</li>
+            <li><span class="step-num">DELTA</span> Como es histórico sin footprint real, el delta es un <strong>proxy de klines</strong>: <span class="mono">delta = 2·taker_buy − volumen</span>. Suficiente para el sesgo, no idéntico a ATAS.</li>
+            <li><span class="step-num">COSTOS</span> 5 bps de fee + 2 bps de slippage por lado. El "win" es net-R después de costos.</li>
+            <li><span class="step-num">SALIDA</span> SL / TP a R fijo; si una vela toca ambos, gana el SL (stop-first, conservador); timeout a 96 barras.</li>
+            <li><span class="step-num">SPLIT</span> Train/test cronológico 70/30. Los números que mostramos son el <strong>out-of-sample</strong> (el 30% final, que el ranking no vio para elegir). Elegibles sólo configs con ≥30 trades.</li>
+          </ul>
+          <div class="signals-box of-box">
+            <div class="box-label">Glosario rápido</div>
+            <ul>
+              <li><strong>Win rate:</strong> % de trades con net-R &gt; 0</li>
+              <li><strong>Expectancy (R):</strong> lo que ganás en promedio por trade, en múltiplos de riesgo. &gt; 0 = sistema +EV</li>
+              <li><strong>Profit factor:</strong> ganancias / pérdidas. &gt; 1 = positivo</li>
+              <li><strong>Max DD (R):</strong> peor racha acumulada, en R</li>
+              <li><strong>Breakeven WR:</strong> win rate mínimo para no perder = 1/(1+RR). A 2R → 33.3%, a 3R → 25%</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">⚠️</span>
+          <span class="concept-title">La verdad incómoda: esto son candidatas, no edges probados</span>
+          <span class="concept-tag">HONESTIDAD</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Lo digo derecho porque es tu plata: las 4 son <strong>positivas out-of-sample (2026) pero negativas en la muestra completa</strong>. El edge apareció recién en 2026. Las muestras de Order Block y Sweep son chicas (n≈34-38) y los intervalos de confianza del WR son anchos.</p>
+          <div class="warn-box">
+            <strong>Qué significa en la práctica:</strong> se aprenden y se <strong>forward-testean en el journal</strong> con size fijo (tu tope $21 = 7%). NO se sube el riesgo ni se calcula Kelly hasta tener ≥100 trades reales con expectancy positiva. Nada de esto se porta a BTC — en BTC todas las estrategias dieron negativo en 2019-2026.
+          </div>
+          <div class="signals-box gold-box">
+            <div class="box-label">El número que perseguís</div>
+            <ul>
+              <li>A RR 2, breakeven = 33%. A RR 3, breakeven = 25%.</li>
+              <li>La pregunta que el journal tiene que responder: ¿tu WR real queda por encima de ese piso, después de costos y de tu psicología?</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🏆</span>
+          <span class="concept-title">Las 4, de un vistazo</span>
+          <span class="concept-tag gold">RESUMEN</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <table class="struct-table">
+            <tr><th>Setup</th><th>WR (OOS)</th><th>Expect.</th><th>n</th><th>Fuerte en…</th></tr>
+            <tr><td>Order Block retest</td><td class="neu">42.1%</td><td class="pos">+0.48R</td><td>38</td><td>mejor expectancy</td></tr>
+            <tr><td>CVD Divergence</td><td class="pos">45.4%</td><td class="pos">+0.20R</td><td class="pos">185</td><td>la más robusta (muestra)</td></tr>
+            <tr><td>Sweep + Reclaim</td><td class="neu">41.2%</td><td class="pos">+0.20R</td><td>34</td><td>Wyckoff spring</td></tr>
+            <tr><td>Absorción / trapped</td><td class="neu">43.1%</td><td class="pos">+0.10R</td><td>51</td><td>reversión en el POI</td></tr>
+          </table>
+          <p class="callout">Todas 15m, LONG. Tip de lectura: más WR ≠ mejor. Un target 2R sube el WR pero baja la expectancy; un 3R lo baja pero paga más por acierto. Por eso miramos las dos cosas juntas.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== 01 · ORDER BLOCK ===================== -->
+  <div class="phase" id="phase-1" style="--phase-color: #e8213f">
+    <div class="phase-header">
+      <div class="phase-num">01</div>
+      <div class="phase-info">
+        <h2>Order Block retest — la de mayor expectancy</h2>
+        <p>Impulso con volumen que rompe estructura → volvés al último bloque de oferta/demanda que lo originó → entrás en el retest cuando el delta reconfirma. +0.48R por trade.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card open" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🧱</span>
+          <span class="concept-title">Qué es y por qué está primera</span>
+          <span class="concept-tag">STATS</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Un Order Block es la <strong>última vela contraria antes de un impulso fuerte</strong>. Ese impulso deja una zona sin mitigar; cuando el precio vuelve a testearla y el flujo reconfirma, es entrada a favor de la fuerza que rompió.</p>
+          <table class="struct-table">
+            <tr><th>Métrica</th><th>Valor</th><th>Lectura</th></tr>
+            <tr><td>Win rate (test / OOS)</td><td class="neu">42.1%</td><td>por encima del breakeven 25% (3R)</td></tr>
+            <tr><td>Expectancy (test)</td><td class="pos">+0.48R</td><td>la mejor de las 4</td></tr>
+            <tr><td>Expectancy (full)</td><td class="pos">+0.20R</td><td>única que aguanta positiva full-sample</td></tr>
+            <tr><td>Profit factor</td><td class="pos">1.74</td><td>gana 1.74 por cada 1 que pierde</td></tr>
+            <tr><td>Muestra (n test)</td><td class="neg">38</td><td>chica — CI95 del WR [27.9%, 57.8%]</td></tr>
+            <tr><td>Max drawdown</td><td>7.27R</td><td>racha peor tolerable</td></tr>
+            <tr><td>Config</td><td>15m · 3R · vol 1.5× · +BTC</td><td>filtro BTC EMA20&gt;EMA50</td></tr>
+          </table>
+          <p class="callout">Variante 2R: el WR sube a ~46% pero la expectancy baja. Elegí 3R si aguantás rachas; 2R si tu psicología necesita más aciertos.</p>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">⚙️</span>
+          <span class="concept-title">La mecánica exacta (lo que dispara en el backtest)</span>
+          <span class="concept-tag">MECÁNICA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">01</span> <strong>Impulso/BOS:</strong> una vela cierra por encima de la resistencia (últimos 30 bares) CON delta&gt;0, volumen ≥ 1.5× la media, y rango ≥ 1.5× ATR.</li>
+            <li><span class="step-num">02</span> <strong>Order Block:</strong> se marca la última vela bajista de las 3 previas al impulso. Su rango (low, high) es la zona.</li>
+            <li><span class="step-num">03</span> <strong>Retest + gatillo:</strong> una vela posterior (hasta 30 bares) mete la mecha en la zona (low ≤ techo del OB) PERO cierra por encima del techo, con delta&gt;0. Ahí entra.</li>
+            <li><span class="step-num">SL</span> Entry − 1.5× ATR.</li>
+            <li><span class="step-num">TP</span> 3R fijo (riesgo × 3).</li>
+            <li><span class="step-num">✕</span> Zona invalidada si una vela cierra por debajo del piso del OB, o si expira a 30 bares.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🔭</span>
+          <span class="concept-title">Cómo verlo en ATAS · entry · gestión</span>
+          <span class="concept-tag of">EJECUCIÓN</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="signals-box of-box">
+            <div class="box-label">En el footprint</div>
+            <ul>
+              <li>La vela de impulso debe tener delta fuerte y volumen mayor al del rango previo (BOS real, no fakeout)</li>
+              <li>El OB "bueno" tiene volumen mayor a sus vecinas — cajita sobre esa vela</li>
+              <li>En el retest buscás absorción/delta flip a verde justo en el techo del bloque</li>
+            </ul>
+          </div>
+          <div class="signals-box green-box">
+            <div class="box-label">Entry</div>
+            <ul>
+              <li>Zona, no tick: repartí en 1-3 entradas dentro del OB</li>
+              <li>Conservador: esperás el cierre de la vela con delta+ por encima del techo</li>
+            </ul>
+          </div>
+          <div class="signals-box gold-box">
+            <div class="box-label">Gestión</div>
+            <ul>
+              <li>SL estructural debajo del piso del OB (donde se rompe la tesis), nunca scalp-tight</li>
+              <li>TP1 parcial rápido → mové SL a breakeven → dejá correr el resto a 3R</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📈</span>
+          <span class="concept-title">Ejemplos reales del backtest</span>
+          <span class="concept-tag green">CHARTS</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="divider-label">Ganador — +2.81R</div>
+          <div class="chartbox">{{CHART:ob_win}}</div>
+          <div class="chart-facts">
+            <span class="fact">29-jun-2025 08:30Z</span>
+            <span class="fact">entry 38.33</span>
+            <span class="fact">SL 38.04</span>
+            <span class="fact">TP 39.17</span>
+            <span class="fact win">+2.81R · 23 barras</span>
+          </div>
+          <p class="chart-cap">Retest del bloque tras el impulso; la vela de entrada (▲) cierra sobre el techo con delta+ y el precio corre limpio al target de 3R.</p>
+
+          <hr class="divider">
+          <div class="divider-label">Perdedor — −1.08R</div>
+          <div class="chartbox">{{CHART:ob_loss}}</div>
+          <div class="chart-facts">
+            <span class="fact">03-jun-2025 17:15Z</span>
+            <span class="fact">entry 37.13</span>
+            <span class="fact">SL 36.50</span>
+            <span class="fact">TP 39.00</span>
+            <span class="fact loss">−1.08R · 13 barras</span>
+          </div>
+          <p class="chart-cap">El retest falló: el precio perdió el piso del bloque y pegó el SL. Así se ve el −1R — que va a pasar ~58% de las veces. La expectancy sale igual positiva porque los ganadores pagan 3R.</p>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🚫</span>
+          <span class="concept-title">Red flags — cuándo NO</span>
+          <span class="concept-tag">VETO</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="warn-box">
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
+              <li>→ Impulso con volumen menor al rango previo = BOS falso, el OB no vale</li>
+              <li>→ Absorción en contra justo en el techo del bloque = trampa, no entres</li>
+              <li>→ Precio ya lejos del bloque (contexto viejo) = no persigas</li>
+              <li>→ BTC en contra (EMA20&lt;EMA50): el filtro que más ayudó a esta setup</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== 02 · CVD DIVERGENCE ===================== -->
+  <div class="phase" id="phase-2" style="--phase-color: #8ec5e8">
+    <div class="phase-header">
+      <div class="phase-num">02</div>
+      <div class="phase-info">
+        <h2>CVD Divergence — la más robusta</h2>
+        <p>El precio hace un mínimo más alto pero el CVD hace un mínimo más bajo: los vendedores empujan y no logran nada (short squeeze en formación). 185 trades out-of-sample, la muestra más grande y confiable.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card open" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📊</span>
+          <span class="concept-title">Qué es y por qué es la que más confianza da</span>
+          <span class="concept-tag">STATS</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Divergencia alcista = <strong>precio con mínimos ascendentes + CVD con mínimos descendentes</strong>. Traducido: el volumen agresivo vendedor aumenta pero el precio no cede → el que vende queda atrapado. Es tu concepto de "short squeeze / continuación".</p>
+          <table class="struct-table">
+            <tr><th>Métrica</th><th>Valor</th><th>Lectura</th></tr>
+            <tr><td>Win rate (test / OOS)</td><td class="pos">45.4%</td><td>el más alto de las 4</td></tr>
+            <tr><td>Expectancy (test)</td><td class="pos">+0.20R</td><td>sólida a 2R</td></tr>
+            <tr><td>Expectancy (full)</td><td class="neg">−0.11R</td><td>el edge es reciente (2026)</td></tr>
+            <tr><td>Profit factor</td><td class="pos">1.31</td><td>positivo</td></tr>
+            <tr><td>Muestra (n test)</td><td class="pos">185</td><td>la única con muestra grande — CI95 [38.4%, 52.6%]</td></tr>
+            <tr><td>Max drawdown</td><td>12.18R</td><td>racha más larga que las demás</td></tr>
+            <tr><td>Config</td><td>15m · 2R · +BTC</td><td>no usa umbral de volumen</td></tr>
+          </table>
+          <p class="callout">Es la que menos depende de parámetros (el volumen no la afecta) y la que más trades tiene. Si tuvieras que elegir UNA para empezar a forward-testear, es ésta.</p>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">⚙️</span>
+          <span class="concept-title">La mecánica exacta</span>
+          <span class="concept-tag">MECÁNICA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">01</span> <strong>Precio higher-low:</strong> el mínimo de las últimas 5 velas &gt; el mínimo de las 5 anteriores.</li>
+            <li><span class="step-num">02</span> <strong>CVD lower-low:</strong> el mínimo del CVD reciente &lt; el del tramo anterior (la divergencia).</li>
+            <li><span class="step-num">03</span> <strong>Confirmación:</strong> vela alcista con delta&gt;0. Ahí entra.</li>
+            <li><span class="step-num">SL</span> Entry − 1.5× ATR.</li>
+            <li><span class="step-num">TP</span> 2R fijo.</li>
+          </ul>
+          <div class="uncertain-box">📝 Espejo bajista para shorts (que el backtest NO recomienda en HYPE): precio lower-high + CVD higher-high + delta&lt;0 + vela bajista. Los shorts destruyeron el edge — quedate en longs.</div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🔭</span>
+          <span class="concept-title">Cómo verlo en ATAS · entry · gestión</span>
+          <span class="concept-tag of">EJECUCIÓN</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="signals-box of-box">
+            <div class="box-label">En el footprint</div>
+            <ul>
+              <li>Poné el indicador CVD debajo del precio; buscás que el precio no confirme la debilidad del CVD</li>
+              <li>Precio hace HL, CVD hace LL = combustible alcista escondido</li>
+              <li>Sumale traders atrapados: OI subiendo mientras el precio no baja</li>
+            </ul>
+          </div>
+          <div class="signals-box green-box">
+            <div class="box-label">Entry</div>
+            <ul>
+              <li>Esperás la vela alcista con delta+ que confirma la divergencia (no anticipes)</li>
+              <li>Mejora fuerte si la divergencia cae dentro de un POI de tu conteo</li>
+            </ul>
+          </div>
+          <div class="signals-box gold-box">
+            <div class="box-label">Gestión</div>
+            <ul>
+              <li>SL 1.5× ATR debajo (deja respirar el ruido); TP a 2R</li>
+              <li>Es la de target más corto → TP1 parcial y a breakeven rápido baja mucho la varianza</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📈</span>
+          <span class="concept-title">Ejemplos reales del backtest</span>
+          <span class="concept-tag green">CHARTS</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="divider-label">Ganador — +1.89R</div>
+          <div class="chartbox">{{CHART:cvd_win}}</div>
+          <div class="chart-facts">
+            <span class="fact">06-jun-2025 09:15Z</span>
+            <span class="fact">entry 34.57</span>
+            <span class="fact">SL 34.13</span>
+            <span class="fact">TP 35.43</span>
+            <span class="fact win">+1.89R · 19 barras</span>
+          </div>
+          <p class="chart-cap">El precio sostiene mínimos mientras el vendedor se agota; la vela de confirmación con delta+ arranca el tramo al target de 2R.</p>
+
+          <hr class="divider">
+          <div class="divider-label">Perdedor — −1.10R</div>
+          <div class="chartbox">{{CHART:cvd_loss}}</div>
+          <div class="chart-facts">
+            <span class="fact">01-jun-2025 06:45Z</span>
+            <span class="fact">entry 32.78</span>
+            <span class="fact">SL 32.31</span>
+            <span class="fact">TP 33.71</span>
+            <span class="fact loss">−1.10R · 2 barras</span>
+          </div>
+          <p class="chart-cap">Divergencia que no prosperó: SL en 2 barras. Con 45% de WR y target 2R, la expectancy sigue positiva — pero necesitás volumen de trades (por eso importa que sea la de n=185).</p>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🚫</span>
+          <span class="concept-title">Red flags — cuándo NO</span>
+          <span class="concept-tag">VETO</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="warn-box">
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
+              <li>→ Divergencia sin vela de confirmación con delta+ = todavía no es señal, esperá</li>
+              <li>→ En onda 5 alcista, una divergencia bajista de CVD es señal de distribución, no de long</li>
+              <li>→ Shorts en HYPE: el backtest los rechaza. No inviertas la lógica</li>
+              <li>→ Es la de mayor drawdown (12R): no la operes con size alto ni sin TP1</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== 03 · SWEEP + RECLAIM ===================== -->
+  <div class="phase" id="phase-3" style="--phase-color: #52d273">
+    <div class="phase-header">
+      <div class="phase-num">03</div>
+      <div class="phase-info">
+        <h2>Sweep + Reclaim — el spring de Wyckoff</h2>
+        <p>El precio barre el soporte (caza stops) con volumen, y en la vela siguiente lo recupera con delta+. Es la toma de liquidez clásica: los que vendieron el rompimiento quedan atrapados.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card open" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🎣</span>
+          <span class="concept-title">Qué es y sus números</span>
+          <span class="concept-tag">STATS</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Es tu <strong>spring de Wyckoff</strong> en clave order flow: penetración breve bajo el soporte + reingreso rápido. El volumen en la mecha confirma que se liquidaron órdenes reales, no un fake.</p>
+          <table class="struct-table">
+            <tr><th>Métrica</th><th>Valor</th><th>Lectura</th></tr>
+            <tr><td>Win rate (test / OOS)</td><td class="neu">41.2%</td><td>&gt; breakeven 25% (3R)</td></tr>
+            <tr><td>Expectancy (test)</td><td class="pos">+0.20R</td><td>sólida</td></tr>
+            <tr><td>Expectancy (full)</td><td class="pos">+0.08R</td><td>positiva incluso full-sample</td></tr>
+            <tr><td>Profit factor</td><td class="pos">1.28</td><td>positivo</td></tr>
+            <tr><td>Muestra (n test)</td><td class="neg">34</td><td>chica — CI95 [26.4%, 57.8%]</td></tr>
+            <tr><td>Max drawdown</td><td>8.32R</td><td>tolerable</td></tr>
+            <tr><td>Config</td><td>15m · 3R · vol 2.0× · sin BTC</td><td>pide spike de volumen fuerte</td></tr>
+          </table>
+          <p class="callout">Con vol 2.0× (spike grande obligatorio) es más selectiva y consistente. Con 1.3-1.5× hay más trades pero el edge se diluye.</p>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">⚙️</span>
+          <span class="concept-title">La mecánica exacta</span>
+          <span class="concept-tag">MECÁNICA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">01</span> <strong>Sweep:</strong> la vela previa perfora el soporte (low &lt; soporte) PERO cierra por encima, con volumen ≥ 2× media y delta&lt;0 (climax vendedor).</li>
+            <li><span class="step-num">02</span> <strong>Reclaim:</strong> la vela de confirmación tiene delta&gt;0, es alcista y cierra por encima del cierre anterior.</li>
+            <li><span class="step-num">SL</span> Estructural: mínimo barrido − 0.10× ATR (debajo de la mecha del sweep).</li>
+            <li><span class="step-num">TP</span> 3R fijo.</li>
+          </ul>
+          <p class="callout">Ojo el orden de tus 4 señales visuales: precio en la línea → pincha y vuelve (sweep) → barra de volumen gigante → delta flip a verde. Igualito.</p>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🔭</span>
+          <span class="concept-title">Cómo verlo en ATAS · entry · gestión</span>
+          <span class="concept-tag of">EJECUCIÓN</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="signals-box of-box">
+            <div class="box-label">En el footprint</div>
+            <ul>
+              <li>Volumen en la MECHA, no en el cuerpo (ahí se liquidó)</li>
+              <li>Delta que flipea rojo→verde en la vela del reclaim</li>
+              <li>OI bajando en el sweep = posiciones cerrándose (spring válido, no nueva tendencia bajista)</li>
+            </ul>
+          </div>
+          <div class="signals-box green-box">
+            <div class="box-label">Entry</div>
+            <ul>
+              <li>Conservador: esperás el cierre de la vela con delta+ que recupera el nivel</li>
+              <li>El "test" de Wyckoff (revisita del mínimo con volumen bajo y sin nuevo mínimo) es la entrada de menor riesgo</li>
+            </ul>
+          </div>
+          <div class="signals-box gold-box">
+            <div class="box-label">Gestión</div>
+            <ul>
+              <li>SL SIEMPRE debajo del mínimo barrido + colchón — no scalp-tight (tu Error #3)</li>
+              <li>TP1 rápido; resto corre a 3R. Si es contra-tendencia HTF, size ~50%</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📈</span>
+          <span class="concept-title">Ejemplos reales</span>
+          <span class="concept-tag green">CHARTS</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="divider-label">Ganador del backtest — +2.96R</div>
+          <div class="chartbox">{{CHART:sweep_win}}</div>
+          <div class="chart-facts">
+            <span class="fact">22-jun-2025 14:45Z</span>
+            <span class="fact">entry 32.69</span>
+            <span class="fact">SL 31.54</span>
+            <span class="fact">TP 36.13</span>
+            <span class="fact win">+2.96R · 70 barras</span>
+          </div>
+          <p class="chart-cap">Sweep del soporte con spike de volumen, reclaim con delta+, y un tramo largo hasta 3R. Fijate el SL ancho bajo la mecha: por eso aguantó el ruido.</p>
+
+          <hr class="divider">
+          <div class="divider-label">Perdedor del backtest — −1.08R</div>
+          <div class="chartbox">{{CHART:sweep_loss}}</div>
+          <div class="chart-facts">
+            <span class="fact">05-jun-2025 15:00Z</span>
+            <span class="fact">entry 34.82</span>
+            <span class="fact">SL 34.21</span>
+            <span class="fact">TP 36.65</span>
+            <span class="fact loss">−1.08R · 8 barras</span>
+          </div>
+          <p class="chart-cap">Reclaim que no sostuvo: el precio volvió a perder el nivel y pegó el SL.</p>
+
+          <hr class="divider">
+          <div class="divider-label">⭐ Caso real anotado — 25-jun-2026 (tu journal, A+)</div>
+          <div class="chartbox">{{CHART:sweep_hero}}</div>
+          <div class="chart-facts">
+            <span class="fact">25-jun-2026 ~14:00Z</span>
+            <span class="fact">barrió 58.50</span>
+            <span class="fact">reclaim ~59.2</span>
+            <span class="fact win">delta −88k → +93k</span>
+          </div>
+          <p class="chart-cap">El caso que documentaste a mano: flush violento a 58.50 con 553k de volumen (capitulación) y reversión brutal con +93k de delta en la vela siguiente. Las 3 banderas juntas. Este es el "libro de texto" de la setup en HYPE reciente (el delta exacto sale del footprint, acá se aproxima con klines).</p>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🚫</span>
+          <span class="concept-title">Red flags — cuándo NO</span>
+          <span class="concept-tag">VETO</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="warn-box">
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
+              <li>→ Sweep SIN aumento de volumen = liquidez falsa, el precio vuelve. La señal más importante es el volumen</li>
+              <li>→ Sin reclaim (no recupera el nivel al cierre) = todavía no es spring, es sólo un rompimiento</li>
+              <li>→ SL apretado arriba del mínimo barrido = una mecha te saca antes del movimiento (tu error más caro)</li>
+              <li>→ Shorts: espejo sólo en resistencia HTF, nunca en soporte</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== 04 · ABSORCIÓN ===================== -->
+  <div class="phase" id="phase-4" style="--phase-color: #c97b8a">
+    <div class="phase-header">
+      <div class="phase-num">04</div>
+      <div class="phase-info">
+        <h2>Absorción / traders atrapados</h2>
+        <p>El precio llega al soporte, los vendedores empujan (delta negativo) pero las órdenes límite institucionales los absorben: la vela cierra arriba con mecha inferior. En la siguiente, el delta flipea y revierte.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card open" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🧲</span>
+          <span class="concept-title">Qué es y sus números</span>
+          <span class="concept-tag">STATS</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>La diferencia con el sweep: acá <strong>no hace falta que perfore el soporte</strong>. Basta que lo toque, empuje con delta negativo, y sea <strong>absorbido</strong> (mecha inferior + cierre en la mitad superior de la vela). Los vendedores quedan atrapados.</p>
+          <table class="struct-table">
+            <tr><th>Métrica</th><th>Valor</th><th>Lectura</th></tr>
+            <tr><td>Win rate (test / OOS)</td><td class="neu">43.1%</td><td>&gt; breakeven 33% (2R)</td></tr>
+            <tr><td>Expectancy (test)</td><td class="pos">+0.10R</td><td>la más modesta de las 4</td></tr>
+            <tr><td>Expectancy (full)</td><td class="neg">−0.07R</td><td>edge reciente</td></tr>
+            <tr><td>Profit factor</td><td class="pos">1.15</td><td>apenas positivo</td></tr>
+            <tr><td>Muestra (n test)</td><td>51</td><td>media — CI95 [30.5%, 56.7%]</td></tr>
+            <tr><td>Max drawdown</td><td>8.23R</td><td>tolerable</td></tr>
+            <tr><td>Config</td><td>15m · 2R · vol 1.3× · sin BTC</td><td>la de edge más chico: úsala como confluencia</td></tr>
+          </table>
+          <p class="callout">Es la más débil de las 4 en solitario. Brilla como confluencia dentro de un POI de tu conteo, no como gatillo aislado.</p>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">⚙️</span>
+          <span class="concept-title">La mecánica exacta</span>
+          <span class="concept-tag">MECÁNICA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">01</span> <strong>Toque + absorción:</strong> la vela previa toca el soporte (low ≤ soporte×1.001), pero cierra por encima, con mecha inferior ≥ 25% del rango, cierre en la mitad superior (≥ 0.50), volumen ≥ 1.3× media y delta&lt;0.</li>
+            <li><span class="step-num">02</span> <strong>Confirmación:</strong> vela siguiente con delta&gt;0 y alcista. Entra.</li>
+            <li><span class="step-num">SL</span> Estructural: mínimo de la zona − 0.10× ATR.</li>
+            <li><span class="step-num">TP</span> 2R fijo.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🔭</span>
+          <span class="concept-title">Cómo verlo en ATAS · entry · gestión</span>
+          <span class="concept-tag of">EJECUCIÓN</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="signals-box of-box">
+            <div class="box-label">En el footprint</div>
+            <ul>
+              <li>Delta negativo creciente (muchos números rojos altos) PERO el precio no cede: eso es absorción</li>
+              <li>La vela cierra fuera del soporte igual, con el POC atrapado en la mecha inferior</li>
+              <li>En la vela siguiente, el delta flipea a positivo = los vendedores capitulan</li>
+            </ul>
+          </div>
+          <div class="signals-box green-box">
+            <div class="box-label">Entry</div>
+            <ul>
+              <li>Agresiva: retest del POC de la vela de absorción</li>
+              <li>Conservadora: esperás el cierre de la vela siguiente con delta+</li>
+            </ul>
+          </div>
+          <div class="signals-box gold-box">
+            <div class="box-label">Gestión</div>
+            <ul>
+              <li>SL debajo de la zona de absorción; TP a 2R (target corto → TP1 y breakeven rápido)</li>
+              <li>Por su edge chico: size estándar o menos, y sólo con confluencia de POI</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📈</span>
+          <span class="concept-title">Ejemplos reales</span>
+          <span class="concept-tag green">CHARTS</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="divider-label">Ganador del backtest — +2.85R</div>
+          <div class="chartbox">{{CHART:abs_win}}</div>
+          <div class="chart-facts">
+            <span class="fact">13-ene-2026 11:00Z</span>
+            <span class="fact">entry 24.26</span>
+            <span class="fact">SL 24.03</span>
+            <span class="fact">TP 24.95</span>
+            <span class="fact win">+2.85R</span>
+          </div>
+          <p class="chart-cap">Absorción en soporte, delta flip y reversión. (Este ejemplo es de la variante 3R; por eso el ganador paga ~2.85R.)</p>
+
+          <hr class="divider">
+          <div class="divider-label">Perdedor del backtest — −1.12R</div>
+          <div class="chartbox">{{CHART:abs_loss}}</div>
+          <div class="chart-facts">
+            <span class="fact">16-jun-2025 20:15Z</span>
+            <span class="fact">entry 44.54</span>
+            <span class="fact">SL 44.01</span>
+            <span class="fact">TP 46.12</span>
+            <span class="fact loss">−1.12R</span>
+          </div>
+          <p class="chart-cap">La absorción no aguantó y el soporte cedió. Es la setup de menor margen: respetá el filtro de POI.</p>
+
+          <hr class="divider">
+          <div class="divider-label">⭐ Caso real anotado — 24-jun-2026 (tu journal)</div>
+          <div class="chartbox">{{CHART:abs_hero}}</div>
+          <div class="chart-facts">
+            <span class="fact">24-jun-2026 ~16:45Z</span>
+            <span class="fact">soporte 59.25</span>
+            <span class="fact">reclaim ~59.55</span>
+            <span class="fact win">delta −74k → +16k → +30k</span>
+          </div>
+          <p class="chart-cap">Tu caso documentado: climax vendedor de −74k en el soporte 59.25, delta flip al low y confirmación con volumen (80k) en la vela de reclaim. Entrada ~59.5-59.6, SL debajo de 59.25 (~0.5%).</p>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🚫</span>
+          <span class="concept-title">Red flags — cuándo NO</span>
+          <span class="concept-tag">VETO</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="warn-box">
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
+              <li>→ Delta "leading" en contra dentro del POI = el precio va a seguir, no es absorción</li>
+              <li>→ Sin flip de delta a positivo en la vela siguiente = no confirmó, no entres</li>
+              <li>→ Es la de menor edge: no la operes sola ni con size alto</li>
+              <li>→ Si el volumen de absorción es flojo (&lt;1.3× media), no es institucional</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== 05 · GESTIÓN & SIZING ===================== -->
+  <div class="phase" id="phase-5" style="--phase-color: #d4a437">
+    <div class="phase-header">
+      <div class="phase-num">05</div>
+      <div class="phase-info">
+        <h2>Gestión &amp; Sizing — tu marco de riesgo</h2>
+        <p>El backtest te dice si la setup sirve; esto te dice si sobrevivís para operarla. Cuenta $300 · x10 · tope duro $21 (7%) por trade. Margen ≠ riesgo.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card open" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🧮</span>
+          <span class="concept-title">Calculadora de sizing</span>
+          <span class="concept-tag gold">HERRAMIENTA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>El proceso correcto: primero el SL estructural, después el size. <strong>Notional = Riesgo$ / SL%</strong>, <strong>Margen = Notional / leverage</strong>. Nunca al revés.</p>
+          <div class="calc">
+            <div class="calc-grid">
+              <div class="calc-field"><label>Cuenta ($)</label><input id="s_acc" type="number" value="300" oninput="calcSize()"></div>
+              <div class="calc-field"><label>Leverage</label><input id="s_lev" type="number" value="10" oninput="calcSize()"></div>
+              <div class="calc-field"><label>Entry</label><input id="s_entry" type="number" value="59.20" step="0.01" oninput="calcSize()"></div>
+              <div class="calc-field"><label>Stop</label><input id="s_stop" type="number" value="58.45" step="0.01" oninput="calcSize()"></div>
+              <div class="calc-field"><label>Riesgo $ deseado</label><input id="s_risk" type="number" value="21" oninput="calcSize()"></div>
+            </div>
+            <div class="calc-results">
+              <div class="calc-stat"><div class="cs-label">Distancia SL</div><div class="cs-value" id="o_slpct">—</div></div>
+              <div class="calc-stat"><div class="cs-label">Notional</div><div class="cs-value" id="o_notional">—</div></div>
+              <div class="calc-stat"><div class="cs-label">Margen</div><div class="cs-value" id="o_margin">—</div></div>
+              <div class="calc-stat"><div class="cs-label">Riesgo % cuenta</div><div class="cs-value" id="o_riskpct">—</div></div>
+            </div>
+            <div class="verdict" id="s_verdict">—</div>
+          </div>
+          <div class="uncertain-box">Regla: si para el size que querés el riesgo pasa $21, BAJÁS EL SIZE, no agrandás el SL ni vas all-in. El size "alto" sólo es sensato con SL corto (0.5-1%).</div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🎲</span>
+          <span class="concept-title">Calculadora de expectancy</span>
+          <span class="concept-tag gold">HERRAMIENTA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Poné tu win rate real (del journal) y el RR de la setup. Si la expectancy es positiva y estás por encima del breakeven, el sistema es +EV.</p>
+          <div class="calc">
+            <div class="calc-grid">
+              <div class="calc-field"><label>Win rate (%)</label><input id="e_wr" type="number" value="42" oninput="calcEV()"></div>
+              <div class="calc-field"><label>RR (target)</label><input id="e_rr" type="number" value="3" step="0.1" oninput="calcEV()"></div>
+            </div>
+            <div class="calc-results">
+              <div class="calc-stat"><div class="cs-label">Expectancy</div><div class="cs-value" id="o_ev">—</div><div class="cs-sub">por trade, en R</div></div>
+              <div class="calc-stat"><div class="cs-label">Breakeven WR</div><div class="cs-value" id="o_be">—</div><div class="cs-sub">piso para no perder</div></div>
+              <div class="calc-stat"><div class="cs-label">Margen sobre BE</div><div class="cs-value" id="o_edge">—</div></div>
+            </div>
+            <div class="verdict" id="e_verdict">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📏</span>
+          <span class="concept-title">Tabla de riesgo real (tope $21)</span>
+          <span class="concept-tag gold">REFERENCIA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>Riesgo$ = Notional × SL%. Todo lo que pase de $21 (7%) está PROHIBIDO.</p>
+          <table class="struct-table">
+            <tr><th>SL dist</th><th>$100 margen ($1k)</th><th>$200 ($2k)</th><th>$300 ($3k)</th></tr>
+            <tr><td>0.5%</td><td class="pos">$5 (1.7%)</td><td class="pos">$10 (3.3%)</td><td class="pos">$15 (5%)</td></tr>
+            <tr><td>1.0%</td><td class="pos">$10 (3.3%)</td><td class="neu">$20 (6.7%)</td><td class="neg">$30 (10%)</td></tr>
+            <tr><td>1.5%</td><td class="pos">$15 (5%)</td><td class="neg">$30 (10%)</td><td class="neg">$45 (15%)</td></tr>
+            <tr><td>2.0%</td><td class="neu">$20 (6.7%)</td><td class="neg">$40 (13%)</td><td class="neg">$60 (20%)</td></tr>
+            <tr><td>3.0%</td><td class="neg">$30 (10%)</td><td class="neg">$60 (20%)</td><td class="neg">$90 (30%)</td></tr>
+          </table>
+          <p class="callout">Verde = OK · dorado = límite · rojo = prohibido. Rango objetivo: arriesgar $15-21 (5-7%) por trade.</p>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🛡️</span>
+          <span class="concept-title">Reglas de ejecución (donde perdiste plata antes)</span>
+          <span class="concept-tag">DISCIPLINA</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div class="signals-box gold-box">
+            <div class="box-label">Regla madre</div>
+            <ul>
+              <li>El SL estructural se pone ANTES de entrar y NO se mueve en contra. Sólo trailea a favor después de TP1</li>
+            </ul>
+          </div>
+          <div class="signals-box green-box">
+            <div class="box-label">TP1 = la clave psicológica</div>
+            <ul>
+              <li>Cerrá 30-50% en el primer target → mové SL a breakeven → recién ahí respirás</li>
+              <li>TP2 otro 30-40%; runner 20-30% traileando a la liquidez opuesta</li>
+            </ul>
+          </div>
+          <div class="warn-box">
+            <strong>Tus 5 errores caros, resumidos:</strong>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:5px;margin-top:8px">
+              <li>→ #1/#5 Mover el SL o salir por ruido de 1m con la tesis intacta</li>
+              <li>→ #3 SL scalp-tight en vez de estructural → una mecha te saca antes del movimiento</li>
+              <li>→ #4 No entrar por miedo post-pérdida (revenge-paralysis) y ver el movimiento irse</li>
+              <li>→ 2 pérdidas seguidas = STOP por hoy. 1-3 trades/día máximo. "No operar también es una posición."</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📓</span>
+          <span class="concept-title">Cómo validar (journal → win rate real)</span>
+          <span class="concept-tag of">VALIDACIÓN</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <p>El backtest es la hipótesis. Para tener TU win rate real, logueá cada trade de estas setups y etiquetá con el <span class="mono">of_pattern</span> correspondiente para poder comparar contra el backtest.</p>
+          <ul class="steps">
+            <li><span class="step-num">of_pattern</span> Usá: <span class="mono">order_block</span> · <span class="mono">cvd_divergence</span> · <span class="mono">sweep_reclaim</span> · <span class="mono">absorption</span></li>
+            <li><span class="step-num">CLI</span> <span class="mono">python main.py log-trade HYPEUSDT 15m long --entry .. --stop .. --rr 3</span>, o desde la web (cockpit → journal)</li>
+            <li><span class="step-num">META</span> ≥100 trades cerrados con expectancy positiva → recién ahí validás y subís de $300 a $1000</li>
+          </ul>
+          <div class="uncertain-box">Marcá también si el Elliott estaba alineado (campo elliott_alineado). Así medís WR con y sin conteo → ahí ves si Elliott suma o es decoración.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== 06 · CHECKLIST ===================== -->
+  <div class="phase" id="phase-6" style="--phase-color: #e8213f">
+    <div class="phase-header">
+      <div class="phase-num">✓</div>
+      <div class="phase-info">
+        <h2>Checklist A+ pre-trade</h2>
+        <p>Antes de apretar el botón. Si no completás los ⭐ obligatorios + al menos 3 confluencias, no es A+ — bajá size o no operes.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card open" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">✅</span>
+          <span class="concept-title">Contexto (Elliott / estructura)</span>
+          <span class="concept-tag">CHECKLIST</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="checklist">
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ Tendencia HTF clara y opero A FAVOR de ella (long en soporte, no short en soporte)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ El precio está en un POI definido (no en el aire)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Conteo Elliott sin ambigüedad (si hay 2 conteos válidos, no opero)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Confluencia de Fib (golden pocket 0.618-0.66 en onda 2, o fin de C)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">✅</span>
+          <span class="concept-title">Gatillo (Order Flow — una de las 4)</span>
+          <span class="concept-tag">CHECKLIST</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="checklist">
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ Patrón claro en el POI: OB retest / CVD divergence / sweep+reclaim / absorción</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ Delta flip a favor en la vela de confirmación (rojo→verde para long)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Volumen &gt; media en la zona clave (spike)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> CVD/delta acompañan; OI confirma; funding no extremo</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">✅</span>
+          <span class="concept-title">Gestión (números antes de entrar)</span>
+          <span class="concept-tag">CHECKLIST</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="checklist">
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ SL estructural definido donde se invalida la tesis (no scalp-tight)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ Riesgo ≤ $21 (7%) — calculado, no estimado</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> R:R ≥ 2 y targets marcados ANTES de entrar</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Plan de TP1 parcial + SL a breakeven después</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> No vengo de 2 pérdidas seguidas hoy (si sí: apago)</li>
+          </ul>
+          <div class="warn-box" style="margin-top:12px">Regla de oro: si el conteo no está claro o el order flow no confirma, NO se opera. La paciencia es la ventaja de la cuenta chica.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function showPhase(n) {
+    document.querySelectorAll('.phase').forEach((p, i) => p.classList.toggle('active', i === n));
+    document.querySelectorAll('.tabs .tab').forEach((t, i) => t.classList.toggle('active', i === n));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggleCard(card) { card.classList.toggle('open'); }
+
+  function toggleCheck(li) {
+    li.classList.toggle('checked');
+    li.querySelector('.check-box').textContent = li.classList.contains('checked') ? '✓' : '';
+    updateProgress();
+  }
+
+  document.querySelectorAll('.checklist li').forEach(li => li.addEventListener('click', e => e.stopPropagation()));
+
+  function updateProgress() {
+    const all = document.querySelectorAll('.checklist li');
+    const done = document.querySelectorAll('.checklist li.checked');
+    const pct = all.length ? Math.round((done.length / all.length) * 100) : 0;
+    document.getElementById('progress-pct').textContent = pct + '%';
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }
+
+  function num(id) { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? 0 : v; }
+
+  function calcSize() {
+    const acc = num('s_acc'), lev = num('s_lev'), entry = num('s_entry'), stop = num('s_stop'), risk = num('s_risk');
+    const slpct = entry > 0 ? Math.abs(entry - stop) / entry : 0;
+    const oSl = document.getElementById('o_slpct'), oN = document.getElementById('o_notional'),
+          oM = document.getElementById('o_margin'), oR = document.getElementById('o_riskpct'),
+          v = document.getElementById('s_verdict');
+    if (slpct <= 0) {
+      oSl.textContent = oN.textContent = oM.textContent = oR.textContent = '—';
+      v.className = 'verdict v-neu'; v.textContent = 'Poné un entry y un stop distintos';
+      return;
+    }
+    const notional = risk / slpct, margin = lev > 0 ? notional / lev : 0, riskpct = acc > 0 ? risk / acc * 100 : 0;
+    oSl.textContent = (slpct * 100).toFixed(2) + '%';
+    oN.textContent = '$' + notional.toFixed(0);
+    oM.textContent = '$' + margin.toFixed(0);
+    oR.textContent = riskpct.toFixed(1) + '%';
+    oR.className = 'cs-value ' + (risk > 21 ? 'neg' : riskpct <= 7 ? 'pos' : 'neu');
+    oM.className = 'cs-value ' + (margin > acc ? 'neg' : 'pos');
+    if (risk > 21) { v.className = 'verdict v-neg'; v.textContent = 'PROHIBIDO — riesgo > $21 (7%). Bajá el riesgo $.'; }
+    else if (margin > acc) { v.className = 'verdict v-neg'; v.textContent = 'Margen > cuenta ($' + acc + '). Reducí el riesgo o achicá el notional.'; }
+    else { v.className = 'verdict v-pos'; v.textContent = 'OK — margen $' + margin.toFixed(0) + ', riesgo $' + risk.toFixed(0) + ' (' + riskpct.toFixed(1) + '%)'; }
+  }
+
+  function calcEV() {
+    const wr = num('e_wr') / 100, rr = num('e_rr');
+    const ev = wr * rr - (1 - wr), be = 1 / (1 + rr) * 100, edge = num('e_wr') - be;
+    const oEv = document.getElementById('o_ev'), oBe = document.getElementById('o_be'),
+          oEdge = document.getElementById('o_edge'), v = document.getElementById('e_verdict');
+    oEv.textContent = (ev >= 0 ? '+' : '') + ev.toFixed(2) + 'R';
+    oEv.className = 'cs-value ' + (ev > 0 ? 'pos' : ev < 0 ? 'neg' : 'neu');
+    oBe.textContent = be.toFixed(1) + '%';
+    oEdge.textContent = (edge >= 0 ? '+' : '') + edge.toFixed(1) + ' pts';
+    oEdge.className = 'cs-value ' + (edge > 0 ? 'pos' : 'neg');
+    if (ev > 0) { v.className = 'verdict v-pos'; v.textContent = 'Sistema +EV: ganás ' + ev.toFixed(2) + 'R por trade en promedio'; }
+    else if (ev < 0) { v.className = 'verdict v-neg'; v.textContent = 'Sistema −EV: por debajo del breakeven ' + be.toFixed(1) + '%'; }
+    else { v.className = 'verdict v-neu'; v.textContent = 'Justo en breakeven'; }
+  }
+
+  calcSize(); calcEV();
+</script>
+</body>
+</html>

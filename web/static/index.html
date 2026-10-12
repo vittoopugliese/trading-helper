@@ -55,6 +55,7 @@
     <button class="tab app-tab active" data-view="cockpit">COCKPIT</button>
     <button class="tab app-tab" data-view="manual">MANUAL</button>
     <button class="tab app-tab" data-view="reference">REFERENCIA</button>
+    <button class="tab app-tab" data-view="execution">EJECUCIÓN</button>
     <button class="tab app-tab" data-view="chat">CHAT</button>
     <button class="tab app-tab" data-view="settings">SETTINGS</button>
   </nav>
@@ -170,10 +171,60 @@
   <!-- REFERENCIA -->
   <section class="app-view" id="view-reference">
     <div class="app-nav" style="margin-bottom:12px">
+      <button class="tab" onclick="document.getElementById('ref-frame').src='/guia-hype.html'">Guía HYPE</button>
       <button class="tab" onclick="document.getElementById('ref-frame').src='/reference-orderflow.html'">Order Flow</button>
       <button class="tab" onclick="document.getElementById('ref-frame').src='/reference-elliott.html'">Elliott</button>
     </div>
     <iframe class="ref-frame" id="ref-frame" src="/reference-orderflow.html" title="Referencia"></iframe>
+  </section>
+
+  <!-- EJECUCION -->
+  <section class="app-view" id="view-execution">
+    <div class="ex-statusbar">
+      <span class="ex-mode" id="ex-mode">—</span>
+      <span id="ex-account">Sin conexión</span>
+      <span id="ex-guard"></span>
+      <button class="cp-btn danger" id="ex-halt">Kill switch</button>
+      <button class="cp-btn" id="ex-resume" style="display:none">Reanudar</button>
+    </div>
+    <p class="ex-error" id="ex-error" style="display:none"></p>
+
+    <div class="cockpit-grid">
+      <div class="cp-card">
+        <h3>Nueva orden — límite post-only + SL/TP</h3>
+        <div class="ex-form">
+          <div class="cp-field"><label>Símbolo</label><input id="ex-symbol" value="HYPEUSDT"></div>
+          <div class="cp-field"><label>Lado</label>
+            <select id="ex-side"><option value="long">long</option><option value="short">short</option></select>
+          </div>
+          <div class="cp-field"><label>Entry (límite)</label><input id="ex-entry" inputmode="decimal"></div>
+          <div class="cp-field"><label>SL</label><input id="ex-stop" inputmode="decimal"></div>
+          <div class="cp-field"><label>TP</label><input id="ex-tp" inputmode="decimal"></div>
+          <div class="cp-field ex-wide"><label>Motivo</label><input id="ex-rationale" placeholder="confluencias / gatillo"></div>
+        </div>
+        <div class="ex-actions">
+          <button class="cp-btn" id="ex-from-context">Desde contexto</button>
+          <button class="cp-btn" id="ex-from-verdict">Desde veredicto</button>
+          <button class="cp-btn primary" id="ex-propose">Proponer</button>
+        </div>
+        <p class="ex-hint">El tamaño sale del riesgo máximo, no del margen. Proponer no envía nada: revisás el preview y aprobás.</p>
+      </div>
+
+      <div class="cp-card">
+        <h3>Preview</h3>
+        <div id="ex-preview" class="ex-preview">Sin propuesta.</div>
+      </div>
+    </div>
+
+    <div class="cp-card" style="margin-bottom:14px">
+      <h3>Posiciones abiertas</h3>
+      <div id="ex-positions" class="ex-table-wrap">—</div>
+    </div>
+
+    <div class="cp-card">
+      <h3>Órdenes y propuestas</h3>
+      <div id="ex-records" class="ex-table-wrap">—</div>
+    </div>
   </section>
 
   <!-- CHAT -->
@@ -213,6 +264,14 @@
         <input id="set-api-key" type="password" placeholder="sk-ant-..." style="width:100%;padding:8px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)">
         <button class="cp-btn primary" id="save-key-btn" style="margin-top:10px">Guardar en .env local</button>
         <p style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:10px">Solo localhost. Nunca sale de tu PC.</p>
+      </div>
+      <div class="cp-card">
+        <h3>BingX API (ejecución)</h3>
+        <p id="set-bingx-status" style="font-family:'IBM Plex Mono',monospace;font-size:12px;margin-bottom:8px">—</p>
+        <input id="set-bingx-key" type="password" autocomplete="off" placeholder="API key" style="width:100%;padding:8px;background:var(--bg2);border:1px solid var(--border);color:var(--cream);margin-bottom:8px">
+        <input id="set-bingx-secret" type="password" autocomplete="off" placeholder="Secret" style="width:100%;padding:8px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)">
+        <button class="cp-btn primary" id="save-bingx-btn" style="margin-top:10px">Guardar en .env local</button>
+        <p style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:10px">Creá la key solo con permiso de trading (sin retiros) y restringida a tu IP. El modo demo/live se cambia solo en config.yaml.</p>
       </div>
     </div>
   </section>

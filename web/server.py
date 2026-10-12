@@ -6,6 +6,7 @@ import asyncio
 import json
 import queue
 import threading
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -17,8 +18,10 @@ from fastapi.staticfiles import StaticFiles
 
 from agent import analyst, context as trade_context, market_data, metrics
 from agent.config import PROJECT_ROOT, get_config
+from agent.execution import ExecutionService
 from agent.watcher import WatcherService
 from web.chat import get_chat_history, stream_chat
+from web.execution_api import router as execution_router
 from web.schemas import (
     AnthropicKeyUpdate,
     ChatRequest,
@@ -43,7 +46,17 @@ from web.services import (
 STATIC_DIR = Path(__file__).parent / "static"
 APP_VERSION = "1.0.0"
 
-app = FastAPI(title="Trading Cockpit", version=APP_VERSION)
+
+
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    # Resumes reconciliation of orders placed in a previous run (fills, closes, TTL).
+    ExecutionService.instance().ensure_monitor()
+    yield
+    ExecutionService.instance().stop_monitor()
+
+
+app = FastAPI(title="Trading Cockpit", version=APP_VERSION, lifespan=_lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -70,6 +83,10 @@ def _on_watcher_event(event: dict[str, Any]) -> None:
 
 
 _watcher.add_listener(_on_watcher_event)
+
+_execution = ExecutionService.instance()
+_execution.add_listener(_on_watcher_event)
+app.include_router(execution_router)
 
 
 @app.get("/api/health")

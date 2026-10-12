@@ -15,6 +15,7 @@ from agent import analyst, knowledge, metrics
 from agent.analyst import _sessions_db, init_sessions_db
 from agent.config import PROJECT_ROOT
 from agent.context import get_context
+from agent.execution import ExecutionError, ExecutionService, load_limits
 from web.services import analyze_for_api, find_chart_image, normalize_symbol
 
 load_dotenv()
@@ -46,6 +47,70 @@ QUICK_PROMPTS = {
         "claro (ENTRADA MECANICA o que falta) + entry, SL estructural, TP1 y sizing cuenta $300 x10."
     ),
 }
+
+
+PROPOSE_TOOL = {
+    "name": "proponer_orden",
+    "description": (
+        "Crea una PROPUESTA de orden limite post-only (maker) con SL y TP adjuntos en BingX. "
+        "NO ejecuta nada: queda pendiente hasta que el trader la aprueba con un click en el cockpit, "
+        "y el sistema re-valida los limites duros antes de enviarla. El tamano se calcula solo desde "
+        "el riesgo maximo configurado; no lo propongas vos. Usala cuando hay ENTRADA MECANICA con "
+        "niveles estructurales concretos o cuando el trader pide explicitamente armar la orden. "
+        "Devuelve la propuesta con qty, riesgo, R:R, comisiones y la lista de errores si un limite la bloquea."
+    ),
+    "eager_input_streaming": True,
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "side": {"type": "string", "enum": ["long", "short"]},
+            "entry": {"type": "number", "description": "Precio limite de entrada (debe quedar del lado maker del libro)."},
+            "stop": {"type": "number", "description": "SL estructural (invalidacion)."},
+            "take_profit": {"type": "number", "description": "TP1."},
+            "rationale": {"type": "string", "description": "Por que: confluencias y gatillo, en una o dos frases."},
+        },
+        "required": ["side", "entry", "stop", "take_profit", "rationale"],
+        "additionalProperties": False,
+    },
+}
+MAX_TOOL_ROUNDS = 3
+
+
+def _valid_proposal_input(args: Any) -> bool:
+    if not isinstance(args, dict) or args.get("side") not in ("long", "short"):
+        return False
+    for key in ("entry", "stop", "take_profit"):
+        value = args.get(key)
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or value <= 0:
+            return False
+    return isinstance(args.get("rationale", ""), str)
+
+
+def _run_propose_tool(args: dict[str, Any], symbol: str, timeframe: str) -> tuple[dict[str, Any] | None, str]:
+    """Returns (record or None, tool_result text for the model)."""
+    try:
+        record = ExecutionService.instance().propose(
+            symbol=symbol,
+            side=args["side"],
+            entry=float(args["entry"]),
+            stop=float(args["stop"]),
+            take_profit=float(args["take_profit"]),
+            timeframe=timeframe,
+            source="chat",
+            rationale=args.get("rationale", ""),
+        )
+    except ExecutionError as exc:
+        return None, json.dumps({"error": str(exc)}, ensure_ascii=False)
+    summary = {
+        "id": record["id"],
+        "status": record["status"],
+        "mode": record["mode"],
+        "plan": record["plan"],
+        "errors": record["errors"],
+        "warnings": record["warnings"],
+        "nota": "Pendiente de aprobacion del trader en el cockpit. No digas que se ejecuto.",
+    }
+    return record, json.dumps(summary, ensure_ascii=False, default=str)
 
 
 def init_chat_db() -> None:
@@ -117,6 +182,11 @@ def build_system_prompt(symbol: str, timeframe: str, trade_type: str, scope: str
         default=str,
     )
     rules = _load_rules_snippet()
+    limits = load_limits()
+    exec_mode = "DEMO VST, dinero ficticio" if not limits.is_live else "LIVE, dinero real"
+    exec_risk = limits.max_risk_usd
+    exec_rr = limits.min_rr
+    exec_symbols = "simbolos habilitados: " + ", ".join(limits.symbols)
     return f"""Eres el asistente de trading del proyecto trading-helper.
 El trader opera crypto futures (Binance USDT-M) con Elliott + Order Flow.
 Responde en espanol, directo, sin suavizar cuando hay gatillo claro.
@@ -135,6 +205,11 @@ Evidencia live ({timeframe} {trade_type}):
 
 Cuando haya confluencia >=3 criterios y sin invalidacion, di **ENTRADA MECANICA** con entry, SL, TP1 y sizing.
 Margen != riesgo. Tope $21 riesgo por trade en cuenta $300 x10.
+
+Ejecucion BingX ({exec_mode}): podes usar la herramienta proponer_orden para dejar una orden limite
+post-only lista para aprobar. Limites duros del ejecutor: riesgo max ${exec_risk} por trade, R:R min {exec_rr},
+{exec_symbols}. Vos solo propones; el trader aprueba con un click. Nunca digas que una orden fue enviada.
+Si la herramienta devuelve errores, explicalos y no insistas con niveles inventados para esquivar un limite.
 """
 
 
@@ -202,20 +277,44 @@ def stream_chat(
     messages.append({"role": "user", "content": content})
 
     full = ""
-    try:
-        with client.messages.stream(
-            model=MODEL,
-            max_tokens=2000,
-            system=system,
-            messages=messages,
-        ) as stream:
-            for text in stream.text_stream:
-                full += text
-                yield json.dumps({"text": text})
-    except Exception as exc:
-        yield json.dumps({"error": str(exc)})
-        yield "[DONE]"
-        return
+    for _ in range(MAX_TOOL_ROUNDS + 1):
+        try:
+            with client.messages.stream(
+                model=MODEL,
+                max_tokens=4000,
+                system=system,
+                messages=messages,
+                tools=[PROPOSE_TOOL],
+            ) as stream:
+                for text in stream.text_stream:
+                    full += text
+                    yield json.dumps({"text": text})
+                response = stream.get_final_message()
+        except ValueError:
+            # Tool input JSON the SDK could not parse; stop instead of guessing.
+            yield json.dumps({"error": "La propuesta del modelo llego malformada. Pedila de nuevo."})
+            break
+        except Exception as exc:
+            yield json.dumps({"error": str(exc)})
+            yield "[DONE]"
+            return
+
+        tool_uses = [b for b in response.content if b.type == "tool_use"]
+        if not tool_uses or response.stop_reason in ("refusal", "max_tokens"):
+            break
+        results = []
+        for block in tool_uses:
+            if block.name != PROPOSE_TOOL["name"] or not _valid_proposal_input(block.input):
+                results.append({"type": "tool_result", "tool_use_id": block.id, "is_error": True,
+                                "content": "Input invalido: side long/short y entry/stop/take_profit numeros positivos."})
+                continue
+            record, tool_text = _run_propose_tool(block.input, sym, timeframe)
+            if record is not None:
+                yield json.dumps({"proposal": record}, default=str)
+                full += f"\n[Propuesta #{record['id']} {record['status']}]\n"
+            results.append({"type": "tool_result", "tool_use_id": block.id, "content": tool_text})
+        messages.append({"role": "assistant", "content": response.content})
+        messages.append({"role": "user", "content": results})
 
     save_chat_message("assistant", full, sym)
     yield "[DONE]"

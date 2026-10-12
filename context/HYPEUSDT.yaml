@@ -1,42 +1,44 @@
 symbol: HYPEUSDT
-bias: long
-wave: "Impulso alcista HTF — breakout pdHigh 67.5, consolidacion en highs ~70.3. Hunt LONG en pullback a soporte."
+bias: short
+wave: Impulso alcista HTF — breakout pdHigh 67.5, consolidacion en highs ~70.3. Hunt
+  LONG en pullback a soporte.
 trade_type: scalp
 poi:
   low: 69.35
   high: 69.65
-invalidation: 69.10
+invalidation: 69.1
 targets:
-  - 70.50
-  - 70.80
-  - 71.20
+- 70.5
+- 70.8
+- 71.2
 fib:
   long_scalp_low: 69.35
   long_scalp_high: 69.65
-  long_scalp_invalidation: 69.10
-  long_scalp_target_1: 70.50
-  long_deep_support: 67.30
-  long_deep_high: 67.70
+  long_scalp_invalidation: 69.1
+  long_scalp_target_1: 70.5
+  long_deep_support: 67.3
+  long_deep_high: 67.7
   long_deep_invalidation: 67.05
-  long_deep_target_1: 69.00
-  long_deep_target_2: 70.00
+  long_deep_target_1: 69.0
+  long_deep_target_2: 70.0
   short_poi_low: 70.65
   short_poi_high: 70.95
-  short_invalidation: 71.10
-  short_target_1: 69.80
+  short_invalidation: 71.1
+  short_target_1: 69.8
   short_target_2: 69.35
-  pdhigh_flip: 67.50
+  pdhigh_flip: 67.5
   key_support: 64.45
   swing_high: 70.83
   mco_invalidation: 74.41
-notes: >
-  2026-07-03 — Tendencia alcista confirmada en 1H. Precio ~70.35 post-breakout de pdHigh (67.5),
-  pwHigh (66), dLow (66.5). Impulso 14:00 con +172k delta en 1H. Consolidacion en highs 69.5-70.8.
-  BTC alcista (viento a favor). OI subiendo +41k/1h = posiciones nuevas.
-  LONG primario: pullback a 69.35-69.65 (15m swing lo) con absorcion/sweep+delta flip.
-  SL 69.10. TP 70.50 / 70.80 / 71.20.
-  LONG profundo: retest pdHigh 67.30-67.70 SL 67.05 TP 69/70.
-  SHORT secundario: rechazo/drenaje delta en 70.65-70.95 SL 71.10 TP 69.80/69.35.
-  NO perseguir long en 70.3 — precio extendido, esperar POI.
-account_size: 300
+notes: '2026-07-03 — Tendencia alcista confirmada en 1H. Precio ~70.35 post-breakout
+  de pdHigh (67.5), pwHigh (66), dLow (66.5). Impulso 14:00 con +172k delta en 1H.
+  Consolidacion en highs 69.5-70.8. BTC alcista (viento a favor). OI subiendo +41k/1h
+  = posiciones nuevas. LONG primario: pullback a 69.35-69.65 (15m swing lo) con absorcion/sweep+delta
+  flip. SL 69.10. TP 70.50 / 70.80 / 71.20. LONG profundo: retest pdHigh 67.30-67.70
+  SL 67.05 TP 69/70. SHORT secundario: rechazo/drenaje delta en 70.65-70.95 SL 71.10
+  TP 69.80/69.35. NO perseguir long en 70.3 — precio extendido, esperar POI.
+
+  '
+account_size: 300.0
 risk_pct: 7.0
+chart_image: ''

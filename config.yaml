@@ -143,3 +143,29 @@ web:
   port: 8780
   open_browser: true
   notify_desktop: false   # true = Windows toast ademas de alertas en la web
+
+# Ejecucion semi-automatica en BingX (perpetuos USDT-M). Ver agent/execution.py.
+# Flujo: propuesta (form / contexto / veredicto / chat) -> chequeo de limites -> el trader
+# aprueba con un click -> limite post-only (maker) con SL stop-market y TP adjuntos.
+# Nada se envia sin aprobacion. Estos limites son DUROS: los aplica el codigo, no el prompt.
+execution:
+  exchange: bingx
+  mode: demo                 # demo = BingX VST (dinero ficticio). live = cuenta real. Cambiar SOLO a mano.
+  symbols: [HYPEUSDT, BTCUSDT]
+  max_risk_usd: 6            # riesgo maximo por orden enviada desde la plataforma (2% de $300)
+  max_risk_pct: 2.0          # y nunca mas de este % del equity actual (aplica el menor)
+  max_daily_loss_usd: 12     # caida de equity del dia (UTC) que bloquea nuevas ordenes
+  consecutive_loss_stop: 2   # perdidas seguidas hoy (journal) que bloquean nuevas ordenes
+  max_open_positions: 1      # posiciones abiertas + entradas pendientes
+  leverage: 10
+  max_leverage: 10
+  min_rr: 2.0
+  min_stop_pct: 0.15         # SL mas cerca que esto = ruido/spread
+  max_entry_distance_pct: 3.0  # entry mas lejos del precio = contexto viejo
+  proposal_ttl_sec: 180      # una propuesta sin aprobar vence (precio cambia)
+  order_ttl_min: 120         # una entrada sin fill se cancela sola
+  margin_mode: isolated
+  tp_order: limit            # limit = TP maker al precio objetivo; market = TAKE_PROFIT_MARKET
+  maker_fee: 0.0002          # estimacion BingX VIP0 para el preview; verificar tu tier
+  taker_fee: 0.0005
+  monitor_interval_sec: 15

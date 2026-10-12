@@ -194,6 +194,42 @@ def journal_stats(symbol: str | None = None) -> str:
     return json.dumps(stats, indent=2)
 
 
+@mcp.tool()
+def propose_order(
+    symbol: str,
+    side: str,
+    entry: float,
+    stop: float,
+    take_profit: float,
+    rationale: str = "",
+    timeframe: str = "15m",
+) -> str:
+    """Create a PENDING BingX order proposal (post-only limit + SL/TP). Does NOT place it.
+
+    The trader must approve it in the web cockpit (tab EJECUCION); limits are re-checked
+    at approval. Size is computed from the configured max risk. Returns the proposal with
+    qty, risk, R:R, fees and any blocking errors.
+    """
+    from agent.execution import ExecutionError, ExecutionService
+
+    try:
+        record = ExecutionService.instance().propose(
+            symbol=symbol, side=side, entry=entry, stop=stop, take_profit=take_profit,
+            timeframe=timeframe, source="chat", rationale=rationale,
+        )
+    except ExecutionError as exc:
+        return json.dumps({"error": str(exc)}, ensure_ascii=False)
+    return json.dumps(record, indent=2, default=str, ensure_ascii=False)
+
+
+@mcp.tool()
+def execution_status() -> str:
+    """BingX execution status: mode (demo/live), equity, positions, limits and recent orders."""
+    from agent.execution import ExecutionService
+
+    return json.dumps(ExecutionService.instance().status(), indent=2, default=str, ensure_ascii=False)
+
+
 def run_mcp() -> None:
     """Run MCP server (stdio transport for Cursor)."""
     mcp.run(transport="stdio")

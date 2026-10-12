@@ -157,6 +157,8 @@ def read_settings() -> dict[str, Any]:
     env = load_env_file()
     return {
         "has_anthropic_key": bool(env.get("ANTHROPIC_API_KEY")),
+        "has_bingx_keys": bool(env.get("BINGX_API_KEY") and env.get("BINGX_API_SECRET")),
+        "execution_mode": (cfg.get("execution") or {}).get("mode", "demo"),
         "account_size": risk.get("default_account_size", 300),
         "leverage": risk.get("leverage", 10),
         "max_risk_usd": risk.get("max_risk_usd", 21),

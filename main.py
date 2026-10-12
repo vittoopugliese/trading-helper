@@ -289,6 +289,22 @@ def show_context_cmd(symbol: str = typer.Argument(...)) -> None:
     console.print_json(json.dumps(ctx.to_dict(), indent=2, ensure_ascii=False))
 
 
+@app.command("bingx-check")
+def bingx_check_cmd() -> None:
+    """Verificar conexion BingX (modo de config.yaml): equity, posiciones, limites. No opera."""
+    from agent.execution import ExecutionService
+
+    status = ExecutionService.instance().status()
+    if not status.get("connected"):
+        console.print(f"[red]Sin conexion ({status['mode']}):[/red] {status.get('error')}")
+        raise typer.Exit(1)
+    console.print(
+        f"[green]BingX {status['mode'].upper()} OK[/green] equity {status['equity']:.2f} "
+        f"libre {status['free']:.2f} | riesgo max/orden ${status['risk_budget_usd']:.2f} | "
+        f"posiciones {len(status['positions'])} | kill switch {'ON' if status['halted'] else 'off'}"
+    )
+
+
 @app.command()
 def mcp() -> None:
     """Iniciar servidor MCP para Cursor."""
