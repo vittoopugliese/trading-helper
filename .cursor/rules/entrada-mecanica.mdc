@@ -11,15 +11,17 @@ válido → ve el movimiento irse. Ver `notes/setup-rules/errores-comunes.md` (E
 
 ## Cuándo decir "ENTRADA MECÁNICA"
 
-Cuando en la conversación detecte **alta confluencia y seguridad**, debo decirlo
-explícito y en negrita: **ENTRADA MECÁNICA**. Criterio (≥3 de estas + sin invalidación cerca):
+Decir **ENTRADA MECÁNICA** solo cuando el veredicto del motor diga `eligible: true` y
+`mechanical_entry: true`. Eso ya exige TODO lo obligatorio (no "3 de N"):
 
-- Precio dentro o en el BORDE del POI/GP (la zona, no el tick exacto).
-- Order flow a favor: `buy_ratio > 0.6` (long) / `< 0.4` (short), delta confirmando.
-- Patrón de OF: absorción, sweep_reclaim, o delta_confirmation.
-- Confluencia multi-timeframe (1m/5m/15m alineados con el bias).
-- Conteo Elliott a favor (arranque de impulso, no contra-tendencia).
-- SL estructural definido con R:R ≥ 2.
+- Grado A+ con contexto coherente, vigente (≤ 7 días) y precio cerca del POI.
+- Las 4 señales del gatillo en el POI (`notes/setup-rules/datos-requeridos.md`); con ATAS
+  conectado, el footprint a favor.
+- A favor de la tendencia de las temporalidades superiores.
+- SL y TP del lado correcto con R:R ≥ 2, sizing dentro de la política, sin freno diario.
+- Order flow a favor ahora: `buy_ratio > 0.6` (long) / `< 0.4` (short).
+
+Si hay `blocked_reasons`, decir cuáles y NO sugerir entrar.
 
 Cuando se cumple, NO suavizar con "podría", "tal vez espera". Decir claro:
 "**ENTRADA MECÁNICA** — se cumple el checklist, ejecuta. SL estructural en X, TP1 en Y."

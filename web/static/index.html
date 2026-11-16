@@ -53,9 +53,9 @@
 
   <nav class="app-nav">
     <button class="tab app-tab active" data-view="cockpit">COCKPIT</button>
+    <button class="tab app-tab" data-view="elliott">BACKTEST EW</button>
     <button class="tab app-tab" data-view="manual">MANUAL</button>
     <button class="tab app-tab" data-view="reference">REFERENCIA</button>
-    <button class="tab app-tab" data-view="execution">EJECUCIÓN</button>
     <button class="tab app-tab" data-view="chat">CHAT</button>
     <button class="tab app-tab" data-view="settings">SETTINGS</button>
   </nav>
@@ -111,7 +111,6 @@
           <input id="calc-sl" placeholder="SL" style="width:80px;padding:6px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)">
           <input id="calc-cap" value="300" style="width:60px;padding:6px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)">
           <input id="calc-risk-pct" value="7" style="width:40px;padding:6px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)">
-          <input id="calc-lev" value="10" style="width:40px;padding:6px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)">
           <button class="cp-btn" id="calc-sizing-btn">Calc</button>
         </div>
         <p id="calc-result" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);margin-top:8px"></p>
@@ -120,6 +119,24 @@
       <div class="cp-card">
         <h3>Multi-TF</h3>
         <table class="mtf-table"><thead><tr><th>TF</th><th>Close</th><th>Trend</th><th>Buy</th><th>Δ8</th><th>RSI</th></tr></thead><tbody id="mtf-body"></tbody></table>
+      </div>
+    </div>
+
+    <div class="cockpit-grid flow-grid">
+      <div class="cp-card">
+        <h3>Order flow ATAS</h3>
+        <p class="flow-status" id="atas-status">—</p>
+        <div class="flow-rows" id="atas-body"></div>
+      </div>
+      <div class="cp-card">
+        <h3>Liquidaciones (Bybit + Binance)</h3>
+        <p class="flow-status" id="liq-status">—</p>
+        <div class="flow-rows" id="liq-body"></div>
+      </div>
+      <div class="cp-card">
+        <h3>Señales forward (confiabilidad real)</h3>
+        <p class="flow-status" id="sig-status">—</p>
+        <div class="flow-rows" id="sig-body"></div>
       </div>
     </div>
 
@@ -141,25 +158,65 @@
           <label>Targets (coma)</label><input id="ctx-targets" style="width:100%;padding:6px;background:var(--bg2);border:1px solid var(--border);color:var(--cream);margin-bottom:8px">
           <label>Notas</label><textarea id="ctx-notes"></textarea>
           <button class="cp-btn primary" id="save-ctx-btn" style="margin-top:10px">Guardar contexto</button>
+          <p id="ctx-issues" class="flow-status warn" style="margin-top:8px"></p>
         </div>
       </div>
     </div>
 
     <div class="cp-card gatillo-compact">
-      <h3>Gatillo — 4 señales (LONG en POI)</h3>
+      <h3>Gatillo — 4 señales (LONG en POI) y su dato</h3>
       <ol>
-        <li>Precio toca tu línea/POI</li>
-        <li>Mecha pincha y cierra del otro lado (sweep/absorción)</li>
-        <li>Volumen MUY por encima de la media en la mecha</li>
-        <li>Delta flip: rojo → verde (buy_ratio &gt; ~0.55)</li>
+        <li>Precio toca tu línea/POI — <code>price_in_poi</code> (tolerancia 0.1%)</li>
+        <li>Mecha pincha y cierra del otro lado — ATAS <code>absorcion_en_minimo</code>: ≥35% del volumen en el 25% inferior, delta de esa zona negativo, cierre en la mitad superior</li>
+        <li>Volumen muy por encima de la media — <code>volume_x ≥ 1.5</code> vs media de 20 velas</li>
+        <li>Delta rojo → verde — ATAS <code>delta_reversal_intra_vela</code> (min delta ≤ −15% del vol y cierra +) o <code>delta_flip</code> (vela previa ≤ −10%, actual ≥ +10%)</li>
       </ol>
-      <p style="margin-top:8px;color:var(--red)">Sin las 4 en el POI = NO operar. Ver tab MANUAL para checklist A+ completo.</p>
+      <p style="margin-top:8px;color:var(--red)">Con ATAS conectado, un A+ en POI sin 2 o 4 en el footprint baja a B. Sin ATAS el A+ sale marcado "sin ATAS".</p>
     </div>
 
     <div class="cp-card" style="margin-top:14px">
       <h3>Journal (read-only)</h3>
       <p id="journal-stats" style="font-family:'IBM Plex Mono',monospace;font-size:12px;margin-bottom:8px">—</p>
       <div id="journal-recent" class="alert-feed"></div>
+    </div>
+  </section>
+
+  <!-- BACKTEST EW: revisión ciega de candidatos 1-2 -->
+  <section class="app-view" id="view-elliott">
+    <div class="cp-card">
+      <h3>Revisión ciega — setup 1-2 (BTC 15m)</h3>
+      <p class="flow-status">Sin fecha y con precio en % contra el cierre de decisión. La entrada es la apertura de la vela siguiente, SL bajo el mínimo de la onda 2, TP 1.618 × onda 1. Decidí como si fuera en vivo: la decisión no se puede cambiar. Reglas: <code>notes/setup-rules/elliott-1-2-reglas.md</code>.</p>
+      <button class="cp-btn primary" id="ew-start">Empezar / siguiente candidato</button>
+      <label style="font-family:'IBM Plex Mono',monospace;font-size:11px;margin-left:10px"><input type="checkbox" id="ew-show-marks" checked> marcas de la máquina (0, 1, fibs)</label>
+      <p class="flow-status" id="ew-status" style="margin-top:10px">—</p>
+      <div id="ew-chart" style="height:460px;margin:8px 0;border:1px solid var(--border-soft)"></div>
+      <div id="ew-decide-box" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div class="cp-field"><label>Conteo</label>
+            <select id="ew-count">
+              <option value="12_claro">1-2 claro</option>
+              <option value="12_con_alternativo">1-2 con conteo alternativo</option>
+              <option value="abc_o_flat">ABC / B de flat</option>
+              <option value="diagonal">Diagonal</option>
+              <option value="no_se">No sé</option>
+            </select>
+          </div>
+          <div class="cp-field"><label>Confianza</label>
+            <select id="ew-confidence"><option value="1">1 baja</option><option value="2" selected>2 media</option><option value="3">3 alta</option></select>
+          </div>
+        </div>
+        <div class="cp-field"><label>Nota (volumen, por qué)</label><input id="ew-note" maxlength="500"></div>
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="cp-btn success" id="ew-take">TOMO</button>
+          <button class="cp-btn danger" id="ew-skip">NO TOMO</button>
+        </div>
+      </div>
+      <p class="flow-status" id="ew-outcome" style="margin-top:10px;color:var(--cream)"></p>
+      <button class="cp-btn" id="ew-next" style="display:none">Siguiente</button>
+    </div>
+    <div class="cp-card" style="margin-top:14px">
+      <h3>Tu scorecard contra la base</h3>
+      <div id="ew-stats" class="flow-status">—</div>
     </div>
   </section>
 
@@ -171,60 +228,10 @@
   <!-- REFERENCIA -->
   <section class="app-view" id="view-reference">
     <div class="app-nav" style="margin-bottom:12px">
-      <button class="tab" onclick="document.getElementById('ref-frame').src='/guia-hype.html'">Guía HYPE</button>
       <button class="tab" onclick="document.getElementById('ref-frame').src='/reference-orderflow.html'">Order Flow</button>
       <button class="tab" onclick="document.getElementById('ref-frame').src='/reference-elliott.html'">Elliott</button>
     </div>
     <iframe class="ref-frame" id="ref-frame" src="/reference-orderflow.html" title="Referencia"></iframe>
-  </section>
-
-  <!-- EJECUCION -->
-  <section class="app-view" id="view-execution">
-    <div class="ex-statusbar">
-      <span class="ex-mode" id="ex-mode">—</span>
-      <span id="ex-account">Sin conexión</span>
-      <span id="ex-guard"></span>
-      <button class="cp-btn danger" id="ex-halt">Kill switch</button>
-      <button class="cp-btn" id="ex-resume" style="display:none">Reanudar</button>
-    </div>
-    <p class="ex-error" id="ex-error" style="display:none"></p>
-
-    <div class="cockpit-grid">
-      <div class="cp-card">
-        <h3>Nueva orden — límite post-only + SL/TP</h3>
-        <div class="ex-form">
-          <div class="cp-field"><label>Símbolo</label><input id="ex-symbol" value="HYPEUSDT"></div>
-          <div class="cp-field"><label>Lado</label>
-            <select id="ex-side"><option value="long">long</option><option value="short">short</option></select>
-          </div>
-          <div class="cp-field"><label>Entry (límite)</label><input id="ex-entry" inputmode="decimal"></div>
-          <div class="cp-field"><label>SL</label><input id="ex-stop" inputmode="decimal"></div>
-          <div class="cp-field"><label>TP</label><input id="ex-tp" inputmode="decimal"></div>
-          <div class="cp-field ex-wide"><label>Motivo</label><input id="ex-rationale" placeholder="confluencias / gatillo"></div>
-        </div>
-        <div class="ex-actions">
-          <button class="cp-btn" id="ex-from-context">Desde contexto</button>
-          <button class="cp-btn" id="ex-from-verdict">Desde veredicto</button>
-          <button class="cp-btn primary" id="ex-propose">Proponer</button>
-        </div>
-        <p class="ex-hint">El tamaño sale del riesgo máximo, no del margen. Proponer no envía nada: revisás el preview y aprobás.</p>
-      </div>
-
-      <div class="cp-card">
-        <h3>Preview</h3>
-        <div id="ex-preview" class="ex-preview">Sin propuesta.</div>
-      </div>
-    </div>
-
-    <div class="cp-card" style="margin-bottom:14px">
-      <h3>Posiciones abiertas</h3>
-      <div id="ex-positions" class="ex-table-wrap">—</div>
-    </div>
-
-    <div class="cp-card">
-      <h3>Órdenes y propuestas</h3>
-      <div id="ex-records" class="ex-table-wrap">—</div>
-    </div>
   </section>
 
   <!-- CHAT -->
@@ -266,16 +273,15 @@
         <p style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:10px">Solo localhost. Nunca sale de tu PC.</p>
       </div>
       <div class="cp-card">
-        <h3>BingX API (ejecución)</h3>
-        <p id="set-bingx-status" style="font-family:'IBM Plex Mono',monospace;font-size:12px;margin-bottom:8px">—</p>
-        <input id="set-bingx-key" type="password" autocomplete="off" placeholder="API key" style="width:100%;padding:8px;background:var(--bg2);border:1px solid var(--border);color:var(--cream);margin-bottom:8px">
-        <input id="set-bingx-secret" type="password" autocomplete="off" placeholder="Secret" style="width:100%;padding:8px;background:var(--bg2);border:1px solid var(--border);color:var(--cream)">
-        <button class="cp-btn primary" id="save-bingx-btn" style="margin-top:10px">Guardar en .env local</button>
-        <p style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:10px">Creá la key solo con permiso de trading (sin retiros) y restringida a tu IP. El modo demo/live se cambia solo en config.yaml.</p>
+        <h3>Índice de notas</h3>
+        <p id="notes-status" class="flow-status">—</p>
+        <button class="cp-btn" id="reindex-btn">Reindexar</button>
       </div>
     </div>
   </section>
 </div>
+<script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
 <script src="/cockpit.js"></script>
+<script src="/elliott-review.js"></script>
 </body>
 </html>

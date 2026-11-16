@@ -17,7 +17,9 @@ SISTEMA POR FASES (punto A -> ser rentable -> punto B)
 ================================================================
 RISK MANAGEMENT Y PSICOLOGIA
 ================================================================
-- Maximo 2% del total de la cuenta en stop loss por posicion.
+- Riesgo por posicion: POLITICA ACTIVA en config.yaml -> risk (7% / $21 tope duro, x10,
+  2 perdidas seguidas = stop del dia). El 2% de esta lista es la regla clasica del curso
+  (teoria de referencia), no el tope vigente.
 - Consistencia: small wins por un largo periodo de tiempo.
 - "El mercado hara lo que quiera, no lo que queremos." El trading es una profesion/empresa
   con ganancias y perdidas: es parte del juego.
@@ -68,3 +70,13 @@ GESTION
 [] R:R minimo aceptable (idealmente >= 2). TP1 rapido, resto a la liquidez del otro lado.
 
 REGLA DE ORO: si el conteo no es claro o el order flow no confirma, NO operar.
+
+================================================================
+DATOS DEL CHECKLIST (que mide la plataforma y que no)
+================================================================
+Medido: tendencia (swings), POI e invalidacion (contexto), delta/CVD (ATAS o aggTrades),
+volumen vs media, OI y funding (Binance), R:R, gatillo footprint ATAS (absorcion / delta
+reversal / flip), liquidaciones (hipotesis, no puntua). NO medido: claridad del conteo
+Elliott (lo decide el trader). Diccionario: `datos-requeridos.md`.
+Confiabilidad: cada alerta queda en el signal ledger y se resuelve sola; ver
+`notes/research/confiabilidad-win-rate.md` antes de cambiar umbrales.

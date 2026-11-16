@@ -27,8 +27,9 @@ rachas emocionales (revancha) antes de que hagan daño irreversible.
 
 ## Traducción a la cuenta del helper
 
-La config del helper es MÁS conservadora/estricta que el 2% genérico de Elder, adaptada
-a cuenta chica apalancada (ver `notes/setup-rules/risk-sizing-cuenta.md`):
+La config del helper es MÁS AGRESIVA que el 2% de Elder (7% > 2%): es una decisión
+para cuenta chica apalancada, compensada con frenos diarios (ver
+`notes/setup-rules/risk-sizing-cuenta.md`). El 2% queda como referencia teórica:
 - Tope duro **$21 por trade** (7% de $300) — el SL define el riesgo, margen ≠ riesgo.
 - **2 pérdidas seguidas → stop del día** (anti-revancha, versión intradía de la regla 6%).
 - 1–3 entradas escalonadas; exposición combinada ≤ 10% si hay 2 trades correlacionados.

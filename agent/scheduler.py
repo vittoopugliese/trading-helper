@@ -29,9 +29,8 @@ class SchedulerService:
         self._running = False
 
     def _should_alert(self, bundle) -> bool:
-        """Alert only when grade is A+ and (if configured) price at POI with OF confirmation."""
-        grade = bundle.verdict.get("grade", "NO_TRADE")
-        if grade != "A+":
+        """Alert only on an eligible A+ (same gate as watcher/cockpit) and, if configured, at POI."""
+        if not bundle.verdict.get("eligible"):
             return False
 
         if not self.alert_only_at_poi:

@@ -18,10 +18,11 @@ from fastapi.staticfiles import StaticFiles
 
 from agent import analyst, context as trade_context, market_data, metrics
 from agent.config import PROJECT_ROOT, get_config
-from agent.execution import ExecutionService
+from agent.liquidations import LiquidationService
 from agent.watcher import WatcherService
+from web.atas_api import router as atas_router
+from web.elliott_api import router as elliott_router
 from web.chat import get_chat_history, stream_chat
-from web.execution_api import router as execution_router
 from web.schemas import (
     AnthropicKeyUpdate,
     ChatRequest,
@@ -50,10 +51,10 @@ APP_VERSION = "1.0.0"
 
 @asynccontextmanager
 async def _lifespan(_app: FastAPI):
-    # Resumes reconciliation of orders placed in a previous run (fills, closes, TTL).
-    ExecutionService.instance().ensure_monitor()
+    # Liquidations are recorded while the cockpit runs (needs ~6 h of history for z-scores).
+    LiquidationService.instance().start()
     yield
-    ExecutionService.instance().stop_monitor()
+    LiquidationService.instance().stop()
 
 
 app = FastAPI(title="Trading Cockpit", version=APP_VERSION, lifespan=_lifespan)
@@ -83,10 +84,8 @@ def _on_watcher_event(event: dict[str, Any]) -> None:
 
 
 _watcher.add_listener(_on_watcher_event)
-
-_execution = ExecutionService.instance()
-_execution.add_listener(_on_watcher_event)
-app.include_router(execution_router)
+app.include_router(atas_router)
+app.include_router(elliott_router)
 
 
 @app.get("/api/health")
@@ -159,9 +158,43 @@ def get_ctx(symbol: str) -> dict[str, Any]:
     if ctx is None:
         raise HTTPException(404, f"No context for {sym}")
     data = ctx.to_dict()
+    data["issues"] = ctx.validate()
+    data["age_days"] = round(ctx.age_days(), 1) if ctx.age_days() is not None else None
+    data["expired"] = ctx.is_expired()
+    data["scenarios"] = ctx.scenarios()
     if find_chart_image(sym):
         data["has_chart"] = True
     return data
+
+
+@app.get("/api/notes/status")
+def notes_status() -> dict[str, Any]:
+    from agent import knowledge
+
+    return knowledge.index_status()
+
+
+@app.post("/api/notes/reindex")
+def notes_reindex() -> dict[str, Any]:
+    from agent import knowledge
+
+    return knowledge.index_notes()
+
+
+@app.get("/api/sizing")
+def sizing(
+    entry: float = Query(..., gt=0),
+    stop: float = Query(..., gt=0),
+    account: float | None = Query(None, gt=0),
+    risk_pct: float | None = Query(None, gt=0),
+) -> dict[str, Any]:
+    """Manual sizing through the same policy as the engine (caps, margin, costs, exposure)."""
+    from agent import policy
+
+    guard = policy.daily_guard()
+    out = policy.size_position(entry, stop, account=account, risk_pct=risk_pct, open_trades=guard.get("open_trades"))
+    out["daily_guard"] = guard
+    return out
 
 
 @app.put("/api/context/{symbol}")
@@ -172,8 +205,12 @@ def put_ctx(symbol: str, body: ContextUpdate) -> dict[str, Any]:
         payload["poi"] = {"low": body.poi_low, "high": body.poi_high}
         payload.pop("poi_low", None)
         payload.pop("poi_high", None)
-    ctx = trade_context.set_context(sym, payload)
-    return ctx.to_dict()
+    try:
+        ctx = trade_context.set_context(sym, payload)
+    except trade_context.ContextValidationError as exc:
+        # 422 with every contradiction so the UI can show what to fix.
+        raise HTTPException(422, {"message": "Contexto incoherente, no se guardo", "issues": exc.issues}) from exc
+    return ctx.to_dict() | {"issues": ctx.validate()}
 
 
 @app.post("/api/context/{symbol}/chart")
@@ -189,7 +226,8 @@ async def upload_chart(symbol: str, file: UploadFile = File(...)) -> dict[str, A
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
     rel = path.relative_to(PROJECT_ROOT).as_posix()
-    trade_context.set_context(sym, {"chart_image": rel})
+    # Attaching an image never edits levels: allowed even if the stored levels need fixing.
+    trade_context.set_context(sym, {"chart_image": rel}, allow_invalid=True)
     return {"ok": True, "path": rel}
 
 

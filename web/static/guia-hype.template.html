@@ -259,6 +259,7 @@
     <button class="tab" onclick="showPhase(4)">04 · Absorción</button>
     <button class="tab" onclick="showPhase(5)">05 · Gestión &amp; Sizing</button>
     <button class="tab" onclick="showPhase(6)">✓ Checklist A+</button>
+    <button class="tab" onclick="showPhase(7)">07 · Datos &amp; confiabilidad</button>
   </div>
 
   <!-- ===================== 00 · MÉTODO ===================== -->
@@ -1136,9 +1137,10 @@
         <div class="concept-body">
           <ul class="checklist">
             <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ Patrón claro en el POI: OB retest / CVD divergence / sweep+reclaim / absorción</li>
-            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ Delta flip a favor en la vela de confirmación (rojo→verde para long)</li>
-            <li onclick="toggleCheck(this)"><span class="check-box"></span> Volumen &gt; media en la zona clave (spike)</li>
-            <li onclick="toggleCheck(this)"><span class="check-box"></span> CVD/delta acompañan; OI confirma; funding no extremo</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> ⭐ Footprint ATAS a favor: <span class="mono">absorcion_en_minimo</span>, <span class="mono">delta_reversal_intra_vela</span> o <span class="mono">delta_flip</span> (el cockpit lo marca en "Order flow ATAS")</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Volumen ≥ 1.5x la media de 20 velas en la zona clave (<span class="mono">volume_x</span>)</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Nada en contra: sin imbalance apilado del otro lado, CVD sin divergencia en contra, funding no extremo</li>
+            <li onclick="toggleCheck(this)"><span class="check-box"></span> Liquidaciones: ¿hubo flush del lado contrario (z ≥ 2.5)? Anotalo — es hipótesis, no requisito</li>
           </ul>
         </div>
       </div>
@@ -1159,6 +1161,102 @@
             <li onclick="toggleCheck(this)"><span class="check-box"></span> No vengo de 2 pérdidas seguidas hoy (si sí: apago)</li>
           </ul>
           <div class="warn-box" style="margin-top:12px">Regla de oro: si el conteo no está claro o el order flow no confirma, NO se opera. La paciencia es la ventaja de la cuenta chica.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== 07 · DATOS & CONFIABILIDAD ===================== -->
+  <div class="phase" id="phase-7" style="--phase-color: #4fc3d9">
+    <div class="phase-header">
+      <div class="phase-num">07</div>
+      <div class="phase-info">
+        <h2>Datos &amp; confiabilidad</h2>
+        <p>Cada regla de esta guía traducida a un dato medible: qué lo mide, de dónde sale y con qué umbral. Y cómo saber si de verdad sube el win rate sin engañarte.</p>
+      </div>
+    </div>
+
+    <div class="concepts">
+
+      <div class="concept-card open" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📡</span>
+          <span class="concept-title">De dónde salen los datos</span>
+          <span class="concept-tag">FUENTES</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div style="overflow-x:auto">
+          <table class="struct-table">
+            <tr><th>Fuente</th><th>Qué aporta</th><th>Cómo llega</th></tr>
+            <tr><td>ATAS (indicador <span class="mono">Trading Helper Bridge</span>)</td><td>Footprint por nivel (bid/ask), delta, max/min delta intra-vela, OI por vela, POC, value area, big trades agregados, DOM ±1%</td><td>POST cada 2 s a <span class="mono">/api/atas/ingest</span>, se guarda en <span class="mono">data/atas.db</span></td></tr>
+            <tr><td>Bybit + Binance (websocket público)</td><td>Liquidaciones en vivo: quién está siendo forzado a cerrar</td><td>Corre con el cockpit; <span class="mono">data/liquidations.db</span>. Bybit completo, Binance muestreado (1 por segundo)</td></tr>
+            <tr><td>Binance Futures (REST)</td><td>Velas, aggTrades, OI, funding, long/short ratio</td><td>Como hasta ahora</td></tr>
+            <tr><td>Tu contexto (<span class="mono">context/HYPEUSDT.yaml</span>)</td><td>POI, invalidación, targets, onda</td><td>Lo editás en el cockpit</td></tr>
+          </table>
+          </div>
+          <div class="uncertain-box">Liquidaciones: el z-score necesita ≥ 6 h de historial grabado. Antes de eso el panel dice "juntando historial" y la condición no cuenta.</div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🎯</span>
+          <span class="concept-title">El gatillo de 4 señales, en datos</span>
+          <span class="concept-tag">LONG / SHORT</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div style="overflow-x:auto">
+          <table class="struct-table">
+            <tr><th>Señal</th><th>LONG — dato y umbral</th><th>SHORT — espejo</th></tr>
+            <tr><td>1 · Toca mi línea</td><td><span class="mono">price_in_poi</span>: precio dentro del POI ±0.1%</td><td>Igual, en resistencia</td></tr>
+            <tr><td>2 · Pincha y vuelve</td><td><span class="mono">absorcion_en_minimo</span>: ≥35% del volumen de la vela en el 25% inferior, delta de esa zona negativo, cierre en la mitad superior</td><td><span class="mono">absorcion_en_maximo</span></td></tr>
+            <tr><td>3 · Barra gigante</td><td><span class="mono">volume_x ≥ 1.5</span> vs media de 20 velas cerradas</td><td>Igual</td></tr>
+            <tr><td>4 · Delta rojo → verde</td><td><span class="mono">delta_reversal_intra_vela</span>: min delta ≤ −15% del volumen y cierra delta positivo · o <span class="mono">delta_flip</span>: vela previa ≤ −10% vol, actual ≥ +10% vol</td><td>max delta ≥ +15% y cierra negativo · flip verde → rojo</td></tr>
+            <tr><td>En contra (frena)</td><td><span class="mono">imbalance_apilado_vendedor</span>: 3+ niveles seguidos con bid ≥ 3x el ask diagonal</td><td><span class="mono">imbalance_apilado_comprador</span></td></tr>
+          </table>
+          </div>
+          <div class="warn-box">Con ATAS conectado, un A+ en POI SIN la señal 2 o 4 baja a B. Si el footprint marca solo señales en contra, también baja a B. Sin ATAS el A+ se mantiene pero la alerta dice "sin ATAS".</div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">🧩</span>
+          <span class="concept-title">Cada setup y el dato que lo confirma</span>
+          <span class="concept-tag">SETUPS</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <div style="overflow-x:auto">
+          <table class="struct-table">
+            <tr><th>Setup</th><th>Confirmación de datos</th><th>Lo que lo invalida</th></tr>
+            <tr><td>OB retest</td><td>Absorción en el borde del OB + volumen ≥ 1.5x; POC de la vela dentro del OB</td><td>Imbalance apilado en contra atravesando el OB</td></tr>
+            <tr><td>CVD divergence</td><td>CVD ATAS: precio hace nuevo mínimo y el delta de las últimas 5 velas es mayor que el de las 5 anteriores</td><td>Divergencia que se "cura": nuevo mínimo con delta más negativo</td></tr>
+            <tr><td>Sweep + reclaim</td><td>Mecha bajo el nivel + delta reversal intra-vela + flush de liquidaciones de longs (si hay historial)</td><td>Cierre bajo el nivel con delta negativo sostenido</td></tr>
+            <tr><td>Absorción</td><td><span class="mono">absorcion_en_minimo</span> + big trades compradores netos en 15 min</td><td>Delta de la zona sigue negativo y el cierre queda abajo</td></tr>
+          </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="concept-card" onclick="toggleCard(this)">
+        <div class="concept-header">
+          <span class="concept-icon">📏</span>
+          <span class="concept-title">Cómo subir el WR sin engañarte</span>
+          <span class="concept-tag">CONFIABILIDAD</span>
+          <span class="chevron">▶</span>
+        </div>
+        <div class="concept-body">
+          <ul class="steps">
+            <li><span class="step-num">1</span> El WR solo no alcanza: con TP más cerca sube el WR y baja la ganancia por trade. Lo que importa es WR <strong>y</strong> expectancy en R, después de comisiones.</li>
+            <li><span class="step-num">2</span> Cada alerta queda registrada con sus datos y se resuelve sola (TP / SL / 4 h). El panel "Señales forward" del cockpit muestra WR con intervalo de confianza, con y sin cada dato.</li>
+            <li><span class="step-num">3</span> Los umbrales de arriba se fijaron ANTES de ver resultados. No se tocan mirando el journal: eso es volver a elegir "el mejor de mil intentos".</li>
+            <li><span class="step-num">4</span> Muestra real: con WR ~40%, el intervalo es ±10 pp a 100 señales. Para afirmar que un dato sube el WR de 35% a 45% hacen falta ~375 señales por grupo. A 30 recién se mira; no se concluye.</li>
+            <li><span class="step-num">5</span> Recién cuando una hipótesis se confirma forward, pasa a pesar en el score. Ver <span class="mono">notes/research/confiabilidad-win-rate.md</span>.</li>
+          </ul>
         </div>
       </div>
 

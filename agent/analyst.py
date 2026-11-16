@@ -403,24 +403,23 @@ Elliott/Fib context (user-defined — this is the primary bias):
 {json.dumps(bundle.trade_context, indent=2, ensure_ascii=False)}
 """
 
-    notes_section = ""
-    if bundle.relevant_notes:
-        snippets = []
-        for n in bundle.relevant_notes[:6]:
-            snippets.append(f"- [{n.get('title')}] ({n.get('source_file')}): {(n.get('content') or '')[:400]}")
-        notes_section = "Relevant notes from knowledge base:\n" + "\n".join(snippets)
+    from agent import prompt_context
+
+    notes_section = prompt_context.notes_block(bundle.relevant_notes, limit=6) if bundle.relevant_notes else ""
 
     prompt = f"""You are a disciplined crypto futures analyst specializing in Elliott Waves + Order Flow.
 The trader has more Elliott/Fib experience; you complement with order flow data and psychology.
 
+{prompt_context.policy_block()}
+
 Rules:
-- The user's Elliott context (wave count, POI, invalidation) takes priority over generic structure
-- Only recommend A+ if confluence is strong (checklist A+ from notes)
-- Cite specific conditions from the notes when relevant
-- Include R:R assessment and 2% risk sizing commentary
-- Address trading psychology: patience, invalidation acceptance, not forcing trades
-- Never suggest automatic execution
-- Be objective, no hype
+- The user's Elliott context (wave count, POI, invalidation) takes priority over generic structure.
+- The engine verdict decides eligibility. You may explain or question it, but never upgrade a
+  verdict with blocked_reasons into an entry. If eligible is false, say why and what is missing.
+- Cite the notes by their `fuente` when relevant.
+- Sizing: use verdict.position_size (already capped by the active policy), not a rule of thumb.
+- Address trading psychology: patience, invalidation acceptance, not forcing trades.
+- Never suggest automatic execution. Be objective, no hype.
 
 {ctx_section}
 {notes_section}
@@ -429,21 +428,23 @@ Market evidence:
 {json.dumps({"snapshot": bundle.snapshot, "verdict": bundle.verdict}, indent=2, default=str)}
 
 Respond in Spanish with:
-1. Veredicto (A+ / B / NO TRADE) — aligned with but may refine the engine score
+1. Veredicto (A+ / B / NO TRADE) y si es elegible (blocked_reasons)
 2. Elliott: onda actual, confluencia Fib, POI status
-3. Order Flow: delta/CVD real, book, patterns at POI (absorcion/sweep/drenaje)
-4. Niveles: entry, stop, target, R:R, position size (2% rule)
+3. Order Flow: delta/CVD real, footprint ATAS si hay, patrones en el POI
+4. Niveles: entry, stop, target, R:R, sizing de verdict.position_size
 5. Riesgos / invalidacion / divergencia CVD (especialmente onda 5)
 6. Psicologia: que hacer si no hay setup, gestion emocional
 7. Nivel de confianza (alta/media/baja)
 """
 
     message = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=1500,
+        model=prompt_context.llm_model(),
+        max_tokens=4000,
         messages=[{"role": "user", "content": prompt}],
     )
-    return message.content[0].text
+    if message.stop_reason == "refusal":
+        return "Analisis profundo no disponible: el modelo declino la solicitud."
+    return "".join(b.text for b in message.content if b.type == "text")
 
 
 def analyze(
@@ -455,6 +456,8 @@ def analyze(
     context_override: dict[str, Any] | None = None,
     persist_context: bool = False,
     scope: str = "core",
+    question: str | None = None,
+    persist: bool = True,
 ) -> EvidenceBundle:
     """Full analysis pipeline with optional Elliott context.
 
@@ -472,8 +475,10 @@ def analyze(
     snapshot = metrics.build_snapshot(symbol, timeframe, trade_type, trade_context=ctx)
     verdict = setup_engine.evaluate_setup(snapshot, trade_context=ctx)
 
-    query = knowledge.build_search_query(snapshot.to_dict(), ctx.to_dict() if ctx else None)
-    notes = knowledge.search_notes(query, scope=scope)
+    verdict_dict = verdict.to_dict()
+    query = knowledge.build_search_query(snapshot.to_dict(), ctx.to_dict() if ctx else None, verdict_dict, question)
+    pinned = knowledge.pinned_for(verdict_dict.get("direction")) if scope in ("core", "all") else []
+    notes = knowledge.search_notes(query, scope=scope, pinned_files=pinned)
 
     bundle = EvidenceBundle(
         symbol=symbol.upper(),
@@ -510,7 +515,8 @@ def analyze(
     if deep:
         bundle.deep_analysis = run_deep_analysis(bundle)
 
-    save_analysis(bundle)
+    if persist:
+        save_analysis(bundle)
     return bundle
 
 

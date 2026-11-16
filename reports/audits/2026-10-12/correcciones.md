@@ -1,0 +1,24 @@
+# Correcciones aplicadas a la auditoría del 2026-10-12
+
+Cada caso que reprodujo `probe.py` quedó como test de regresión en
+`tests/test_audit_regressions.py` (23 tests). Suite completa: 52 tests en verde.
+`probe.py` no se volvió a correr para no sobrescribir `evidence.json`: sus `assert`
+describían el comportamiento defectuoso y ahora fallarían.
+
+| # | Hallazgo | Estado | Qué cambió |
+|---|---|---|---|
+| 1 | NO_TRADE podía decir "ENTRADA MECANICA" | Corregido | `SetupVerdict.eligible` + `blocked_reasons` (agent/setup_engine.py). `mechanical_entry` solo puede achicar `eligible`. Watcher, scheduler, cockpit y chat leen `eligible`. |
+| 2 | Alertas scalp sin R:R mínimo | Corregido | `scalp_alerts.validate_alert` = misma regla de niveles que el motor (agent/policy.py). Si falla, la alerta queda como observación con su motivo. Se eliminó la rama heredada de absorción por delta positivo. La absorción exige venta previa, flip, volumen ≥1.5x y cierre en la mitad superior. Los umbrales de delta son relativos al volumen de la vela. |
+| 3 | Sizing fuera de límites | Corregido | `policy.size_position`: tope en USD, tope de margen (`margin_max` y cuenta), costos de ida y vuelta, exposición con los trades abiertos del journal y riesgo efectivo recalculado. El freno diario sale del journal (`policy.daily_guard`). El contexto scalp conserva el `risk_pct` y la cuenta. El sizing manual del cockpit usa `/api/sizing`. |
+| 4 | Contexto HYPE incoherente | Detectado y bloqueado | `TradeContext.validate()`, escenarios long/short explícitos (`scenarios()`; también lee `fib.short_*` y `fib.long_scalp_*`). Al guardar responde 422 con los problemas. Al consumir: NO_TRADE con motivo. Se quitaron los niveles HYPE por defecto. **El YAML no se editó**: elegir el escenario vigente requiere un conteo nuevo. |
+| 5 | Nombres de patrones que afirman de más | Corregido en parte | `sweep_candidate`, `absorption_proxy` y `delta_drain_proxy` no confirman. Solo el delta a favor confirma, y el footprint real viene de ATAS. **Pendiente:** unificar la definición de divergencia CVD entre aggTrades y el backtester. |
+| 6 | Multi-TF/BTC no gobiernan | Corregido en parte | `htf_alignment`: si todas las temporalidades superiores van en contra, el setup no es A+ ni elegible. **Pendiente:** BTC como evidencia del veredicto. |
+| 7 | Fragmentos pierden contexto | Corregido | Chunks por unidad de regla con el tokenizer real (≤120 tokens, el modelo admite 128) y la ruta de encabezados en cada chunk. Al recuperar se expande la sección completa. Reglas `.mdc` sin recorte. Política activa y gatillo inyectados enteros. |
+| 8 | Consulta semántica genérica | Corregido | Consulta por dirección y patrones del veredicto, con la pregunta del usuario. Corregido `bullish`/`bearish`. Máximo 2 resultados por archivo. La nota de gatillo de la dirección va siempre (`pinned_files`). **Pendiente:** búsqueda híbrida léxica y un set etiquetado de evaluación. |
+| 9 | Corpus sin jerarquía | Corregido | `doc_type` (regla, teoría, libro, ejemplo, investigación, historial). `scope=core` = reglas y teoría, sin conversaciones ni journal. Corregidos 2% vs 7% en el checklist y en errores comunes, el error aritmético de Elder y el criterio "≥3 de N" de `entrada-mecanica.mdc`. |
+| 10 | Ventanas de evidencia mezcladas | Corregido en parte | Los campos de aggTrades tienen nombre propio (`trades_*`) y ventana en segundos. Se conserva `trades_error`. Se agregó `acquired_at`. **Pendiente:** snapshot inmutable por ciclo y la vela en curso (RSI/ATR vs volumen). |
+| 11 | Contexto sin caducidad | Corregido | `as_of` (o mtime) con máximo de 7 días. Caché que relee el archivo si cambió. Invalidación persistente: si el precio tocó la invalidación después de `as_of` (velas de 1h), queda bloqueado. |
+| 12 | Chat sin los datos prometidos | Corregido | Un solo bundle y una sola búsqueda (con la pregunta). `price_live` en la evidencia. Notas en `<documentos_de_referencia>` como material, no instrucciones. `persist=False` se respeta. El prompt aclara que el chat no tiene herramientas. |
+| 13 | Mantenimiento del índice | Corregido | Hash con versión de pipeline y modelo. Se borran huérfanos. Se recuenta tras el bootstrap. `/api/notes/status`, botón Reindexar en Settings y MCP `notes_index_status`. |
+| 14 | Emisión duplicada y trazabilidad | Corregido en parte | El cooldown del ledger limita también la notificación (por tipo de señal). El loop ya no re-emite. Cada alerta se registra con su timeframe y lado, la evidencia de ese snapshot y `policy_version`/`context_as_of`. Un snapshot por TF para ambos lados, y el aggTrades se reutiliza. **Pendiente:** presupuesto de requests y TTL por endpoint. |
+| 15 | Modelo retirado; live ≠ backtest | Corregido en parte | `config.yaml → llm.model` para chat y análisis profundo (el análisis profundo ya no usa el modelo retirado). **Pendiente:** definición de setup compartida entre replay y live. |

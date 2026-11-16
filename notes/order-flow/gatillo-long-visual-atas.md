@@ -128,3 +128,15 @@ delta flip confirmado dentro de la caja era la entrada.
 Contexto HTF en ambos casos: onda C de (4) bajista (ver `context/HYPEUSDT.yaml`).
 Por eso fueron longs contra-tendencia -> TP rapido y size reducido. El target macro
 seguia siendo mas abajo (~53), pero el rebote de absorcion/sweep era operable.
+
+## Datos que miden cada señal (cockpit -> "Order flow ATAS")
+Diccionario completo: `notes/setup-rules/datos-requeridos.md`.
+1) Precio en mi linea -> `price_in_poi` (POI ±0.1%).
+2) Pincha y vuelve -> `absorcion_en_minimo`: >=35% del volumen en el 25% inferior de la vela,
+   delta de esa zona negativo, cierre en la mitad superior.
+3) Barra gigante -> `volume_x >= 1.5` (vs media de 20 velas).
+4) Delta rojo -> verde -> `delta_reversal_intra_vela` (min delta <= -15% del vol y cierra +)
+   o `delta_flip` (vela previa <= -10% del vol, actual >= +10%).
+Frenar si aparece `imbalance_apilado_vendedor` (3+ niveles con bid >= 3x el ask diagonal).
+Con ATAS conectado el motor no da A+ en POI sin la señal 2 o la 4.
+Extra a registrar (hipotesis H2): flush de liquidaciones de longs en 15 min (z >= 2.5).

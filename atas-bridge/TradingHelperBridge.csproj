@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    ATAS indicator that streams footprint / delta / OI / big trades / DOM to the
+    Trading Cockpit (python main.py web). Build:  dotnet build -c Release
+    The DLL is copied to %APPDATA%\ATAS\Indicators by the CopyToAtas target.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>TradingHelperBridge</AssemblyName>
+    <RootNamespace>TradingHelper.AtasBridge</RootNamespace>
+    <AtasDir Condition="'$(AtasDir)' == ''">C:\Program Files (x86)\ATAS Platform</AtasDir>
+    <AtasIndicatorsDir Condition="'$(AtasIndicatorsDir)' == ''">$(APPDATA)\ATAS\Indicators</AtasIndicatorsDir>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="ATAS.Indicators">
+      <HintPath>$(AtasDir)\ATAS.Indicators.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ATAS.Types">
+      <HintPath>$(AtasDir)\ATAS.Types.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ATAS.DataFeedsCore">
+      <HintPath>$(AtasDir)\ATAS.DataFeedsCore.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="OFT.Attributes">
+      <HintPath>$(AtasDir)\OFT.Attributes.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Utils.Common">
+      <HintPath>$(AtasDir)\Utils.Common.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="CopyToAtas" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <MakeDir Directories="$(AtasIndicatorsDir)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(AtasIndicatorsDir)" SkipUnchangedFiles="true" ContinueOnError="true" />
+  </Target>
+
+</Project>

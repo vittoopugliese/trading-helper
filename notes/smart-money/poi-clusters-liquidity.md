@@ -45,3 +45,13 @@ Checklist:
 [] Si coincide con 0.618 u Optimal Trade Entry, PERFECTO.
 Order Block = bloque de ordenes = volumen esperando ser tomado.
 Revisar en ATAS el volumen acumulado en la vela del OB.
+
+================================================================
+DATOS (ver setup-rules/datos-requeridos.md)
+================================================================
+- Divergencia CVD: el motor calcula las dos lecturas sobre el delta ATAS (5 velas vs 5):
+  `agotamiento` (nuevo minimo con menos venta) y `absorcion` (minimo mas alto con mas
+  venta = la definicion de esta nota). Campo `cvd_divergence_type`.
+- SFP: OI de la vela (`oi_change` ATAS) + absorcion + liquidaciones del lado atrapado.
+- Liquidez tomada: con historial, `liq_flush` muestra cuando la toma fue forzada
+  (liquidaciones), no solo stops.

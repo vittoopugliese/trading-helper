@@ -1,0 +1,648 @@
+{
+  "corpus": {
+    "discovered_file_count": 43,
+    "current_chunk_count_if_reindexed": 553,
+    "indexed_chunk_count": 553,
+    "indexed_file_count": 43,
+    "indexed_categories": {
+      "conversacion-previa-2026-06-22.md": 29,
+      "cursor_hype_an_lisis_y_watcher.md": 45,
+      "elliott": 53,
+      "journal": 29,
+      "libros": 153,
+      "order-flow": 106,
+      "setup-rules": 88,
+      "smart-money": 21,
+      "backtest-results-2026-09-02.md": 14,
+      "backtesting-methodology.md": 15
+    },
+    "indexed_files": {
+      "notes/order-flow/ORDERFLOW.txt": 60,
+      "notes/cursor_hype_an_lisis_y_watcher.md": 45,
+      "notes/setup-rules/errores-comunes.md": 34,
+      "notes/conversacion-previa-2026-06-22.md": 29,
+      "notes/setup-rules/risk-sizing-cuenta.md": 24,
+      "notes/elliott/elliott-basics.md": 23,
+      "notes/order-flow/gatillo-long-visual-atas.md": 20,
+      "notes/elliott/structure-corrections.md": 19,
+      "notes/setup-rules/a-plus-checklist.md": 15,
+      "notes/setup-rules/gestion-trade-activo.md": 15,
+      "notes/backtesting-methodology.md": 15,
+      "notes/order-flow/entry-patterns.md": 14,
+      "notes/backtest-results-2026-09-02.md": 14,
+      "notes/order-flow/gatillo-short-visual-atas.md": 12,
+      "notes/smart-money/poi-clusters-liquidity.md": 12,
+      "notes/elliott/fib-levels.md": 11,
+      "notes/libros/plan-beig-01-smc-plan.md": 9,
+      "notes/libros/psico-tendler-01-juego-mental.md": 9,
+      "notes/libros/sintesis-confluencias.md": 9,
+      "notes/smart-money/correlacion-btc-eth-hype.md": 9,
+      "notes/journal/2026-06-20-22_HYPE_lecciones-ejecucion.md": 8,
+      "notes/libros/wyckoff-02-acumulacion.md": 8,
+      "notes/libros/wyckoff-04-spring-upthrust-tests.md": 8,
+      "notes/journal/2026-06-24_HYPE_long_absorcion.md": 7,
+      "notes/journal/2026-06-25_HYPE_long_sweep-reclaim.md": 7,
+      "notes/journal/README.md": 7,
+      "notes/libros/elder-01-triple-pantalla.md": 7,
+      "notes/libros/elder-02-indicadores.md": 7,
+      "notes/libros/elliott-02-ondas-correctivas.md": 7,
+      "notes/libros/elliott-04-personalidad-ondas.md": 7,
+      "notes/libros/elliott-05-guias-alternancia-canales.md": 7,
+      "notes/libros/fractales-01-mercados.md": 7,
+      "notes/libros/psico-elder-01-psicologia-masas.md": 7,
+      "notes/libros/psico-liderazgo-01-caracter-disciplina.md": 7,
+      "notes/libros/psico-tendler-02-emociones.md": 7,
+      "notes/libros/wyckoff-03-distribucion.md": 7,
+      "notes/libros/elder-03-gestion-dinero.md": 6,
+      "notes/libros/elliott-01-estructura-impulso.md": 6,
+      "notes/libros/psico-douglas-01-probabilidades.md": 6,
+      "notes/libros/psico-douglas-02-disciplina-creencias.md": 6,
+      "notes/libros/wyckoff-05-checklist-operativa.md": 6,
+      "notes/libros/elliott-03-fibonacci-ratios.md": 5,
+      "notes/libros/wyckoff-01-leyes.md": 5
+    },
+    "not_indexed": [],
+    "orphaned_index_files": [],
+    "hash_mismatches": [],
+    "excluded_files": [
+      "notes/_template.md",
+      "notes/indexes/Elliott.html",
+      "notes/indexes/OrderFlow.html",
+      "notes/indexes/Trading.html",
+      "notes/journal/_template-trade.md",
+      "notes/libros/_indice-libros.md",
+      "notes/sources/ELLIOTTWAVES.txt",
+      "notes/sources/SETUP_RULE_PATRON_ENTRADA.txt",
+      "notes/sources/SUP_TRADING_COURSE.txt"
+    ],
+    "indexed_chunks_lt_80_chars": 35,
+    "indexed_chunks_gt_300_chars": 329,
+    "indexed_chunks_gt_400_chars": 243,
+    "duplicate_document_occurrences": 0,
+    "source_inventory": {
+      "notes/backtest-results-2026-09-02.md": {
+        "chars": 4733,
+        "chunks": 14,
+        "tiny_chunks_lt_80_chars": 2,
+        "file_hash": "70820d172a55f468e9b661a316638e01"
+      },
+      "notes/backtesting-methodology.md": {
+        "chars": 4245,
+        "chunks": 15,
+        "tiny_chunks_lt_80_chars": 2,
+        "file_hash": "d8bd35f819e4287699cdbd597009dbbb"
+      },
+      "notes/conversacion-previa-2026-06-22.md": {
+        "chars": 9291,
+        "chunks": 29,
+        "tiny_chunks_lt_80_chars": 4,
+        "file_hash": "76da2e2b4568b8850b0097d0b559d9d5"
+      },
+      "notes/cursor_hype_an_lisis_y_watcher.md": {
+        "chars": 16641,
+        "chunks": 45,
+        "tiny_chunks_lt_80_chars": 1,
+        "file_hash": "a926a1d8697d4f9dd06e672d003d2e2f"
+      },
+      "notes/elliott/elliott-basics.md": {
+        "chars": 6026,
+        "chunks": 23,
+        "tiny_chunks_lt_80_chars": 1,
+        "file_hash": "98ea39c4dfcccbd6224a4618d926c9be"
+      },
+      "notes/elliott/fib-levels.md": {
+        "chars": 2987,
+        "chunks": 11,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "7abaa224b613acb34f04a3187af5a59d"
+      },
+      "notes/elliott/structure-corrections.md": {
+        "chars": 4619,
+        "chunks": 19,
+        "tiny_chunks_lt_80_chars": 2,
+        "file_hash": "081aa8f124ef5fb9b6b24e427174fd33"
+      },
+      "notes/journal/2026-06-20-22_HYPE_lecciones-ejecucion.md": {
+        "chars": 2822,
+        "chunks": 8,
+        "tiny_chunks_lt_80_chars": 1,
+        "file_hash": "c1645e69a1f5aed0995e1eb2e8c6c693"
+      },
+      "notes/journal/2026-06-24_HYPE_long_absorcion.md": {
+        "chars": 1787,
+        "chunks": 7,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "43d39c91bc7d589687bb0197e50967c1"
+      },
+      "notes/journal/2026-06-25_HYPE_long_sweep-reclaim.md": {
+        "chars": 1920,
+        "chunks": 7,
+        "tiny_chunks_lt_80_chars": 1,
+        "file_hash": "b9f7b12d98820d9af041531c5a069484"
+      },
+      "notes/journal/README.md": {
+        "chars": 2062,
+        "chunks": 7,
+        "tiny_chunks_lt_80_chars": 2,
+        "file_hash": "b2e4646b11706154de690d6de07bbd92"
+      },
+      "notes/libros/elder-01-triple-pantalla.md": {
+        "chars": 2230,
+        "chunks": 7,
+        "tiny_chunks_lt_80_chars": 1,
+        "file_hash": "812d83515b0e1b62ef5315a17a1e22e7"
+      },
+      "notes/libros/elder-02-indicadores.md": {
+        "chars": 2128,
+        "chunks": 7,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "e874ff8aa609c3c001b91707db33a221"
+      },
+      "notes/libros/elder-03-gestion-dinero.md": {
+        "chars": 2098,
+        "chunks": 6,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "09139918fbb60f27820695a7381d24e5"
+      },
+      "notes/libros/elliott-01-estructura-impulso.md": {
+        "chars": 1764,
+        "chunks": 6,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "143c6ff4146f045c479459e3166e1805"
+      },
+      "notes/libros/elliott-02-ondas-correctivas.md": {
+        "chars": 2107,
+        "chunks": 7,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "c6d40a2aff86039ac845bc90e1c71706"
+      },
+      "notes/libros/elliott-03-fibonacci-ratios.md": {
+        "chars": 1704,
+        "chunks": 5,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "3892a5d46bf682a41076e1564e47aa1c"
+      },
+      "notes/libros/elliott-04-personalidad-ondas.md": {
+        "chars": 1880,
+        "chunks": 7,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "732e79eded57c32e830097410d330c14"
+      },
+      "notes/libros/elliott-05-guias-alternancia-canales.md": {
+        "chars": 1904,
+        "chunks": 7,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "d846da188990418089c5383574042c31"
+      },
+      "notes/libros/fractales-01-mercados.md": {
+        "chars": 2295,
+        "chunks": 7,
+        "tiny_chunks_lt_80_chars": 1,
+        "file_hash": "ce1fed05e71d4449acd7515d8d4a8c9b"
+      },
+      "notes/libros/plan-beig-01-smc-plan.md": {
+        "chars": 2883,
+        "chunks": 9,
+        "tiny_chunks_lt_80_chars": 1,
+        "file_hash": "1a6800f8acb3501ee9f20e48f504405c"
+      },
+      "notes/libros/psico-douglas-01-probabilidades.md": {
+        "chars": 1917,
+        "chunks": 6,
+        "tiny_chunks_lt_80_chars": 1,
+        "file_hash": "9f7b814863973d2058b4c44c4ab143fc"
+      },
+      "notes/libros/psico-douglas-02-disciplina-creencias.md": {
+        "chars": 2093,
+        "chunks": 6,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "4df0ae2b5207fc0bf4c3617662884620"
+      },
+      "notes/libros/psico-elder-01-psicologia-masas.md": {
+        "chars": 2080,
+        "chunks": 7,
+        "tiny_chunks_lt_80_chars": 1,
+        "file_hash": "211b66696b4222f6d5ee43eb348b996c"
+      },
+      "notes/libros/psico-liderazgo-01-caracter-disciplina.md": {
+        "chars": 1795,
+        "chunks": 7,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "5c8a7e686e61823f7cd6b933a6af23a9"
+      },
+      "notes/libros/psico-tendler-01-juego-mental.md": {
+        "chars": 2797,
+        "chunks": 9,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "dac1b55bf6216527ec184dfd7175f9aa"
+      },
+      "notes/libros/psico-tendler-02-emociones.md": {
+        "chars": 2720,
+        "chunks": 7,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "85d3e1426ebf3dd6c292a340acc71abb"
+      },
+      "notes/libros/sintesis-confluencias.md": {
+        "chars": 3253,
+        "chunks": 9,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "2e054051a9ab30c9e45b52cc0ca7418f"
+      },
+      "notes/libros/wyckoff-01-leyes.md": {
+        "chars": 1670,
+        "chunks": 5,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "b2039617f41c3a4a1e3abc17f6a718d1"
+      },
+      "notes/libros/wyckoff-02-acumulacion.md": {
+        "chars": 2250,
+        "chunks": 8,
+        "tiny_chunks_lt_80_chars": 1,
+        "file_hash": "38ae542163be433e22790c7a8694ee03"
+      },
+      "notes/libros/wyckoff-03-distribucion.md": {
+        "chars": 2136,
+        "chunks": 7,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "eedd1205e14ae460334e32d4d0793250"
+      },
+      "notes/libros/wyckoff-04-spring-upthrust-tests.md": {
+        "chars": 2272,
+        "chunks": 8,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "4df4edf3814fcab36a6eba9c11d3e878"
+      },
+      "notes/libros/wyckoff-05-checklist-operativa.md": {
+        "chars": 2015,
+        "chunks": 6,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "50b9344e72171d2507dfbfc66fa06c4e"
+      },
+      "notes/order-flow/entry-patterns.md": {
+        "chars": 4243,
+        "chunks": 14,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "4875ac889f1af3b941dac2aad8cb3a19"
+      },
+      "notes/order-flow/gatillo-long-visual-atas.md": {
+        "chars": 6293,
+        "chunks": 20,
+        "tiny_chunks_lt_80_chars": 3,
+        "file_hash": "4698eb6617e9c6a0589b6abd0db936d6"
+      },
+      "notes/order-flow/gatillo-short-visual-atas.md": {
+        "chars": 3792,
+        "chunks": 12,
+        "tiny_chunks_lt_80_chars": 1,
+        "file_hash": "45bdc85cd178904552bcb87d1d3b10dd"
+      },
+      "notes/order-flow/ORDERFLOW.txt": {
+        "chars": 25192,
+        "chunks": 60,
+        "tiny_chunks_lt_80_chars": 1,
+        "file_hash": "7233f0cc061612e62ef550d3102d2e8e"
+      },
+      "notes/setup-rules/a-plus-checklist.md": {
+        "chars": 4194,
+        "chunks": 15,
+        "tiny_chunks_lt_80_chars": 2,
+        "file_hash": "6a08f464261f273806458f30406bd86b"
+      },
+      "notes/setup-rules/errores-comunes.md": {
+        "chars": 10790,
+        "chunks": 34,
+        "tiny_chunks_lt_80_chars": 0,
+        "file_hash": "8d5b797005ed0c97fa326f7f962e11a8"
+      },
+      "notes/setup-rules/gestion-trade-activo.md": {
+        "chars": 3908,
+        "chunks": 15,
+        "tiny_chunks_lt_80_chars": 2,
+        "file_hash": "94bfde651b7cc06a9bdbb9d809b5269f"
+      },
+      "notes/setup-rules/risk-sizing-cuenta.md": {
+        "chars": 6679,
+        "chunks": 24,
+        "tiny_chunks_lt_80_chars": 2,
+        "file_hash": "ca41bb176c4a8bb603add931167c8a8f"
+      },
+      "notes/smart-money/correlacion-btc-eth-hype.md": {
+        "chars": 2843,
+        "chunks": 9,
+        "tiny_chunks_lt_80_chars": 1,
+        "file_hash": "e430dce3e26633d24056a9a368d36815"
+      },
+      "notes/smart-money/poi-clusters-liquidity.md": {
+        "chars": 2693,
+        "chunks": 12,
+        "tiny_chunks_lt_80_chars": 1,
+        "file_hash": "97d6df6291d39238db7e6c2bf9560b66"
+      }
+    }
+  },
+  "decision_probes": {
+    "no_trade_but_mechanical_entry": {
+      "grade": "NO_TRADE",
+      "context_stale": false,
+      "context_drift_pct": 0.0,
+      "score": 0.945,
+      "direction": "long",
+      "trade_type": "scalp",
+      "summary": "NO_TRADE - LONG scalp on AUDITUSDT 1m @ POI. Score 94% (10/13 conditions met).",
+      "levels": {
+        "entry": 100.0,
+        "stop": 99.0,
+        "target": 101.0,
+        "risk_reward": 1.0,
+        "source": "context",
+        "targets_all": [
+          101.0
+        ]
+      },
+      "position_size": {
+        "account_size": 300,
+        "risk_pct": 2.0,
+        "risk_amount": 6.0,
+        "position_size": 6.0,
+        "per_unit_risk": 1.0
+      },
+      "at_poi": true,
+      "of_patterns": [
+        "delta_confirmation",
+        "book_support"
+      ],
+      "evidence": {
+        "atas": {
+          "available": false,
+          "confirmed": false,
+          "contradicted": false,
+          "signals": [],
+          "against": []
+        },
+        "liquidations": {
+          "available": false,
+          "flush": false,
+          "detail": "historial de liquidaciones insuficiente"
+        }
+      },
+      "conditions": [
+        {
+          "name": "trend_alignment",
+          "passed": true,
+          "weight": 0.04,
+          "score": 0.04,
+          "detail": "Structure trend=bullish, trade direction=long",
+          "critical": false
+        },
+        {
+          "name": "delta_cvd",
+          "passed": true,
+          "weight": 0.15,
+          "score": 0.15,
+          "detail": "CVD bias=bullish (aggTrades), delta=None, buy_ratio=0.7",
+          "critical": true
+        },
+        {
+          "name": "volume_spike",
+          "passed": true,
+          "weight": 0.1,
+          "score": 0.1,
+          "detail": "Volume ratio vs MA20 = 2.0x",
+          "critical": false
+        },
+        {
+          "name": "oi_confirmation",
+          "passed": true,
+          "weight": 0.05,
+          "score": 0.05,
+          "detail": "OI change 1h=1.0, OI=None",
+          "critical": false
+        },
+        {
+          "name": "funding_neutral",
+          "passed": true,
+          "weight": 0.03,
+          "score": 0.03,
+          "detail": "Funding rate=0.0",
+          "critical": false
+        },
+        {
+          "name": "structure_swing",
+          "passed": true,
+          "weight": 0.05,
+          "score": 0.05,
+          "detail": "Recent swings detected: 2",
+          "critical": false
+        },
+        {
+          "name": "risk_reward",
+          "passed": false,
+          "weight": 0.08,
+          "score": 0.04,
+          "detail": "R:R = 1.0 (min 2.0) [context]",
+          "critical": true
+        },
+        {
+          "name": "price_in_poi",
+          "passed": true,
+          "weight": 0.18,
+          "score": 0.18,
+          "detail": "Price=100.0, POI=[99.9, 100.1], in_poi=True, near=True",
+          "critical": false
+        },
+        {
+          "name": "invalidation_respected",
+          "passed": true,
+          "weight": 0.12,
+          "score": 0.12,
+          "detail": "Price=100.0, invalidation=99.0, bias=long",
+          "critical": true
+        },
+        {
+          "name": "of_confirmation_at_poi",
+          "passed": true,
+          "weight": 0.15,
+          "score": 0.15,
+          "detail": "Patterns=['delta_confirmation', 'book_support'], in_poi=True",
+          "critical": true
+        },
+        {
+          "name": "cvd_divergence",
+          "passed": true,
+          "weight": 0.05,
+          "score": 0.034999999999999996,
+          "detail": "CVD divergence=none",
+          "critical": false
+        },
+        {
+          "name": "atas_footprint",
+          "passed": false,
+          "weight": 0.0,
+          "score": 0.0,
+          "detail": "ATAS no disponible: bridge ATAS sin datos",
+          "critical": false
+        },
+        {
+          "name": "liquidation_flush",
+          "passed": false,
+          "weight": 0.0,
+          "score": 0.0,
+          "detail": "historial de liquidaciones insuficiente",
+          "critical": false
+        }
+      ],
+      "mechanical_entry": true
+    },
+    "opposite_higher_timeframes": {
+      "grade": "A+",
+      "score": 0.985,
+      "direction": "long",
+      "htf_trends": "bearish in every supplied higher timeframe"
+    },
+    "atas_against_but_mechanical_entry": {
+      "grade": "B",
+      "mechanical_entry": true,
+      "atas_evidence": {
+        "available": true,
+        "confirmed": false,
+        "contradicted": true,
+        "signals": [],
+        "against": [
+          "delta_flip"
+        ]
+      }
+    },
+    "actual_context_at_poi_mid": {
+      "bias": "short",
+      "levels": {
+        "entry": 69.5,
+        "stop": 69.1,
+        "target": 70.5,
+        "risk_reward": 2.5,
+        "source": "context",
+        "targets_all": [
+          70.5,
+          70.8,
+          71.2
+        ]
+      },
+      "directional_levels_sane": false
+    },
+    "margin_exceeds_account": {
+      "account_size": 300,
+      "risk_pct": 7.0,
+      "risk_amount": 21.0,
+      "position_size": 42.0,
+      "per_unit_risk": 0.5,
+      "derived_notional": 4200.0,
+      "derived_margin_at_10x": 420.0
+    },
+    "configured_usd_risk_cap_ignored": {
+      "account_size": 1000,
+      "risk_pct": 7.0,
+      "risk_amount": 70.0,
+      "position_size": 70.0,
+      "per_unit_risk": 1.0
+    },
+    "volume_spike_without_sweep_price_evidence": {
+      "patterns": [
+        "liquidity_sweep"
+      ],
+      "confirmed": true,
+      "in_poi": true
+    },
+    "scalp_now_without_min_rr_or_absorption_sequence": [
+      {
+        "direction": "long",
+        "trigger": "absorption_at_support",
+        "urgency": "now",
+        "price": 100.0,
+        "entry": 100.0,
+        "stop": 99.0,
+        "target": 100.1,
+        "detail": "Absorcion en soporte (99.9, 100.1) delta=+400 buy_ratio=0.70"
+      }
+    ],
+    "scalp_context_risk_pct": 2.0,
+    "stored_context_risk_pct": 7.0
+  },
+  "indexing_probes": {
+    "cold_index_first_query": {
+      "index_called": true,
+      "requested_top_k": 8,
+      "actual_n_results": 1
+    },
+    "force_reindex_with_no_source_files": {
+      "stats": {
+        "indexed_files": 0,
+        "indexed_chunks": 0,
+        "skipped_files": 0,
+        "total_files": 0
+      },
+      "delete_called": false
+    },
+    "scope_core_filter": {
+      "category": {
+        "$ne": "libros"
+      }
+    },
+    "heading_split_example": [
+      "# Parent",
+      "## Child\nA complete rule."
+    ]
+  },
+  "chat_rules": {
+    "analisis-5min-gatillo.mdc": {
+      "total_chars": 3337,
+      "retained_chars": 2000,
+      "chars_removed": 1337,
+      "last_140_chars_passed_to_chat": "s/journal/` — casos previos y lecciones de ejecucion (errores a no repetir).\n- `context/HYPEUSDT.yaml` — bias, POI, invalidacion, targets vi"
+    },
+    "entrada-mecanica.mdc": {
+      "total_chars": 3165,
+      "retained_chars": 2000,
+      "chars_removed": 1165,
+      "last_140_chars_passed_to_chat": "buy_ratio, delta momentáneo). Solo invalidar si rompe el SL estructural definido ANTES de entrar.\n- Las alertas del watcher en TF altos (15m"
+    },
+    "inicio-sesion.mdc": {
+      "total_chars": 2635,
+      "retained_chars": 2000,
+      "chars_removed": 635,
+      "last_140_chars_passed_to_chat": "de-activo.md`.\n\n## 5. Notas que SIEMPRE debo consultar al analizar/gatillar\n- `notes/order-flow/gatillo-long-visual-atas.md` y `gatillo-shor"
+    }
+  },
+  "scan_fetch_counts": {
+    "invocations": {
+      "fetch_ticker_price": 2,
+      "update_cache": 1,
+      "load_klines_df": 42,
+      "fetch_agg_trades": 13,
+      "fetch_depth": 19,
+      "fetch_open_interest": 7,
+      "fetch_open_interest_hist": 14,
+      "fetch_funding_rate": 7,
+      "fetch_long_short_ratio": 7
+    },
+    "minimum_rest_requests_without_backfill": 112,
+    "mode": "one HYPEUSDT scalp cycle, both biases, primary 1m"
+  },
+  "audited_at_utc": "2026-10-12T23:48:08.880621+00:00",
+  "source_sha256": {
+    "agent/knowledge.py": "44877263c47e9a945bf6d3e7807f80d6d76f5bcd202f3cebcce56b7e93a162a4",
+    "agent/metrics.py": "59e48acf131f892e818706e8b75f04f27561d6c8f69832d61810affcf3900723",
+    "agent/setup_engine.py": "e92ca8654518ae4bea409d18bc8c05aa258b80a1f432a78fc3ff07824246ebc7",
+    "agent/watcher.py": "ef9732ccc6b5948cdf47da6bd5dcea1ea520b86acafe6a671b25e391b9cec987",
+    "agent/scalp_alerts.py": "a6ab22e7908b5f61aa387e56c5bbce27ef9d6c5e83b420484e94486d4c0a2e1f",
+    "agent/analyst.py": "56f9f48992ff53b1fabcecc5c5f7650a403cacd3f72d223004c3dca996d611eb",
+    "agent/context.py": "e881dee65814cb37a8aae1f1f628c1c162e0137cc9c65995a2e70021cee88444",
+    "agent/market_data.py": "262eb962fa064bac50bca7ad6ea658b2512bd9760767b4937a04984dbcfd58bb",
+    "agent/atas_feed.py": "53a41995fac7eac272510751a46832a88fc986914f49ebb23dd345d7bafb2b8e",
+    "agent/liquidations.py": "a4ea2a132417615bb36a0381b9a3e40169120c37be4a2f7397d38e57abb291b7",
+    "agent/signal_ledger.py": "522e3e02420edc2583fb518d62f7136d08c72f712eaecfbcc6df074436f37d9b",
+    "web/chat.py": "f3e8a307c178e845f24973ac2dd3f31fdfe2ec6b62de71a21732690b3afa34a4",
+    "web/services.py": "3b7ff893a75bdaf1ef569aef0c2bb51fa90af9aae4e36eb72f4619e25007cb46",
+    "web/static/cockpit.js": "3609922df23867dd0ed021f762669b0ebeff7bd5d3ba7e9f4689964b15770fa1",
+    "config.yaml": "8e393beea7ddf6bc9bd00d63e9578a531ead0dd0cc5a499651dd81688ace4b36",
+    "context/HYPEUSDT.yaml": "4646de13150ba726c76c42ec11af5c102ba6e6cef480469077f4eb38376f9039"
+  }
+}

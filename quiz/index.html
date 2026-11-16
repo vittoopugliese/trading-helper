@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz Trading</title>
+<style>
+  :root {
+    --bg: #0d0f12;
+    --panel: #15181d;
+    --panel-2: #1b1f26;
+    --line: #262b33;
+    --text: #e6e8eb;
+    --muted: #8a919c;
+    --accent: #d9a441;
+    --ok: #2fb36b;
+    --ok-bg: #12301f;
+    --bad: #e0524d;
+    --bad-bg: #3a1615;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  body {
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex; justify-content: center;
+    padding: 24px 16px 48px;
+  }
+  main { width: 100%; max-width: 680px; min-width: 0; }
+
+  header {
+    display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap;
+    gap: 6px 12px; margin-bottom: 20px;
+  }
+  h1 { font-size: 15px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin: 0; color: var(--muted); }
+  h1 b { color: var(--accent); font-weight: 700; }
+  .stats { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; }
+  .stats b { color: var(--text); font-weight: 600; }
+
+  .progress { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-bottom: 18px; }
+  .progress span { height: 4px; border-radius: 2px; background: var(--line); }
+  .progress span.ok { background: var(--ok); }
+  .progress span.bad { background: var(--bad); }
+  .progress span.now { background: var(--accent); }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+  .meta { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+  .chip { border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; }
+  .kind { color: var(--accent); }
+  .question { font-size: 19px; line-height: 1.45; font-weight: 500; margin: 0 0 20px; overflow-wrap: anywhere; }
+
+  .options { display: grid; gap: 10px; }
+  .opt {
+    display: flex; align-items: flex-start; gap: 12px; width: 100%;
+    text-align: left; font: inherit; color: var(--text);
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 14px; cursor: pointer; transition: border-color .12s, background .12s;
+    overflow-wrap: anywhere;
+  }
+  .opt:hover:not(:disabled) { border-color: #3a414c; background: #20252d; }
+  .opt:disabled { cursor: default; }
+  .opt .k {
+    flex: none; width: 22px; height: 22px; border-radius: 5px; border: 1px solid var(--line);
+    display: grid; place-items: center; font-size: 12px; color: var(--muted); margin-top: 1px;
+  }
+  .opt.ok { border-color: var(--ok); background: var(--ok-bg); }
+  .opt.ok .k { border-color: var(--ok); color: var(--ok); }
+  .opt.bad { border-color: var(--bad); background: var(--bad-bg); }
+  .opt.bad .k { border-color: var(--bad); color: var(--bad); }
+  .options.answered .opt:not(.ok):not(.bad) { opacity: .45; }
+
+  .tf { grid-template-columns: 1fr 1fr; }
+  .tf .opt { justify-content: center; font-weight: 600; }
+
+  .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; min-height: 40px; }
+  .hint { font-size: 12px; color: var(--muted); }
+  button.primary {
+    font: inherit; font-weight: 600; color: #111; background: var(--accent);
+    border: 0; border-radius: 8px; padding: 9px 18px; cursor: pointer;
+  }
+  button.primary:hover { filter: brightness(1.08); }
+  button.ghost {
+    font: inherit; font-size: 13px; color: var(--muted); background: transparent;
+    border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; cursor: pointer;
+  }
+  .hidden { display: none !important; }
+
+  .end { text-align: center; padding: 34px 22px; }
+  .end .big { font-size: 64px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+  .end .big small { font-size: 28px; color: var(--muted); font-weight: 500; }
+  .end .msg { color: var(--muted); margin: 10px 0 24px; }
+  .end .record { color: var(--accent); font-weight: 600; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 26px; }
+  .grid div { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 6px; }
+  .grid b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .grid span { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+
+  @media (max-width: 520px) {
+    .question { font-size: 17px; }
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .end .big { font-size: 52px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Quiz <b>Trading</b></h1>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <div class="progress" id="progress"></div>
+
+  <section class="card" id="quiz">
+    <div class="meta">
+      <span class="chip" id="topic"></span>
+      <span><span class="kind" id="kind"></span> · <span id="count"></span></span>
+    </div>
+    <p class="question" id="question"></p>
+    <div class="options" id="options"></div>
+    <div class="foot">
+      <span class="hint" id="hint">Teclas 1–4 para responder</span>
+      <button class="primary hidden" id="next">Siguiente →</button>
+    </div>
+  </section>
+
+  <section class="card end hidden" id="end">
+    <div class="big" id="final"></div>
+    <p class="msg" id="msg"></p>
+    <div class="grid">
+      <div><b id="s-best">0</b><span>Mejor run</span></div>
+      <div><b id="s-runs">0</b><span>Runs</span></div>
+      <div><b id="s-streak">0</b><span>Mejor racha</span></div>
+      <div><b id="s-avg">0</b><span>Promedio</span></div>
+    </div>
+    <button class="primary" id="again">Otra run (Enter)</button>
+  </section>
+</main>
+
+<script>
+  // Banco de preguntas: cada archivo en bank/ llama QB.add(fuente, [...]).
+  // Formato: ["pregunta", "correcta", "distractor", "distractor", "distractor"]  |  ["afirmación", true|false]
+  window.QB = { items: [], add(src, list) { list.forEach(q => this.items.push({ src, q })); } };
+</script>
+<script src="bank/elliott-libros.js"></script>
+<script src="bank/elliott-notas.js"></script>
+<script src="bank/elliott-avanzado.js"></script>
+<script src="bank/manual-elliott-html.js"></script>
+<script src="bank/estructura-entradas.js"></script>
+<script src="bank/gatillos-atas.js"></script>
+<script src="bank/orderflow-curso.js"></script>
+<script src="bank/roadmap-atas.js"></script>
+<script src="bank/manual-maestro.js"></script>
+<script src="bank/wyckoff-elder.js"></script>
+<script src="bank/psicologia.js"></script>
+<script src="bank/fractales-beig-sintesis.js"></script>
+<script src="bank/checklist-gestion.js"></script>
+<script src="bank/errores-comunes.js"></script>
+<script src="bank/riesgo-datos.js"></script>
+<script src="bank/setup12-smc.js"></script>
+<script src="bank/correlacion-research.js"></script>
+<script src="bank/journal.js"></script>
+<script src="bank/backtesting.js"></script>
+<script src="bank/elliott-backtest-conversacion.js"></script>
+<script src="bank/guia-hype-config.js"></script>
+<script>
+(() => {
+  const RUN_LEN = 10;
+  const TF_SHARE = 0.2; // fracción de preguntas de 4 opciones que se muestran como V/F
+  const STORE = "quiz-trading-stats-v1";
+
+  const TOPICS = {
+    "elliott-libros": "Elliott · libros",
+    "elliott-notas": "Elliott · tus notas",
+    "elliott-avanzado": "Elliott avanzado",
+    "manual-elliott-html": "Elliott + OF",
+    "estructura-entradas": "Estructura y entradas",
+    "gatillos-atas": "Gatillos ATAS",
+    "orderflow-curso": "Order flow · curso",
+    "roadmap-atas": "Roadmap ATAS",
+    "manual-maestro": "Manual maestro",
+    "wyckoff-elder": "Wyckoff · Elder",
+    "psicologia": "Psicología",
+    "fractales-beig-sintesis": "Fractales · BEIG · síntesis",
+    "checklist-gestion": "Checklist y gestión",
+    "errores-comunes": "Errores comunes",
+    "riesgo-datos": "Riesgo y datos",
+    "setup12-smc": "Setup 1-2 · SMC",
+    "correlacion-research": "Correlación · research",
+    "journal": "Journal",
+    "backtesting": "Backtesting",
+    "elliott-backtest-conversacion": "Backtest EW · historial",
+    "guia-hype-config": "Guía HYPE · config",
+  };
+
+  const $ = id => document.getElementById(id);
+  const bank = QB.items;
+
+  // ---------- stats (localStorage, tolerante a fallos)
+  function loadStats() {
+    try { return Object.assign({ best: 0, runs: 0, total: 0, bestStreak: 0, streak: 0 }, JSON.parse(localStorage.getItem(STORE) || "{}")); }
+    catch { return { best: 0, runs: 0, total: 0, bestStreak: 0, streak: 0 }; }
+  }
+  function saveStats() { try { localStorage.setItem(STORE, JSON.stringify(stats)); } catch {} }
+  let stats = loadStats();
+
+  // ---------- helpers
+  function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+  function pickDistinct(n) {
+    const idx = shuffle([...bank.keys()]).slice(0, n);
+    return idx.map(i => bank[i]);
+  }
+  // Convierte pregunta + opción en una afirmación para V/F
+  function asStatement(q, opt) {
+    const blanks = (q.match(/___/g) || []).length;
+    if (blanks === 1) return q.replace("___", opt);
+    if (blanks > 1) {
+      const parts = opt.split(" / ");
+      if (parts.length === blanks) { let i = 0; return q.replace(/___/g, () => parts[i++]); }
+    }
+    return q.replace(/[\s:…]*(\.\.\.)?\s*$/, "") + " → " + opt;
+  }
+  const canBeTF = q => q.length === 5 && !/\bNO\b/.test(q[0]) && !/[Nn]inguna|[Tt]odas/.test(q[1]);
+
+  // Construye el item a mostrar
+  function build(entry) {
+    const q = entry.q;
+    if (q.length === 2) {
+      return { src: entry.src, kind: "V / F", text: q[0], options: ["Verdadero", "Falso"], answer: q[1] ? 0 : 1, tf: true };
+    }
+    if (canBeTF(q) && Math.random() < TF_SHARE) {
+      const truthy = Math.random() < 0.5;
+      const opt = truthy ? q[1] : q[2 + Math.floor(Math.random() * 3)];
+      return { src: entry.src, kind: "V / F", text: asStatement(q[0], opt), options: ["Verdadero", "Falso"], answer: truthy ? 0 : 1, tf: true };
+    }
+    const opts = shuffle(q.slice(1).map((t, i) => ({ t, ok: i === 0 })));
+    return { src: entry.src, kind: "4 opciones", text: q[0], options: opts.map(o => o.t), answer: opts.findIndex(o => o.ok), tf: false };
+  }
+
+  // ---------- run state
+  let run = [], pos = 0, score = 0, results = [], answered = false;
+
+  function startRun() {
+    run = pickDistinct(RUN_LEN).map(build);
+    pos = 0; score = 0; results = []; answered = false;
+    $("end").classList.add("hidden");
+    $("quiz").classList.remove("hidden");
+    render();
+  }
+
+  function renderProgress() {
+    $("progress").innerHTML = Array.from({ length: RUN_LEN }, (_, i) => {
+      const cls = i < results.length ? (results[i] ? "ok" : "bad") : (i === pos ? "now" : "");
+      return `<span class="${cls}"></span>`;
+    }).join("");
+  }
+
+  function renderStats() {
+    $("stats").innerHTML = `Score <b>${score}</b> · Racha <b>${stats.streak}</b> · Récord <b>${stats.best}/10</b>`;
+  }
+
+  function render() {
+    const item = run[pos];
+    answered = false;
+    $("topic").textContent = TOPICS[item.src] || item.src;
+    $("kind").textContent = item.kind;
+    $("count").textContent = `${pos + 1}/${RUN_LEN}`;
+    $("question").textContent = item.text;
+    const box = $("options");
+    box.className = "options" + (item.tf ? " tf" : "");
+    box.innerHTML = "";
+    item.options.forEach((t, i) => {
+      const b = document.createElement("button");
+      b.className = "opt";
+      b.innerHTML = `<span class="k">${item.tf ? (i ? "F" : "V") : i + 1}</span><span></span>`;
+      b.lastChild.textContent = t;
+      b.addEventListener("click", () => answer(i));
+      box.appendChild(b);
+    });
+    $("hint").textContent = item.tf ? "Teclas V / F (o 1 / 2)" : "Teclas 1–4 para responder";
+    $("next").classList.add("hidden");
+    renderProgress(); renderStats();
+  }
+
+  function answer(i) {
+    if (answered) return;
+    answered = true;
+    const item = run[pos];
+    const ok = i === item.answer;
+    const btns = [...$("options").children];
+    btns.forEach(b => b.disabled = true);
+    btns[i].classList.add(ok ? "ok" : "bad");   // solo se colorea la elegida: nunca se revela la correcta
+    $("options").classList.add("answered");
+    results.push(ok);
+    if (ok) { score++; stats.streak++; stats.bestStreak = Math.max(stats.bestStreak, stats.streak); }
+    else stats.streak = 0;
+    saveStats();
+    $("next").textContent = pos === RUN_LEN - 1 ? "Ver resultado →" : "Siguiente →";
+    $("next").classList.remove("hidden");
+    $("hint").textContent = "Enter para seguir";
+    renderProgress(); renderStats();
+  }
+
+  function next() {
+    if (!answered) return;
+    if (pos < RUN_LEN - 1) { pos++; render(); return; }
+    finish();
+  }
+
+  function finish() {
+    const prevBest = stats.best;
+    stats.runs++; stats.total += score; stats.best = Math.max(stats.best, score);
+    saveStats();
+    $("quiz").classList.add("hidden");
+    $("end").classList.remove("hidden");
+    $("final").innerHTML = `${score}<small>/${RUN_LEN}</small>`;
+    const msg = $("msg");
+    if (score > prevBest && stats.runs > 1) { msg.innerHTML = `<span class="record">Nuevo récord.</span> Antes: ${prevBest}/10`; }
+    else if (score === RUN_LEN) { msg.innerHTML = `<span class="record">Run perfecta.</span>`; }
+    else { msg.textContent = `Récord: ${stats.best}/10`; }
+    $("s-best").textContent = `${stats.best}/10`;
+    $("s-runs").textContent = stats.runs;
+    $("s-streak").textContent = stats.bestStreak;
+    $("s-avg").textContent = (stats.total / stats.runs).toFixed(1);
+    pos = RUN_LEN; renderProgress(); renderStats();
+  }
+
+  // ---------- eventos
+  $("next").addEventListener("click", next);
+  $("again").addEventListener("click", startRun);
+  document.addEventListener("keydown", e => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const onEnd = !$("end").classList.contains("hidden");
+    if (onEnd) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); startRun(); } return; }
+    if (answered) { if (e.key === "Enter" || e.key === " " || e.key === "ArrowRight") { e.preventDefault(); next(); } return; }
+    const item = run[pos]; if (!item) return;
+    const k = e.key.toLowerCase();
+    if (item.tf) { if (k === "v" || k === "1") answer(0); else if (k === "f" || k === "2") answer(1); }
+    else if (/^[1-4]$/.test(k)) answer(+k - 1);
+  });
+
+  if (!bank.length) { $("question").textContent = "No se cargó ninguna pregunta. Revisá la carpeta bank/."; return; }
+  startRun();
+})();
+</script>
+</body>
+</html>

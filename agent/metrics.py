@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Any
 
 import numpy as np
@@ -37,6 +38,9 @@ class MarketSnapshot:
     derivatives: dict[str, Any] = field(default_factory=dict)
     context_timeframes: dict[str, dict[str, Any]] = field(default_factory=dict)
     trade_context: dict[str, Any] | None = None
+    atas: dict[str, Any] = field(default_factory=dict)
+    liquidations: dict[str, Any] = field(default_factory=dict)
+    acquired_at: str = ""  # when the evidence was fetched (timestamp = candle open time)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -51,6 +55,9 @@ class MarketSnapshot:
             "derivatives": self.derivatives,
             "context_timeframes": self.context_timeframes,
             "trade_context": self.trade_context,
+            "atas": self.atas,
+            "liquidations": self.liquidations,
+            "acquired_at": self.acquired_at,
         }
 
 
@@ -74,7 +81,7 @@ def compute_real_order_flow(symbol: str) -> dict[str, Any]:
     div_lookback = of_cfg.get("divergence_lookback", 20)
     book_ratio_thresh = cfg["thresholds"].get("book_imbalance_ratio", 1.3)
 
-    result: dict[str, Any] = {"source": "aggTrades"}
+    result: dict[str, Any] = {"source": "aggTrades", "window": f"ultimos {lookback} aggTrades"}
 
     try:
         trades = market_data.fetch_agg_trades(symbol)
@@ -110,15 +117,19 @@ def compute_real_order_flow(symbol: str) -> dict[str, Any]:
     else:
         bias = "mixed"
 
+    times = [t.get("time") for t in trades if t.get("time") is not None]
+    # Names carry their unit: these windows are trades, not candles (they used to overwrite
+    # the candle fields with the same name, so "_5" stopped meaning five candles).
     result.update(
         {
-            "last_delta": round(last_delta, 4),
+            "trades_last_delta": round(last_delta, 4),
             "recent_delta_sum": round(recent_sum, 4),
-            "cvd": round(last_cvd, 4),
-            "cvd_slope_5": round(cvd_slope, 4),
+            "trades_cvd": round(last_cvd, 4),
+            "trades_cvd_slope_5trades": round(cvd_slope, 4),
             "bias": bias,
             "buy_ratio": buy_ratio,
             "trade_count": len(trades),
+            "trades_window_sec": round((max(times) - min(times)) / 1000, 1) if len(times) >= 2 else None,
         }
     )
 
@@ -177,36 +188,34 @@ def detect_of_pattern_at_poi(
     divergence = order_flow.get("cvd_divergence")
     vol_spike = order_flow.get("volume_spike_at_poi", False)
 
+    # Only an aggressor flow on our side confirms (signal 4 of the gatillo). The rest are
+    # labelled *_proxy / *_candidate: this function sees aggregates, not the candle sequence,
+    # the wick or the footprint, so it cannot claim a sweep or an absorption happened.
+    # The real footprint confirmation comes from ATAS (setup_engine atas_footprint).
     if direction == "long":
         if bias == "bullish" or buy_ratio > 0.55:
             patterns.append("delta_confirmation")
             confirmed = True
         if book_bias == "bullish":
             patterns.append("book_support")
-            confirmed = True
         if divergence == "bullish":
             patterns.append("cvd_bullish_divergence")
         if in_poi and bias == "mixed" and buy_ratio >= absorption_ratio:
-            patterns.append("absorption")
-            confirmed = True
+            patterns.append("absorption_proxy")
         if in_poi and vol_spike:
-            patterns.append("liquidity_sweep")
-            confirmed = True
+            patterns.append("sweep_candidate")
     elif direction == "short":
         if bias == "bearish" or buy_ratio < 0.45:
             patterns.append("delta_confirmation")
             confirmed = True
         if book_bias == "bearish":
             patterns.append("book_resistance")
-            confirmed = True
         if divergence == "bearish":
             patterns.append("cvd_bearish_divergence")
         if in_poi and bias == "mixed" and buy_ratio <= (1 - absorption_ratio):
-            patterns.append("delta_drain")
-            confirmed = True
+            patterns.append("delta_drain_proxy")
         if in_poi and vol_spike:
-            patterns.append("liquidity_sweep")
-            confirmed = True
+            patterns.append("sweep_candidate")
 
     return {
         "patterns": patterns,
@@ -335,11 +344,16 @@ def compute_order_flow(df: pd.DataFrame) -> dict[str, Any]:
 
 
 def merge_order_flow(kline_of: dict[str, Any], real_of: dict[str, Any]) -> dict[str, Any]:
-    """Prefer real aggTrades data; keep kline fields as fallback."""
+    """Candle fields keep their meaning; aggTrades adds its own fields and the bias.
+
+    If aggTrades failed, the error is kept (`trades_error`) and the bias stays from candles.
+    """
     if "error" in real_of:
-        return kline_of
-    merged = {**kline_of, **real_of}
-    merged["recent_delta_sum_5"] = real_of.get("recent_delta_sum", kline_of.get("recent_delta_sum_5"))
+        return {**kline_of, "trades_error": real_of["error"], "bias_source": "klines"}
+    merged = {**kline_of, **{k: v for k, v in real_of.items() if k != "source"}}
+    merged["kline_bias"] = kline_of.get("bias")
+    merged["bias_source"] = "aggTrades"
+    merged["source"] = "klines+aggTrades"
     return merged
 
 
@@ -396,46 +410,36 @@ def suggest_levels(
     cfg = get_config()
     price = float(df["close"].iloc[-1])
 
-    # Contexto viejo (precio lejos del POI) = niveles ficticios. Se descarta y se cae al
-    # calculo por estructura/ATR en vez de emitir un stop del lado equivocado del entry.
-    ctx_drift = trade_context.poi_drift_pct(price) if trade_context else None
-    ctx_stale = bool(trade_context and trade_context.has_poi() and trade_context.is_stale(price))
+    # Context levels are used only when the scenario for THIS direction is coherent (SL and TP
+    # on the right side of the POI), fresh in price (POI within context_stale_pct) and in time
+    # (edited within context_max_age_days). Otherwise ATR/structure levels, labelled why.
+    scenario = trade_context.scenario(direction) if trade_context and direction in ("long", "short") else None
+    ctx_drift = None
+    fallback_reason = None
+    if trade_context and trade_context.has_poi() and scenario is None:
+        fallback_reason = f"sin escenario {direction} coherente en el contexto"
+    if scenario:
+        lo, hi = scenario["poi_low"], scenario["poi_high"]
+        ctx_drift = 0.0 if lo <= price <= hi else (lo - price if price < lo else price - hi) / price
+        if ctx_drift > float(cfg["thresholds"].get("context_stale_pct", 0.08)):
+            fallback_reason = "contexto desactualizado"
+        elif trade_context.is_expired():
+            fallback_reason = f"contexto vencido ({trade_context.age_days():.0f} dias)"
+    ctx_stale = fallback_reason == "contexto desactualizado"
 
-    if trade_context and trade_context.has_poi() and not ctx_stale:
-        entry = trade_context.poi_mid() or price
-        stop = trade_context.invalidation
-        target = trade_context.targets[0] if trade_context.targets else None
-
-        if stop is None:
-            indicators = compute_indicators(df)
-            structure = compute_structure(df)
-            atr = indicators.get("atr") or 0.0
-            mult_stop = cfg["thresholds"]["atr_stop_multiplier"]
-            if direction == "long":
-                stop = structure.get("last_swing_low") or (price - atr * mult_stop)
-            elif direction == "short":
-                stop = structure.get("last_swing_high") or (price + atr * mult_stop)
-
-        if target is None:
-            indicators = compute_indicators(df)
-            atr = indicators.get("atr") or 0.0
-            mult_target = cfg["thresholds"]["atr_target_multiplier"]
-            target = price + atr * mult_target if direction == "long" else price - atr * mult_target
-
-        risk = abs(entry - stop) if stop else 0
-        reward = abs(target - entry) if target else 0
-        rr = round(reward / risk, 2) if risk > 0 else 0.0
-
-        levels: dict[str, float | None | str] = {
+    if scenario and fallback_reason is None:
+        entry = (scenario["poi_low"] + scenario["poi_high"]) / 2
+        stop = scenario["invalidation"]
+        target = scenario["targets"][0]
+        rr = round(abs(target - entry) / abs(entry - stop), 2) if entry != stop else 0.0
+        return {
             "entry": round(float(entry), 6),
-            "stop": round(float(stop), 6) if stop else None,
-            "target": round(float(target), 6) if target else None,
+            "stop": round(float(stop), 6),
+            "target": round(float(target), 6),
             "risk_reward": rr,
-            "source": "context",
+            "source": f"context ({scenario['source']})",
+            "targets_all": scenario["targets"],  # type: ignore[dict-item]
         }
-        if trade_context.targets:
-            levels["targets_all"] = trade_context.targets  # type: ignore[assignment]
-        return levels
 
     indicators = compute_indicators(df)
     structure = compute_structure(df)
@@ -462,7 +466,7 @@ def suggest_levels(
         "stop": round(float(stop), 6) if stop else None,
         "target": round(float(target), 6) if target else None,
         "risk_reward": rr,
-        "source": "atr (contexto desactualizado)" if ctx_stale else "atr",
+        "source": f"atr ({fallback_reason})" if fallback_reason else "atr",
     }
     if ctx_stale:
         out["context_stale"] = True  # type: ignore[assignment]
@@ -475,27 +479,27 @@ def compute_position_size(
     stop: float | None,
     account_size: float | None = None,
     risk_pct: float | None = None,
-) -> dict[str, float | None]:
-    """2% risk rule position sizing."""
-    cfg = get_config()
-    risk_cfg = cfg.get("risk", {})
-    account = account_size or risk_cfg.get("default_account_size", 10000)
-    risk = risk_pct or risk_cfg.get("max_risk_pct", 2.0)
+    open_trades: int | None = None,
+) -> dict[str, Any]:
+    """Position size under every configured cap (see agent/policy.size_position)."""
+    from agent import policy
 
-    if stop is None or entry == stop:
-        return {"account_size": account, "risk_pct": risk, "risk_amount": None, "position_size": None}
+    return policy.size_position(entry, stop, account=account_size, risk_pct=risk_pct, open_trades=open_trades)
 
-    risk_amount = account * (risk / 100)
-    per_unit_risk = abs(entry - stop)
-    position_size = round(risk_amount / per_unit_risk, 4) if per_unit_risk > 0 else None
 
-    return {
-        "account_size": account,
-        "risk_pct": risk,
-        "risk_amount": round(risk_amount, 2),
-        "position_size": position_size,
-        "per_unit_risk": round(per_unit_risk, 6),
-    }
+def compute_external_flow(symbol: str, timeframe: str) -> tuple[dict[str, Any], dict[str, Any]]:
+    """ATAS footprint (if the bridge is streaming) + live liquidations. Never raises."""
+    from agent import atas_feed, liquidations
+
+    try:
+        atas = atas_feed.best_snapshot(symbol, timeframe)
+    except Exception as exc:
+        atas = {"available": False, "reason": f"error ATAS: {exc}"}
+    try:
+        liq = liquidations.summary(symbol)
+    except Exception as exc:
+        liq = {"ready": False, "error": str(exc)}
+    return atas, liq
 
 
 def build_timeframe_summary(df: pd.DataFrame) -> dict[str, Any]:
@@ -548,6 +552,8 @@ def build_snapshot(
         derivatives=compute_derivatives(symbol),
         trade_context=ctx.to_dict() if ctx else None,
     )
+    snapshot.atas, snapshot.liquidations = compute_external_flow(symbol, timeframe)
+    snapshot.acquired_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
     if include_context:
         cfg = get_config()

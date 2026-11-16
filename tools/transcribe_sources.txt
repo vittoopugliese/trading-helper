@@ -1,0 +1,3 @@
+# Carpetas a transcribir, una por linea. Se recorren con subcarpetas.
+# Lo ya transcripto se saltea, asi que se pueden agregar carpetas nuevas en cualquier momento.
+C:/Users/torib/Desktop/Imagenes/Trading/CriptoAcademy

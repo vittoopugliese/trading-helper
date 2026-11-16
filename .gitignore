@@ -21,3 +21,14 @@ reports/backtests/
 # OS
 .DS_Store
 Thumbs.db
+
+# ATAS bridge build output
+atas-bridge/bin/
+atas-bridge/obj/
+data/atas.db
+data/liquidations.db
+data/signals.db
+
+# Raw course transcripts (local only, copyrighted material)
+knowledge_raw/
+.venv-transcribe/

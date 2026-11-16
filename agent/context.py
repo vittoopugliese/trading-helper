@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -10,7 +11,11 @@ import yaml
 
 from agent.config import PROJECT_ROOT, get_config, resolve_path
 
-_cache: dict[str, "TradeContext | None"] = {}
+# symbol -> (file mtime or None when missing, parsed context). Re-read when the file changes,
+# so an edit from the web, the CLI or a text editor reaches a running watcher.
+_cache: dict[str, tuple[float | None, "TradeContext | None"]] = {}
+
+DIRECTIONS = ("long", "short")
 
 
 @dataclass
@@ -30,6 +35,8 @@ class TradeContext:
     account_size: float | None = None
     risk_pct: float = 2.0
     chart_image: str = ""
+    as_of: str = ""  # ISO timestamp of the last edit; age limit in thresholds.context_max_age_days
+    scenarios_raw: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -45,6 +52,8 @@ class TradeContext:
             "account_size": self.account_size,
             "risk_pct": self.risk_pct,
             "chart_image": self.chart_image,
+            "as_of": self.as_of,
+            **({"scenarios": self.scenarios_raw} if self.scenarios_raw else {}),
         }
 
     @classmethod
@@ -84,6 +93,8 @@ class TradeContext:
             account_size=float(data["account_size"]) if data.get("account_size") is not None else None,
             risk_pct=float(data.get("risk_pct", 2.0)),
             chart_image=str(data.get("chart_image", "")),
+            as_of=str(data.get("as_of") or ""),
+            scenarios_raw=dict(data.get("scenarios") or {}),
         )
 
     def has_poi(self) -> bool:
@@ -146,6 +157,88 @@ class TradeContext:
             max_drift_pct = float(get_config()["thresholds"].get("context_stale_pct", 0.08))
         return drift > max_drift_pct
 
+    # ------------------------------------------------------------------ scenarios
+
+    def main_geometry(self) -> str | None:
+        """Direction implied by the main POI / invalidation / targets, None if incoherent."""
+        if not self.has_poi() or self.invalidation is None:
+            return None
+        lo, hi, inv = float(self.poi_low), float(self.poi_high), float(self.invalidation)  # type: ignore[arg-type]
+        if inv < lo and all(t > hi for t in self.targets):
+            return "long"
+        if inv > hi and all(t < lo for t in self.targets):
+            return "short"
+        return None
+
+    def scenarios(self) -> dict[str, dict[str, Any]]:
+        """Long/short plans with coherent geometry, from (in priority order) the explicit
+        `scenarios:` block, the main levels (by their geometry) and the `fib` long_/short_ keys.
+        A scenario with levels on the wrong side is dropped, never "fixed"."""
+        out: dict[str, dict[str, Any]] = {}
+
+        def add(direction: str, lo: Any, hi: Any, inv: Any, targets: list[Any], source: str) -> None:
+            if direction in out or None in (lo, hi, inv):
+                return
+            lo, hi, inv = float(lo), float(hi), float(inv)
+            tgs = [float(t) for t in targets if t is not None]
+            if not tgs or lo > hi:
+                return
+            if direction == "long":
+                ok = inv < lo and all(t > hi for t in tgs)
+            else:
+                ok = inv > hi and all(t < lo for t in tgs)
+            if ok:
+                out[direction] = {"poi_low": lo, "poi_high": hi, "invalidation": inv, "targets": tgs, "source": source}
+
+        for direction in DIRECTIONS:
+            sc = self.scenarios_raw.get(direction) or {}
+            poi = sc.get("poi") or [sc.get("poi_low"), sc.get("poi_high")]
+            if isinstance(poi, dict):
+                poi = [poi.get("low"), poi.get("high")]
+            add(direction, poi[0], poi[1], sc.get("invalidation"), list(sc.get("targets") or []), "scenarios")
+        geometry = self.main_geometry()
+        if geometry:
+            add(geometry, self.poi_low, self.poi_high, self.invalidation, self.targets, "principal")
+        fib = self.fib or {}
+        add("short", fib.get("short_poi_low"), fib.get("short_poi_high"), fib.get("short_invalidation"),
+            [fib.get("short_target_1"), fib.get("short_target_2")], "fib.short_*")
+        add("long", fib.get("long_scalp_low"), fib.get("long_scalp_high"), fib.get("long_scalp_invalidation"),
+            [fib.get("long_scalp_target_1"), fib.get("long_scalp_target_2")], "fib.long_scalp_*")
+        return out
+
+    def scenario(self, direction: str) -> dict[str, Any] | None:
+        return self.scenarios().get(direction)
+
+    def age_days(self, now: datetime | None = None) -> float | None:
+        if not self.as_of:
+            return None
+        try:
+            ts = datetime.fromisoformat(self.as_of)
+        except ValueError:
+            return None
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        return ((now or datetime.now(timezone.utc)) - ts).total_seconds() / 86400
+
+    def is_expired(self, now: datetime | None = None) -> bool:
+        age = self.age_days(now)
+        max_days = float(get_config()["thresholds"].get("context_max_age_days", 7))
+        return age is not None and age > max_days
+
+    def validate(self) -> list[str]:
+        """Contradictions a human must resolve. Empty list = coherent context."""
+        issues: list[str] = []
+        if self.has_poi() and float(self.poi_low) > float(self.poi_high):  # type: ignore[arg-type]
+            issues.append("POI low > POI high")
+        geometry = self.main_geometry()
+        if self.has_poi() and self.invalidation is not None and geometry is None:
+            issues.append("niveles principales incoherentes: invalidacion y targets no quedan en lados opuestos del POI")
+        if self.bias in DIRECTIONS and geometry and geometry != self.bias:
+            issues.append(f"bias '{self.bias}' pero los niveles principales describen un {geometry}")
+        if self.bias in DIRECTIONS and self.has_poi() and self.bias not in self.scenarios():
+            issues.append(f"no hay escenario {self.bias} coherente para el bias declarado")
+        return issues
+
     def nearest_fib(self, price: float) -> str | None:
         if not self.fib:
             return None
@@ -185,19 +278,28 @@ def _context_path(symbol: str) -> Path:
     return _context_dir() / f"{symbol.upper()}.yaml"
 
 
-def get_context(symbol: str, override: dict[str, Any] | None = None) -> TradeContext | None:
-    """Load context from file, optionally merged with ephemeral override."""
-    sym = symbol.upper()
-    if sym not in _cache:
-        path = _context_path(sym)
-        if path.exists():
-            with open(path, encoding="utf-8") as f:
-                data = yaml.safe_load(f) or {}
-            _cache[sym] = TradeContext.from_dict(data, sym)
-        else:
-            _cache[sym] = None
+def _load(sym: str) -> TradeContext | None:
+    path = _context_path(sym)
+    mtime = path.stat().st_mtime if path.exists() else None
+    cached = _cache.get(sym)
+    if cached is not None and cached[0] == mtime:
+        return cached[1]
+    ctx = None
+    if mtime is not None:
+        with open(path, encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+        ctx = TradeContext.from_dict(data, sym)
+        if not ctx.as_of:
+            # Files written before `as_of` existed: the last edit is the best evidence of age.
+            ctx.as_of = datetime.fromtimestamp(mtime, timezone.utc).isoformat(timespec="seconds")
+    _cache[sym] = (mtime, ctx)
+    return ctx
 
-    base = _cache[sym]
+
+def get_context(symbol: str, override: dict[str, Any] | None = None) -> TradeContext | None:
+    """Load context from file (re-read when it changes), optionally merged with an override."""
+    sym = symbol.upper()
+    base = _load(sym)
     if base is None and override is None:
         return None
     if base is None:
@@ -205,20 +307,30 @@ def get_context(symbol: str, override: dict[str, Any] | None = None) -> TradeCon
     return base.merge(override)
 
 
-def set_context(symbol: str, data: dict[str, Any]) -> TradeContext:
-    """Persist context to context/SYMBOL.yaml."""
+class ContextValidationError(ValueError):
+    def __init__(self, issues: list[str]):
+        super().__init__("; ".join(issues))
+        self.issues = issues
+
+
+def set_context(symbol: str, data: dict[str, Any], *, allow_invalid: bool = False) -> TradeContext:
+    """Persist context to context/SYMBOL.yaml. Refuses contradictory levels unless forced."""
     sym = symbol.upper()
     existing = get_context(sym)
     if existing:
         ctx = existing.merge(data)
     else:
         ctx = TradeContext.from_dict(data, sym)
+    issues = ctx.validate()
+    if issues and not allow_invalid:
+        raise ContextValidationError(issues)
+    ctx.as_of = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
     path = _context_path(sym)
     with open(path, "w", encoding="utf-8") as f:
         yaml.dump(ctx.to_dict(), f, default_flow_style=False, allow_unicode=True, sort_keys=False)
 
-    _cache[sym] = ctx
+    _cache.pop(sym, None)
     return ctx
 
 

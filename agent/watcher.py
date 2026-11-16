@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
-from agent import market_data, metrics, scalp_alerts, setup_engine
+from agent import market_data, metrics, scalp_alerts, setup_engine, signal_ledger
 from agent.config import PROJECT_ROOT, get_config
 from agent.context import TradeContext, get_context
 
@@ -64,40 +64,26 @@ def notify_desktop(title: str, message: str, *, enabled: bool = True) -> None:
 
 
 def scalp_levels_from_context(ctx: TradeContext | None) -> dict[str, tuple[float, float, float, list[float]]]:
-    """Return long/short POI, invalidation, targets from context file or defaults."""
+    """Coherent long/short scenarios of the context as (poi_low, poi_high, invalidation, targets).
+
+    No hardcoded fallback levels: without a context (or without a coherent scenario for a side)
+    that side is simply not hunted. Old HYPE numbers used to leak into any symbol here.
+    """
     if not ctx:
-        return {
-            "long": (66.50, 67.00, 66.20, [67.80, 68.30]),
-            "short": (68.00, 68.50, 68.80, [67.25, 66.58]),
-        }
-
-    fib = ctx.fib or {}
-    long_lo = ctx.poi_low if ctx.poi_low is not None else float(fib.get("abc_C_low", 66.58)) - 0.08
-    long_hi = ctx.poi_high if ctx.poi_high is not None else long_lo + 0.50
-    inv_long = ctx.invalidation if ctx.invalidation is not None else float(fib.get("abc_C_low", 66.58)) - 0.38
-    long_targets = ctx.targets if ctx.targets else [67.80, 68.30]
-
-    short_lo = float(fib.get("short_poi_low", fib.get("broken_support", 68.30) - 0.30))
-    short_hi = float(fib.get("short_poi_high", short_lo + 0.50))
-    inv_short = float(fib.get("short_invalidation", short_hi + 0.30))
-    short_targets = [
-        float(fib.get("short_target_1", 67.25)),
-        float(fib.get("short_target_2", 66.58)),
-    ]
-
+        return {}
     return {
-        "long": (long_lo, long_hi, inv_long, long_targets),
-        "short": (short_lo, short_hi, inv_short, short_targets),
+        direction: (sc["poi_low"], sc["poi_high"], sc["invalidation"], list(sc["targets"]))
+        for direction, sc in ctx.scenarios().items()
     }
 
 
-def build_scalp_ctx(symbol: str, bias: str, base_ctx: TradeContext | None = None) -> TradeContext:
-    """Ephemeral scalp context based on desired bias."""
+def build_scalp_ctx(symbol: str, bias: str, base_ctx: TradeContext | None = None) -> TradeContext | None:
+    """Ephemeral context for one side, keeping the account, risk and age of the stored one."""
     levels = scalp_levels_from_context(base_ctx)
+    if bias not in levels:
+        return None
     poi_lo, poi_hi, inv, targets = levels[bias]
-    wave = (base_ctx.wave if base_ctx and base_ctx.wave else None) or (
-        "ABC-C / W2 profunda — rebote en soporte" if bias == "long" else "Onda C de (4) — short en resistencia"
-    )
+    wave = (base_ctx.wave if base_ctx and base_ctx.wave else "") or f"escenario {bias}"
     return TradeContext(
         symbol=symbol,
         bias=bias,
@@ -107,21 +93,38 @@ def build_scalp_ctx(symbol: str, bias: str, base_ctx: TradeContext | None = None
         poi_high=poi_hi,
         invalidation=inv,
         targets=targets,
+        account_size=base_ctx.account_size if base_ctx else None,
+        risk_pct=base_ctx.risk_pct if base_ctx else 2.0,
+        as_of=base_ctx.as_of if base_ctx else "",
     )
 
 
-def pick_active_bias(price: float, base_ctx: TradeContext | None) -> str:
-    """Choose scalp bias by proximity to long/short POI zones."""
+def pick_active_bias(price: float, base_ctx: TradeContext | None) -> str | None:
+    """Side whose POI is closest to the price (None when the context has no scenario)."""
     levels = scalp_levels_from_context(base_ctx)
-    long_lo, long_hi, _, _ = levels["long"]
-    short_lo, short_hi, _, _ = levels["short"]
-    long_mid = (long_lo + long_hi) / 2
-    short_mid = (short_lo + short_hi) / 2
-    if price <= long_hi + 0.15:
-        return "long"
-    if price >= short_lo - 0.15:
-        return "short"
-    return "long" if abs(price - long_mid) <= abs(price - short_mid) else "short"
+    if not levels:
+        return None
+
+    def distance(direction: str) -> float:
+        lo, hi, _, _ = levels[direction]
+        return 0.0 if lo <= price <= hi else min(abs(price - lo), abs(price - hi))
+
+    return min(levels, key=distance)
+
+
+def _alert_block_reasons(alert: scalp_alerts.ScalpAlert, eval_ctx: TradeContext, price: float,
+                         guard: dict[str, Any]) -> list[str]:
+    """Everything that stops a scalp alert from being an entry: same rules as the engine."""
+    reasons = scalp_alerts.validate_alert(alert)
+    issues = eval_ctx.validate()
+    reasons += [f"contexto: {i}" for i in issues]
+    if eval_ctx.is_expired():
+        reasons.append(f"contexto vencido ({eval_ctx.age_days():.0f} dias)")
+    if eval_ctx.has_poi() and eval_ctx.is_stale(price):
+        reasons.append("contexto desactualizado (precio lejos del POI)")
+    if guard.get("blocked"):
+        reasons.append(guard["detail"])
+    return reasons
 
 
 def scan_timeframes(
@@ -130,19 +133,37 @@ def scan_timeframes(
     base_ctx: TradeContext | None,
     biases: list[str],
 ) -> tuple[list, dict[str, dict]]:
-    """Scan multiple TFs and biases; return alerts + summary per TF."""
+    """Scan multiple TFs and biases. One snapshot per TF serves both sides (the evidence is
+    the same market), and the aggTrades/book read is reused by the scalp detectors.
+
+    Returns (alerts, summary); summary[tf]["_eval"][bias] = (snapshot, verdict) so each alert
+    can be recorded with the evidence of the timeframe and side that produced it.
+    """
+    from agent import policy
+
+    guard = policy.daily_guard()
     all_alerts: list = []
     summary: dict[str, dict] = {}
     for tf in timeframes:
-        tf_data: dict = {"long": None, "short": None, "alerts": []}
+        tf_data: dict = {"long": None, "short": None, "alerts": [], "_eval": {}}
+        snap = None
         for b in biases:
             eval_ctx = build_scalp_ctx(symbol, b, base_ctx)
-            snap = metrics.build_snapshot(symbol, tf, "scalp", trade_context=eval_ctx)
+            if eval_ctx is None:
+                continue
+            if snap is None:
+                snap = metrics.build_snapshot(symbol, tf, "scalp", trade_context=eval_ctx, include_context=True)
+            snap.order_flow["volume_spike_at_poi"] = bool(
+                eval_ctx.price_in_poi(snap.price) and snap.indicators.get("volume_spike")
+            )
             v = setup_engine.evaluate_setup(snap, trade_context=eval_ctx)
+            tf_data["_eval"][b] = (snap, v)
             tf_data[b] = {
                 "grade": v.grade,
                 "score": v.score,
                 "direction": v.direction,
+                "eligible": v.eligible,
+                "blocked_reasons": v.blocked_reasons,
                 "at_poi": v.at_poi,
                 "patterns": v.of_patterns,
                 "trend": snap.structure.get("trend"),
@@ -151,63 +172,43 @@ def scan_timeframes(
             }
             if b == "long":
                 alerts = scalp_alerts.detect_scalp_alerts(
-                    symbol,
-                    tf,
-                    short_resistance=None,
+                    symbol, tf, short_resistance=None,
                     long_support=(eval_ctx.poi_low, eval_ctx.poi_high),
                     long_invalidation=eval_ctx.invalidation,
                     long_targets=tuple(eval_ctx.targets),
+                    order_flow=snap.order_flow,
                 )
             else:
                 alerts = scalp_alerts.detect_scalp_alerts(
-                    symbol,
-                    tf,
-                    short_resistance=(eval_ctx.poi_low, eval_ctx.poi_high),
+                    symbol, tf, short_resistance=(eval_ctx.poi_low, eval_ctx.poi_high),
                     short_invalidation=eval_ctx.invalidation,
                     short_targets=tuple(eval_ctx.targets),
                     long_support=None,
+                    order_flow=snap.order_flow,
                 )
-            # POI viejo: los targets/invalidacion salen de un contexto que ya no describe
-            # el mercado. La alerta se muestra pero NUNCA como "*** ENTRAR ***".
-            stale = eval_ctx.has_poi() and eval_ctx.is_stale(snap.price)
             for a in alerts:
-                if stale:
+                a.timeframe = tf
+                a.blocked_reasons = _alert_block_reasons(a, eval_ctx, snap.price, guard)
+                if a.blocked_reasons:
+                    # Shown as an observation, never as "*** ENTRAR ***".
                     a.urgency = "watch"
-                a.detail = f"[{tf}] {'[contexto viejo] ' if stale else ''}{a.detail}"
+                    a.detail = f"[{tf}] [no elegible: {a.blocked_reasons[0]}] {a.detail}"
+                else:
+                    a.detail = f"[{tf}] {a.detail}"
             tf_data["alerts"].extend(alerts)
             all_alerts.extend(alerts)
         summary[tf] = tf_data
     return all_alerts, summary
 
 
-def mechanical_entry_flag(verdict: setup_engine.SetupVerdict, hunt_biases: list[str]) -> bool:
-    """True when checklist supports ENTRADA MECANICA."""
-    of = verdict.order_flow if hasattr(verdict, "order_flow") else {}
-    buy_ratio = of.get("buy_ratio", 0.5) if isinstance(of, dict) else 0.5
-    snap_of = getattr(verdict, "_of", None)
-    if snap_of is None:
-        pass
-    direction = verdict.direction
-    if direction == "long":
-        of_ok = buy_ratio > 0.6
-    elif direction == "short":
-        of_ok = buy_ratio < 0.4
-    else:
-        of_ok = False
-    return (
-        verdict.score >= 0.75
-        and verdict.at_poi
-        and direction in hunt_biases
-        and bool(verdict.of_patterns)
-        and of_ok
-    )
-
-
 def enrich_verdict_dict(verdict_dict: dict[str, Any], hunt_biases: list[str]) -> dict[str, Any]:
-    """Add mechanical_entry flag to verdict JSON for API/UI."""
+    """mechanical_entry = the engine said eligible AND the live flow agrees right now.
+
+    It can only narrow `eligible`, never widen it: NO_TRADE / B / any blocked reason means
+    no "ENTRADA MECANICA", whatever the score.
+    """
     direction = verdict_dict.get("direction", "none")
     buy_ratio = verdict_dict.get("_buy_ratio")
-    score = verdict_dict.get("score", 0)
     at_poi = verdict_dict.get("at_poi", False)
     patterns = verdict_dict.get("of_patterns") or []
     of_ok = True
@@ -218,11 +219,51 @@ def enrich_verdict_dict(verdict_dict: dict[str, Any], hunt_biases: list[str]) ->
             of_ok = buy_ratio < 0.4
         else:
             of_ok = False
-    verdict_dict["mechanical_entry"] = (
-        score >= 0.75 and at_poi and direction in hunt_biases and len(patterns) >= 1 and of_ok
+    verdict_dict["mechanical_entry"] = bool(
+        verdict_dict.get("eligible") and at_poi and direction in hunt_biases and patterns and of_ok
     )
     verdict_dict.pop("_buy_ratio", None)
     return verdict_dict
+
+
+def signal_features(
+    snap: metrics.MarketSnapshot, verdict: setup_engine.SetupVerdict, direction: str, context_stale: bool
+) -> dict[str, Any]:
+    """Evidence present when an alert fires; stored in the signal ledger to measure later."""
+    from agent import atas_feed, liquidations
+
+    conf = atas_feed.footprint_confirmation(snap.atas or {}, direction)
+    flush = liquidations.flush_confirmation(snap.liquidations or {}, direction)
+    trend = snap.structure.get("trend")
+    oi_change = (snap.derivatives or {}).get("oi_change_1h")
+    return {
+        "atas_available": conf["available"],
+        "atas_confirmed": conf["confirmed"] if conf["available"] else None,
+        "atas_contradicted": conf["contradicted"] if conf["available"] else None,
+        "atas_signals": conf["signals"],
+        "atas_tf": (snap.atas or {}).get("tf"),
+        "liq_flush": flush["flush"] if flush["available"] else None,
+        "liq_detail": flush["detail"],
+        "at_poi": bool(verdict.at_poi),
+        "oi_rising": (oi_change > 0) if oi_change is not None else None,
+        "funding_extreme": (snap.derivatives or {}).get("funding_extreme"),
+        "trend_aligned": (direction == "long" and trend == "bullish") or (direction == "short" and trend == "bearish"),
+        "context_fresh": not context_stale,
+    }
+
+
+def evidence_line(features: dict[str, Any]) -> str:
+    if not features.get("atas_available"):
+        parts = ["sin ATAS"]
+    elif features.get("atas_confirmed"):
+        parts = ["ATAS OK: " + ", ".join(features.get("atas_signals") or [])]
+    elif features.get("atas_contradicted"):
+        parts = ["ATAS EN CONTRA"]
+    else:
+        parts = ["ATAS sin gatillo"]
+    if features.get("liq_flush"):
+        parts.append("flush " + str(features.get("liq_detail")))
+    return " | ".join(parts)
 
 
 @dataclass
@@ -288,23 +329,21 @@ def run_scan(
     if timeframe is None:
         timeframe = "1m" if scalp_mode else get_config()["timeframes"].get(trade_type, "1m")
 
+    price_now = market_data.fetch_ticker_price(symbol)
     eval_ctx = ctx
     if scalp_mode:
-        active = pick_active_bias(market_data.fetch_ticker_price(symbol), ctx)
-        if bias == "both":
-            hunt_biases = ["long", "short"]
-            primary_bias = active
-        else:
-            hunt_biases = [bias]
-            primary_bias = bias
-        eval_ctx = build_scalp_ctx(symbol, primary_bias, ctx)
+        available = set(scalp_levels_from_context(ctx))
+        wanted = ["long", "short"] if bias == "both" else [bias]
+        hunt_biases = [b for b in wanted if b in available]
+        primary_bias = pick_active_bias(price_now, ctx) if bias == "both" else bias
+        eval_ctx = (build_scalp_ctx(symbol, primary_bias, ctx) if primary_bias else None) or ctx
     else:
         hunt_biases = [bias] if bias != "both" else ["long", "short"]
         primary_bias = bias if bias != "both" else (ctx.bias if ctx and ctx.bias in ("long", "short") else "long")
 
     market_data.update_cache(symbol, timeframe, limit=200)
     snap = metrics.build_snapshot(symbol, timeframe, trade_type, trade_context=eval_ctx)
-    snap.price = market_data.fetch_ticker_price(symbol)
+    snap.price = price_now
     v = setup_engine.evaluate_setup(snap, trade_context=eval_ctx)
 
     df = market_data.load_klines_df(symbol, timeframe, limit=25)
@@ -314,11 +353,9 @@ def run_scan(
     vol_x = float(lc["volume"] / avg20) if avg20 else 0.0
 
     price = snap.price
-    levels = scalp_levels_from_context(ctx) if ctx else {}
+    levels = scalp_levels_from_context(ctx)
     if scalp_mode and bias == "both" and levels:
-        long_poi = levels["long"]
-        short_poi = levels["short"]
-        poi_str = f"LONG [{long_poi[0]:.2f}-{long_poi[1]:.2f}] | SHORT [{short_poi[0]:.2f}-{short_poi[1]:.2f}]"
+        poi_str = " | ".join(f"{d.upper()} [{lv[0]:.2f}-{lv[1]:.2f}]" for d, lv in levels.items())
     else:
         poi_str = (
             f"[{eval_ctx.poi_low}, {eval_ctx.poi_high}]"
@@ -332,7 +369,7 @@ def run_scan(
 
     alerts: list = []
     tf_summary: dict[str, dict] = {}
-    if scalp_mode:
+    if scalp_mode and hunt_biases:
         scan_tfs = ["1m", "5m", "15m"]
         alerts, tf_summary = scan_timeframes(symbol, scan_tfs, ctx, hunt_biases)
 
@@ -347,35 +384,55 @@ def run_scan(
 
     context_stale = bool(v.context_stale) or bool(ctx and ctx.has_poi() and ctx.is_stale(price))
 
-    now_alerts = [a for a in alerts if a.urgency == "now"]
-    fast_setup = v.score >= 0.75 and v.at_poi and v.direction in hunt_biases and not context_stale
-
-    if now_alerts:
-        for a in now_alerts:
-            _notify(
-                f"{a.direction.upper()} {symbol} {a.trigger}",
-                f"@ {a.price:.4f} entry {a.entry:.4f} stop {a.stop:.4f} target {a.target:.4f}",
+    def _record(kind: str, direction: str, tf: str, snap_used: metrics.MarketSnapshot,
+                verdict_used: setup_engine.SetupVerdict, stop: float | None, target: float | None,
+                entry: float | None, detail: str) -> tuple[bool, dict[str, Any]]:
+        """Store the alert; returns (should_emit, features). Inside the ledger cooldown the
+        same signal is not emitted again, so the cooldown limits notifications too."""
+        feats = signal_features(snap_used, verdict_used, direction, context_stale)
+        feats["policy_version"] = verdict_used.policy_version
+        feats["context_as_of"] = ctx.as_of if ctx else None
+        try:
+            signal_id = signal_ledger.record(
+                symbol=symbol, tf=tf, kind=kind, direction=direction, price=price, stop=stop,
+                target=target, grade=verdict_used.grade, score=verdict_used.score, planned_entry=entry,
+                features=feats, detail=detail,
             )
-    elif fast_setup and v.of_patterns:
-        _notify(
-            f"{primary_bias.upper()} SETUP {symbol} {v.score*100:.0f}%",
-            f"@ {price:.4f} POI {eval_ctx.poi_low}-{eval_ctx.poi_high} patterns={v.of_patterns}",
-        )
-    elif v.grade == "A+" and v.at_poi and v.direction in hunt_biases:
-        _notify(f"A+ {symbol} {v.direction.upper()}", f"@ {price:.4f} patterns={v.of_patterns}")
+        except Exception:
+            return True, feats  # the ledger must never swallow an alert
+        return signal_id is not None, feats
+
+    for a in [a for a in alerts if a.urgency == "now"]:
+        snap_tf, v_tf = tf_summary.get(a.timeframe, {}).get("_eval", {}).get(a.direction, (snap, v))
+        emit, feats = _record(f"scalp:{a.trigger}", a.direction, a.timeframe or timeframe, snap_tf, v_tf,
+                              a.stop, a.target, a.entry, a.detail)
+        if emit:
+            _notify(
+                f"{a.direction.upper()} {symbol} {a.trigger} [{a.timeframe}]",
+                f"@ {a.price:.4f} entry {a.entry:.4f} stop {a.stop:.4f} target {a.target:.4f} | {evidence_line(feats)}",
+            )
+
+    if v.eligible and v.at_poi and v.direction in hunt_biases:
+        emit, feats = _record("a_plus", v.direction, timeframe, snap, v, v.levels.get("stop"),
+                              v.levels.get("target"), v.levels.get("entry"), v.summary)
+        if emit:
+            _notify(f"A+ {symbol} {v.direction.upper()}", f"@ {price:.4f} patterns={v.of_patterns} | {evidence_line(feats)}")
+    elif v.score >= 0.75 and v.at_poi and v.direction in hunt_biases and v.of_patterns:
+        # Observation only: close to a setup but not eligible. Says why, never "entrar".
+        emit, _ = _record("setup_watch", v.direction, timeframe, snap, v, v.levels.get("stop"),
+                          v.levels.get("target"), v.levels.get("entry"), v.summary)
+        if emit:
+            reason = v.blocked_reasons[0] if v.blocked_reasons else "no elegible"
+            _notify(f"VIGILAR {symbol} {v.direction.upper()} {v.score*100:.0f}%", f"@ {price:.4f} no elegible: {reason}")
 
     multi_tf_out: dict[str, Any] = {}
     for tf, td in tf_summary.items():
         parts = {}
         for b in hunt_biases:
             row = td.get(b)
-            if row:
-                poi = scalp_levels_from_context(ctx)[b]
-                parts[b] = {
-                    **row,
-                    "poi_low": poi[0],
-                    "poi_high": poi[1],
-                }
+            if row and b in levels:
+                poi = levels[b]
+                parts[b] = {**row, "poi_low": poi[0], "poi_high": poi[1]}
         multi_tf_out[tf] = parts
 
     snap_dict = snap.to_dict()
@@ -524,10 +581,8 @@ class WatcherService:
             while not self._stop_event.wait(interval_sec):
                 result = self.run_once()
                 if result:
+                    # Urgent alerts were already emitted (once, deduplicated) inside run_scan.
                     self.emit("scan", result.to_dict())
-                    for alert in result.alerts:
-                        if alert.get("urgency") == "now":
-                            self.emit("alert", alert)
 
         self._thread = threading.Thread(target=_loop, daemon=True, name="watcher")
         self._thread.start()
@@ -559,6 +614,16 @@ class WatcherService:
 
         def _event_notify(title: str, msg: str) -> None:
             self.emit("alert", {"title": title, "message": msg})
+
+        # Label alerts whose outcome is now known (TP / SL / timeout), at most once a minute.
+        now_mono = time.monotonic()
+        if now_mono - getattr(self, "_last_resolve", 0.0) >= 60:
+            self._last_resolve = now_mono
+            try:
+                if signal_ledger.resolve_open():
+                    self.emit("signals", signal_ledger.stats())
+            except Exception:
+                pass
 
         try:
             result = run_scan(

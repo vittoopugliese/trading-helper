@@ -105,7 +105,10 @@ def set_context(
     if account_size is not None:
         data["account_size"] = account_size
 
-    ctx = context.set_context(symbol.upper(), data)
+    try:
+        ctx = context.set_context(symbol.upper(), data)
+    except context.ContextValidationError as exc:
+        return json.dumps({"error": "contexto incoherente, no se guardo", "issues": exc.issues}, ensure_ascii=False)
     return json.dumps({"saved": ctx.to_dict()}, indent=2, ensure_ascii=False)
 
 
@@ -195,39 +198,37 @@ def journal_stats(symbol: str | None = None) -> str:
 
 
 @mcp.tool()
-def propose_order(
-    symbol: str,
-    side: str,
-    entry: float,
-    stop: float,
-    take_profit: float,
-    rationale: str = "",
-    timeframe: str = "15m",
-) -> str:
-    """Create a PENDING BingX order proposal (post-only limit + SL/TP). Does NOT place it.
+def atas_footprint(symbol: str = "HYPEUSDT", timeframe: str = "5m") -> str:
+    """Live ATAS footprint for symbol/timeframe (absorption, delta reversal, stacked imbalances,
+    big trades, DOM) streamed by the Trading Helper Bridge indicator. available=false means
+    ATAS is closed or the indicator is not on a chart."""
+    from agent import atas_feed
 
-    The trader must approve it in the web cockpit (tab EJECUCION); limits are re-checked
-    at approval. Size is computed from the configured max risk. Returns the proposal with
-    qty, risk, R:R, fees and any blocking errors.
-    """
-    from agent.execution import ExecutionError, ExecutionService
-
-    try:
-        record = ExecutionService.instance().propose(
-            symbol=symbol, side=side, entry=entry, stop=stop, take_profit=take_profit,
-            timeframe=timeframe, source="chat", rationale=rationale,
-        )
-    except ExecutionError as exc:
-        return json.dumps({"error": str(exc)}, ensure_ascii=False)
-    return json.dumps(record, indent=2, default=str, ensure_ascii=False)
+    return json.dumps(atas_feed.best_snapshot(symbol.upper(), timeframe), indent=2, default=str)
 
 
 @mcp.tool()
-def execution_status() -> str:
-    """BingX execution status: mode (demo/live), equity, positions, limits and recent orders."""
-    from agent.execution import ExecutionService
+def liquidations_summary(symbol: str = "HYPEUSDT") -> str:
+    """Live liquidations (Bybit + Binance) by side over 5/15/60 min with 15m z-score vs 24h.
+    Recorded only while the web cockpit runs."""
+    from agent import liquidations
 
-    return json.dumps(ExecutionService.instance().status(), indent=2, default=str, ensure_ascii=False)
+    return json.dumps(liquidations.summary(symbol.upper()), indent=2, default=str)
+
+
+@mcp.tool()
+def signal_stats(symbol: str | None = None) -> str:
+    """Forward results of every alert the platform sent: WR (Wilson 95% CI) and expectancy,
+    split by feature (ATAS confirmation, liquidation flush, POI, trend)."""
+    from agent import signal_ledger
+
+    return json.dumps(signal_ledger.stats(symbol.upper() if symbol else None), indent=2, default=str)
+
+
+@mcp.tool()
+def notes_index_status() -> str:
+    """Notes index health: stale (edited since indexing), missing and orphaned files."""
+    return json.dumps(knowledge.index_status(), indent=2)
 
 
 def run_mcp() -> None:

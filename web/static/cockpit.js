@@ -44,10 +44,15 @@ function renderVerdict(data) {
   gradeEl.textContent = `${grade} ${(v.direction || '').toUpperCase()} ${Math.round((v.score || 0) * 100)}%`;
   gradeEl.className = 'verdict-grade ' + (grade === 'A+' ? 'aplus' : grade === 'B' ? 'b' : 'notrade');
 
+  const blocked = v.blocked_reasons || [];
   if (v.mechanical_entry) {
     mechEl.style.display = 'block';
     mechEl.className = 'mechanical';
-    mechEl.textContent = 'ENTRADA MECANICA — ejecuta con SL estructural';
+    mechEl.textContent = 'ENTRADA MECANICA — elegible: niveles, riesgo y gatillo validados';
+  } else if (blocked.length) {
+    mechEl.style.display = 'block';
+    mechEl.className = 'mechanical stale';
+    mechEl.textContent = `NO ELEGIBLE — ${blocked.slice(0, 3).join(' · ')}${blocked.length > 3 ? ` (+${blocked.length - 3})` : ''}`;
   } else if (v.context_stale) {
     const drift = v.context_drift_pct != null ? ` (${(v.context_drift_pct * 100).toFixed(1)}% del POI)` : '';
     mechEl.style.display = 'block';
@@ -64,7 +69,11 @@ function renderVerdict(data) {
   (v.conditions || []).forEach(c => {
     const li = document.createElement('li');
     li.className = c.passed ? 'pass' : 'fail';
-    li.textContent = `${c.passed ? '✓' : '✗'} ${c.name}: ${c.detail}`;
+    // What the condition does: blocks (critical), adds weight to the score, or gates/informs.
+    const role = c.critical ? 'obligatoria'
+      : c.weight > 0 ? `peso ${Math.round(c.weight * 100)}%`
+      : ['htf_alignment', 'atas_footprint'].includes(c.name) ? 'filtro A+' : 'info';
+    li.textContent = `${c.passed ? '✓' : '✗'} [${role}] ${c.name}: ${c.detail}`;
     condEl.appendChild(li);
   });
 
@@ -73,9 +82,12 @@ function renderVerdict(data) {
   $('sizing-entry').textContent = levels.entry != null ? levels.entry.toFixed(4) : '—';
   $('sizing-sl').textContent = levels.stop != null ? levels.stop.toFixed(4) : '—';
   $('sizing-tp').textContent = levels.target != null ? levels.target.toFixed(4) : '—';
-  $('sizing-risk').textContent = ps.risk_usd != null ? `$${ps.risk_usd.toFixed(2)}` : '—';
-  $('sizing-margin').textContent = ps.margin_usd != null ? `$${ps.margin_usd.toFixed(2)}` : '—';
-  $('sizing-notional').textContent = ps.notional_usd != null ? `$${ps.notional_usd.toFixed(0)}` : '—';
+  $('sizing-risk').textContent = ps.risk_amount != null ? `$${ps.risk_amount.toFixed(2)}` : '—';
+  $('sizing-margin').textContent = ps.margin != null ? `$${ps.margin.toFixed(2)}` : '—';
+  $('sizing-notional').textContent = ps.notional != null ? `$${ps.notional.toFixed(0)}` : '—';
+  if (ps.capped_by && ps.capped_by.length) {
+    $('sizing-notional').textContent += ` (tope: ${ps.capped_by.join(', ')})`;
+  }
 }
 
 function renderMultiTf(mtf) {
@@ -103,6 +115,9 @@ function renderContext(ctx) {
   $('ctx-inv').value = ctx.invalidation ?? '';
   $('ctx-targets').value = (ctx.targets || []).join(', ');
   $('ctx-notes').value = ctx.notes || '';
+  const problems = [...(ctx.issues || [])];
+  if (ctx.expired) problems.push(`contexto vencido: editado hace ${ctx.age_days} días`);
+  $('ctx-issues').textContent = problems.length ? 'A corregir: ' + problems.join(' · ') : '';
   const img = $('chart-preview');
   if (ctx.has_chart || ctx.chart_image) {
     img.src = `${API}/context/${normSymbol($('symbol-input').value)}/chart?t=${Date.now()}`;
@@ -126,6 +141,7 @@ async function refreshCockpit() {
     $('live-price').textContent = analysis.price_live?.toFixed(4) || '—';
     renderVerdict(analysis);
     renderMultiTf(mtf);
+    refreshFlow();
 
     const btcEl = $('btc-banner');
     if (btc && sym !== 'BTCUSDT') {
@@ -149,22 +165,132 @@ async function refreshCockpit() {
   }
 }
 
+/* --- Order flow ATAS / liquidaciones / señales forward --- */
+
+function esc(v) {
+  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  return String(v ?? '').replace(/[&<>"']/g, c => map[c]);
+}
+
+function num(v, d = 2) {
+  if (v == null || isNaN(v)) return '—';
+  const n = Number(v);
+  return Math.abs(n) >= 1e6 ? (n / 1e6).toFixed(2) + 'M' : Math.abs(n) >= 1e4 ? (n / 1e3).toFixed(1) + 'k' : n.toFixed(d);
+}
+
+function row(label, value, cls = '') {
+  return `<div class="row"><span>${esc(label)}</span><span class="${cls}">${value}</span></div>`;
+}
+
+function setStatus(id, text, cls) {
+  const el = $(id);
+  el.textContent = text;
+  el.className = 'flow-status ' + (cls || '');
+}
+
+function renderAtas(a) {
+  if (!a || !a.available) {
+    setStatus('atas-status', `Sin datos: ${a?.reason || 'agregá "Trading Helper Bridge" al chart de ATAS'}`, 'warn');
+    $('atas-body').innerHTML = '';
+    return;
+  }
+  const alt = a.requested_tf ? ` (pediste ${a.requested_tf})` : '';
+  setStatus('atas-status', `${a.exchange || 'ATAS'} ${a.tf}${alt} · hace ${Math.round(a.age_sec)}s · ${a.closed_bars} velas`, 'ok');
+  const lc = a.last_closed || {};
+  const tags = side => (a.recent_signals?.[side] || []).map(t => `<span class="tag ${side}">${esc(t)}</span>`).join('') || '—';
+  const bt = a.big_trades_15m || {};
+  const dom = a.dom;
+  $('atas-body').innerHTML = [
+    row('Última vela Δ / vol', `${num(lc.delta, 0)} / ${num(lc.volume, 0)}${lc.volume_x ? ` (${lc.volume_x}x)` : ''}`, (lc.delta || 0) >= 0 ? 'long' : 'short'),
+    row('CVD pendiente 5', num(a.cvd_slope_5, 0), (a.cvd_slope_5 || 0) >= 0 ? 'long' : 'short'),
+    row('Divergencia CVD', esc(a.cvd_divergence || 'no'), a.cvd_divergence === 'bullish' ? 'long' : a.cvd_divergence === 'bearish' ? 'short' : ''),
+    row('Big trades 15m (buy/sell)', `${num(bt.buy_volume, 0)} / ${num(bt.sell_volume, 0)}`, (bt.net || 0) >= 0 ? 'long' : 'short'),
+    row('DOM ±1% bid/ask', dom ? `${esc(dom.ratio ?? '—')} (${esc(dom.bias)})` : 'sin DOM', dom?.bias === 'bullish' ? 'long' : dom?.bias === 'bearish' ? 'short' : ''),
+    `<div style="margin-top:6px">LONG: ${tags('long')}</div>`,
+    `<div>SHORT: ${tags('short')}</div>`,
+  ].join('');
+}
+
+function renderLiquidations(l) {
+  if (!l || l.error) {
+    setStatus('liq-status', `Error: ${l?.error || 'sin respuesta'}`, 'warn');
+    $('liq-body').innerHTML = '';
+    return;
+  }
+  setStatus('liq-status', l.ready
+    ? `${l.events_24h} eventos en 24h · ${l.coverage_hours}h de historial`
+    : `Juntando historial (${l.coverage_hours}h de 6h): z-score todavía no disponible`, l.ready ? 'ok' : 'warn');
+  const z = v => v == null ? '' : ` z=${v}`;
+  $('liq-body').innerHTML = [
+    row('Longs liquidados 5m / 15m / 60m', `$${num(l.long_usd_5m, 0)} / $${num(l.long_usd_15m, 0)} / $${num(l.long_usd_60m, 0)}`, 'short'),
+    row('Shorts liquidados 5m / 15m / 60m', `$${num(l.short_usd_5m, 0)} / $${num(l.short_usd_15m, 0)} / $${num(l.short_usd_60m, 0)}`, 'long'),
+    row('Flush de longs (15m)', (l.long_spike ? 'SÍ' : 'no') + z(l.long_z_15m), l.long_spike ? 'long' : ''),
+    row('Squeeze de shorts (15m)', (l.short_spike ? 'SÍ' : 'no') + z(l.short_z_15m), l.short_spike ? 'short' : ''),
+  ].join('');
+}
+
+function renderSignals(st) {
+  const o = st?.overall || {};
+  setStatus('sig-status', `${o.n || 0} resueltas · ${st?.open || 0} abiertas · mínimo ${st?.min_samples} por grupo para concluir`, o.n ? 'ok' : 'warn');
+  const ci = o.win_rate_ci95 ? ` [${(o.win_rate_ci95[0] * 100).toFixed(0)}–${(o.win_rate_ci95[1] * 100).toFixed(0)}%]` : '';
+  const rows = [
+    row('WR', o.win_rate != null ? `${(o.win_rate * 100).toFixed(1)}%${ci}` : '—'),
+    row('Expectancy', o.expectancy_r != null ? `${o.expectancy_r}R` : '—', (o.expectancy_r || 0) >= 0 ? 'long' : 'short'),
+  ];
+  const labels = { atas_confirmed: 'Con gatillo ATAS', liq_flush: 'Con flush de liquidaciones', at_poi: 'En POI', trend_aligned: 'A favor de tendencia' };
+  for (const [feat, label] of Object.entries(labels)) {
+    const f = st?.by_feature?.[feat];
+    if (!f) continue;
+    const fmt = c => c.n ? `${(c.win_rate * 100).toFixed(0)}% / ${c.expectancy_r}R (n=${c.n})` : 'n=0';
+    rows.push(row(`${label}: sí | no`, `${fmt(f.con)} | ${fmt(f.sin)}${f.suficiente ? '' : ' *'}`));
+  }
+  rows.push('<p style="font-size:10px;color:var(--muted);margin-top:6px">* muestra insuficiente: no sacar conclusiones todavía.</p>');
+  $('sig-body').innerHTML = rows.join('');
+}
+
+async function refreshFlow() {
+  const sym = normSymbol($('symbol-input').value);
+  if (!sym) return;
+  const tf = $('tf-select').value;
+  const [atas, liq, sig] = await Promise.allSettled([
+    api(`/atas/snapshot/${sym}?timeframe=${tf}`),
+    api(`/liquidations/${sym}`),
+    api(`/signals/stats?symbol=${sym}`),
+  ]);
+  renderAtas(atas.status === 'fulfilled' ? atas.value : { available: false, reason: atas.reason?.message });
+  renderLiquidations(liq.status === 'fulfilled' ? liq.value : { error: liq.reason?.message });
+  if (sig.status === 'fulfilled') renderSignals(sig.value);
+}
+
+function browserNotify(title, body) {
+  if (!('Notification' in window) || Notification.permission !== 'granted' || !document.hidden) return;
+  try { new Notification(title, { body, tag: title }); } catch { /* ignore */ }
+}
+
 async function saveContext() {
   const sym = normSymbol($('symbol-input').value);
   const targets = $('ctx-targets').value.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
-  await api(`/context/${sym}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      bias: $('ctx-bias').value,
-      wave: $('ctx-wave').value,
-      poi_low: parseFloat($('ctx-poi-low').value) || null,
-      poi_high: parseFloat($('ctx-poi-high').value) || null,
-      invalidation: parseFloat($('ctx-inv').value) || null,
-      targets,
-      notes: $('ctx-notes').value,
-    }),
-  });
+  try {
+    await api(`/context/${sym}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        bias: $('ctx-bias').value,
+        wave: $('ctx-wave').value,
+        poi_low: parseFloat($('ctx-poi-low').value) || null,
+        poi_high: parseFloat($('ctx-poi-high').value) || null,
+        invalidation: parseFloat($('ctx-inv').value) || null,
+        targets,
+        notes: $('ctx-notes').value,
+      }),
+    });
+  } catch (e) {
+    let msg = e.message;
+    try { const d = JSON.parse(e.message).detail; msg = `${d.message}: ${(d.issues || []).join(' · ')}`; } catch { /* plain text */ }
+    $('ctx-issues').textContent = msg;
+    return;
+  }
+  $('ctx-issues').textContent = '';
   await refreshCockpit();
 }
 
@@ -201,16 +327,12 @@ function connectSSE() {
         }
       } else if (data.type === 'alert') {
         const p = data.payload || {};
-        pushAlert(`ALERTA: ${p.title || p.trigger || JSON.stringify(p)}`, 'alert');
-      } else if (data.type === 'execution') {
-        const p = data.payload || {};
-        const labels = { placed: 'enviada', filled: 'FILL', closed: 'cerrada', cancelled: 'cancelada', failed: 'falló', proposal: 'propuesta' };
-        if (data.kind !== 'sync_error') {
-          const detail = p.reason || p.result || '';
-          const cls = data.kind === 'filled' || data.kind === 'closed' ? 'alert' : 'scan';
-          pushAlert(`[exec] #${p.id ?? ''} ${labels[data.kind] || data.kind} ${detail}`.trim(), cls);
-        }
-        if ($('view-execution').classList.contains('active')) loadExecution();
+        const title = p.title || `${(p.direction || '').toUpperCase()} ${p.trigger || ''}`.trim();
+        const body = p.message || p.detail || '';
+        pushAlert(`ALERTA: ${title}${body ? ' — ' + body : ''}`, 'alert');
+        browserNotify(title, body);
+      } else if (data.type === 'signals') {
+        renderSignals(data.payload);
       } else if (data.type === 'watcher_started') {
         pushAlert('Watcher iniciado', 'scan');
         updateWatcherStatus();
@@ -226,6 +348,9 @@ function connectSSE() {
 }
 
 async function startWatcher() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
   const sym = normSymbol($('symbol-input').value);
   await api('/watcher/start', {
     method: 'POST',
@@ -259,7 +384,25 @@ async function loadSettings() {
   $('set-leverage').value = s.leverage;
   $('set-max-risk').value = s.max_risk_usd;
   $('set-key-status').textContent = s.has_anthropic_key ? 'API key configurada' : 'Sin API key';
-  $('set-bingx-status').textContent = (s.has_bingx_keys ? 'Keys configuradas' : 'Sin keys') + ` · modo ${s.execution_mode}`;
+  loadNotesStatus();
+}
+
+async function loadNotesStatus() {
+  try {
+    const st = await api('/notes/status');
+    const pending = st.stale.length + st.missing.length + st.orphans.length;
+    setStatus('notes-status', pending
+      ? `${pending} archivo(s) desactualizados (editados ${st.stale.length}, nuevos ${st.missing.length}, borrados ${st.orphans.length}). Reindexá.`
+      : `Al día: ${st.files_on_disk} notas, ${st.chunks} fragmentos (pipeline v${st.pipeline_version})`, pending ? 'warn' : 'ok');
+  } catch (e) {
+    setStatus('notes-status', 'Error: ' + e.message, 'warn');
+  }
+}
+
+async function reindexNotes() {
+  setStatus('notes-status', 'Reindexando...', '');
+  try { await api('/notes/reindex', { method: 'POST' }); } catch (e) { /* status shows it */ }
+  loadNotesStatus();
 }
 
 async function saveRiskSettings() {
@@ -352,7 +495,6 @@ async function sendChat(quickAction) {
           const j = JSON.parse(payload);
           if (j.text) assistantEl.textContent = 'Bot: ' + (assistantEl.textContent.replace(/^Bot: /, '') + j.text);
           if (j.error) assistantEl.textContent = 'Bot: Error — ' + j.error;
-          if (j.proposal) renderChatProposal(j.proposal);
         } catch { /* skip */ }
       }
     }
@@ -364,284 +506,34 @@ async function sendChat(quickAction) {
   }
 }
 
-function calcManualSizing() {
-  const cap = parseFloat($('calc-cap').value) || 300;
-  const riskPct = parseFloat($('calc-risk-pct').value) || 7;
+async function calcManualSizing() {
+  // Same policy as the engine (server side): risk cap, margin cap, costs, open exposure.
   const entry = parseFloat($('calc-entry').value);
   const sl = parseFloat($('calc-sl').value);
-  const lev = parseFloat($('calc-lev').value) || 10;
   if (!entry || !sl) return;
-  const slPct = Math.abs(entry - sl) / entry;
-  const riskUsd = Math.min(cap * riskPct / 100, 21);
-  const notional = riskUsd / slPct;
-  const margin = notional / lev;
-  $('calc-result').textContent =
-    `SL ${(slPct * 100).toFixed(2)}% | Riesgo $${riskUsd.toFixed(2)} | Notional $${notional.toFixed(0)} | Margen $${margin.toFixed(0)}`;
-}
-
-/* --- Ejecucion BingX --- */
-
-let exMode = 'demo';
-
-function esc(v) {
-  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
-  return String(v ?? '').replace(/[&<>"']/g, c => map[c]);
-}
-
-function fmt(n, d = 4) {
-  return n == null || isNaN(n) ? '—' : Number(n).toFixed(d);
-}
-
-// Execution routes require X-Cockpit: forces a CORS preflight so other sites can't call them.
-async function exApi(path, opts = {}) {
-  const headers = { 'X-Cockpit': '1', ...(opts.body ? { 'Content-Type': 'application/json' } : {}) };
-  const res = await fetch(`${API}/execution${path}`, { ...opts, headers });
-  const text = await res.text();
-  let data = null;
-  try { data = text ? JSON.parse(text) : null; } catch { data = text; }
-  if (!res.ok) throw new Error((data && data.detail) || text || res.statusText);
-  return data;
-}
-
-function exShowError(msg) {
-  const el = $('ex-error');
-  el.textContent = msg || '';
-  el.style.display = msg ? 'block' : 'none';
-}
-
-function proposalHtml(rec) {
-  const p = rec.plan || {};
-  const errs = (rec.errors || []).map(e => `<li class="err">✗ ${esc(e)}</li>`).join('');
-  const warns = (rec.warnings || []).map(w => `<li class="warn">! ${esc(w)}</li>`).join('');
-  let actions = '';
-  if (rec.status === 'pending') {
-    const live = rec.mode === 'live';
-    actions = `<div class="ex-confirm">
-      ${live ? `<input data-confirm="${rec.id}" placeholder="LIVE">` : ''}
-      <button class="cp-btn success" data-approve="${rec.id}">Aprobar y enviar</button>
-      <button class="cp-btn" data-reject="${rec.id}">Rechazar</button>
-      <span style="color:var(--muted)">vence ${esc((rec.expires_at || '').slice(11, 19))} UTC</span>
-    </div>`;
-  }
-  return `
-    <div class="ex-kv">
-      <span>#</span><span>${rec.id} · <span class="ex-status ${esc(rec.status)}">${esc(rec.status)}</span> · ${esc(rec.mode)} · ${esc(rec.source)}</span>
-      <span>Orden</span><span>${esc((p.side || '').toUpperCase())} ${esc(p.symbol)} ${fmt(p.qty)} @ ${fmt(p.entry)} (post-only)</span>
-      <span>SL / TP</span><span>${fmt(p.stop)} / ${fmt(p.take_profit)} · SL ${fmt(p.stop_pct, 2)}% · R:R ${fmt(p.rr, 2)}</span>
-      <span>Riesgo</span><span>$${fmt(p.risk_usd, 2)} · notional $${fmt(p.notional_usd, 0)} · margen $${fmt(p.margin_usd, 2)} (x${esc(p.leverage)})</span>
-      <span>Comisiones</span><span>si SL $${fmt(p.fees_if_stop_usd, 3)} (${fmt(p.fees_if_stop_r, 2)}R) · si TP $${fmt(p.fees_if_target_usd, 3)}</span>
-      ${rec.rationale ? `<span>Motivo</span><span>${esc(rec.rationale)}</span>` : ''}
-      ${rec.note ? `<span>Nota</span><span>${esc(rec.note)}</span>` : ''}
-    </div>
-    <ul class="ex-msgs">${errs}${warns}</ul>
-    ${actions}`;
-}
-
-function renderPreview(rec) {
-  $('ex-preview').innerHTML = rec ? proposalHtml(rec) : 'Sin propuesta.';
-}
-
-function renderPositions(positions) {
-  const el = $('ex-positions');
-  if (!positions || !positions.length) { el.textContent = 'Sin posiciones.'; return; }
-  el.innerHTML = `<table class="mtf-table"><thead><tr><th>Símbolo</th><th>Lado</th><th>Qty</th><th>Entry</th><th>Mark</th><th>PnL</th><th>Liq</th><th></th></tr></thead><tbody>
-    ${positions.map(p => `<tr>
-      <td>${esc(p.symbol)}</td><td>${esc(p.side)}</td><td>${fmt(p.qty)}</td><td>${fmt(p.entry_price)}</td>
-      <td>${fmt(p.mark_price)}</td><td>${fmt(p.unrealized_pnl, 2)}</td><td>${fmt(p.liquidation_price)}</td>
-      <td><button class="cp-btn danger" data-close="${esc(p.symbol)}">Cerrar a mercado</button></td></tr>`).join('')}
-  </tbody></table>`;
-}
-
-let exRecords = [];
-
-function renderRecords(records) {
-  const el = $('ex-records');
-  exRecords = records || [];
-  if (!exRecords.length) { el.textContent = 'Sin órdenes todavía.'; return; }
-  el.innerHTML = `<table class="mtf-table"><thead><tr><th>#</th><th>Hora</th><th>Orden</th><th>Riesgo</th><th>Estado</th><th>Resultado</th><th></th></tr></thead><tbody>
-    ${exRecords.map(r => {
-      const p = r.plan || {};
-      let btn = '';
-      if (r.status === 'pending') btn = `<button class="cp-btn" data-show="${r.id}">Revisar</button>`;
-      if (r.status === 'placed') btn = `<button class="cp-btn" data-cancel="${r.id}">Cancelar</button>`;
-      const result = r.rr_real != null
-        ? `${r.rr_real > 0 ? '+' : ''}${fmt(r.rr_real, 2)}R`
-        : (r.note || (r.errors || [])[0] || '');
-      return `<tr>
-        <td>${r.id}</td><td>${esc((r.created_at || '').slice(5, 16).replace('T', ' '))}</td>
-        <td>${esc(p.side)} ${esc(r.symbol)} ${fmt(p.qty)} @ ${fmt(p.entry)} SL ${fmt(p.stop)} TP ${fmt(p.take_profit)}</td>
-        <td>$${fmt(p.risk_usd, 2)}</td><td><span class="ex-status ${esc(r.status)}">${esc(r.status)}</span></td>
-        <td title="${esc(result)}">${esc(String(result).slice(0, 60))}</td><td>${btn}</td></tr>`;
-    }).join('')}
-  </tbody></table>`;
-}
-
-async function loadExecution() {
+  const params = new URLSearchParams({ entry, stop: sl });
+  const cap = parseFloat($('calc-cap').value);
+  const riskPct = parseFloat($('calc-risk-pct').value);
+  if (cap) params.set('account', cap);
+  if (riskPct) params.set('risk_pct', riskPct);
   try {
-    const st = await exApi('/status');
-    exMode = st.mode;
-    const modeEl = $('ex-mode');
-    modeEl.textContent = st.mode === 'live' ? 'LIVE' : 'DEMO (VST)';
-    modeEl.className = 'ex-mode' + (st.mode === 'live' ? ' live' : '');
-    $('ex-account').textContent = st.connected
-      ? `Equity ${fmt(st.equity, 2)} · libre ${fmt(st.free, 2)} · riesgo máx/orden $${fmt(st.risk_budget_usd, 2)}`
-      : `Sin conexión: ${st.error || 'configurá las keys en Settings'}`;
-    const lim = st.limits || {};
-    const lossBad = st.daily_loss_usd != null && st.daily_loss_usd >= lim.max_daily_loss_usd;
-    const streakBad = st.consecutive_losses >= lim.consecutive_loss_stop;
-    $('ex-guard').innerHTML = `<span class="${lossBad ? 'ex-guard-bad' : 'ex-guard-ok'}">pérdida hoy $${fmt(st.daily_loss_usd, 2)} / ${esc(lim.max_daily_loss_usd)}</span>
-      · <span class="${streakBad ? 'ex-guard-bad' : 'ex-guard-ok'}">racha pérdidas ${esc(st.consecutive_losses)} / ${esc(lim.consecutive_loss_stop)}</span>
-      ${st.halted ? ' · <span class="ex-guard-bad">KILL SWITCH ACTIVO</span>' : ''}
-      ${st.monitor_error ? ` · <span class="ex-guard-bad">monitor: ${esc(st.monitor_error)}</span>` : ''}`;
-    $('ex-halt').style.display = st.halted ? 'none' : '';
-    $('ex-resume').style.display = st.halted ? '' : 'none';
-    renderPositions(st.positions);
-    renderRecords(st.records);
+    const r = await api(`/sizing?${params}`);
+    if (r.blocked_reason) {
+      $('calc-result').textContent = `Bloqueado: ${r.blocked_reason}`;
+      return;
+    }
+    const caps = r.capped_by && r.capped_by.length ? ` | tope: ${r.capped_by.join(', ')}` : '';
+    const guard = r.daily_guard?.blocked ? ` | ${r.daily_guard.detail}` : '';
+    $('calc-result').textContent =
+      `SL ${r.stop_pct}% | Riesgo $${r.risk_amount} (incl. costos) | Qty ${r.position_size} | Notional $${r.notional} | Margen $${r.margin} x${r.leverage}${caps}${guard}`;
   } catch (e) {
-    exShowError(e.message);
+    $('calc-result').textContent = 'Error: ' + e.message;
   }
-}
-
-async function exSuggest(source) {
-  exShowError('');
-  const sym = normSymbol($('ex-symbol').value);
-  try {
-    const s = await exApi(`/suggest/${sym}?source=${source}&timeframe=${$('tf-select').value}&trade_type=${$('trade-type').value}`);
-    $('ex-symbol').value = s.symbol;
-    $('ex-side').value = s.side;
-    $('ex-entry').value = s.entry;
-    $('ex-stop').value = s.stop;
-    $('ex-tp').value = s.take_profit;
-    $('ex-rationale').value = s.rationale || '';
-    $('ex-propose').dataset.source = source;
-  } catch (e) {
-    exShowError(e.message);
-  }
-}
-
-async function exPropose() {
-  exShowError('');
-  const body = {
-    symbol: normSymbol($('ex-symbol').value),
-    side: $('ex-side').value,
-    entry: parseFloat($('ex-entry').value),
-    stop: parseFloat($('ex-stop').value),
-    take_profit: parseFloat($('ex-tp').value),
-    timeframe: $('tf-select').value,
-    source: $('ex-propose').dataset.source || 'manual',
-    rationale: $('ex-rationale').value,
-  };
-  if ([body.entry, body.stop, body.take_profit].some(n => !(n > 0))) {
-    exShowError('Completá entry, SL y TP con precios válidos.');
-    return;
-  }
-  try {
-    renderPreview(await exApi('/proposals', { method: 'POST', body: JSON.stringify(body) }));
-    $('ex-propose').dataset.source = 'manual';
-    loadExecution();
-  } catch (e) {
-    exShowError(e.message);
-  }
-}
-
-async function exApprove(id, root) {
-  exShowError('');
-  const input = root.querySelector(`[data-confirm="${id}"]`);
-  try {
-    const rec = await exApi(`/proposals/${id}/approve`, {
-      method: 'POST', body: JSON.stringify({ confirm: input ? input.value : null }),
-    });
-    renderPreview(rec);
-    pushAlert(`Orden #${id} enviada: ${rec.plan.side} ${rec.symbol} ${rec.plan.qty} @ ${rec.plan.entry}`, 'alert');
-  } catch (e) {
-    exShowError(e.message);
-    if (root.classList.contains('chat-proposal')) window.alert(e.message);
-  }
-  loadExecution();
-}
-
-async function exAction(path, okMsg) {
-  exShowError('');
-  try {
-    const out = await exApi(path, { method: 'POST', body: '{}' });
-    if (okMsg) pushAlert(okMsg, 'scan');
-    return out;
-  } catch (e) {
-    exShowError(e.message);
-    return null;
-  } finally {
-    loadExecution();
-  }
-}
-
-async function exClose(symbol) {
-  let confirmText = null;
-  if (exMode === 'live') {
-    confirmText = window.prompt(`Cerrar ${symbol} a mercado (taker). Escribí LIVE para confirmar:`);
-    if (confirmText === null) return;
-  } else if (!window.confirm(`Cerrar ${symbol} a mercado (taker)?`)) {
-    return;
-  }
-  exShowError('');
-  try {
-    await exApi(`/positions/${symbol}/close`, { method: 'POST', body: JSON.stringify({ confirm: confirmText }) });
-    pushAlert(`Cierre a mercado enviado: ${symbol}`, 'alert');
-  } catch (e) {
-    exShowError(e.message);
-  }
-  setTimeout(loadExecution, 1500);
-}
-
-// One delegated handler for buttons rendered in the preview, tables and chat cards.
-async function exClick(ev) {
-  const t = ev.target.closest('button');
-  if (!t) return;
-  const root = ev.currentTarget;
-  if (t.dataset.approve) {
-    t.disabled = true;
-    await exApprove(Number(t.dataset.approve), root);
-  } else if (t.dataset.reject) {
-    const rec = await exAction(`/proposals/${t.dataset.reject}/reject`);
-    if (rec) renderPreview(rec);
-    if (rec && root.classList.contains('chat-proposal')) root.innerHTML = proposalHtml(rec);
-  } else if (t.dataset.cancel) {
-    await exAction(`/orders/${t.dataset.cancel}/cancel`, `Orden #${t.dataset.cancel} cancelada`);
-  } else if (t.dataset.close) {
-    await exClose(t.dataset.close);
-  } else if (t.dataset.show) {
-    renderPreview(exRecords.find(r => r.id === Number(t.dataset.show)));
-  }
-}
-
-function renderChatProposal(rec) {
-  const div = document.createElement('div');
-  div.className = 'chat-proposal';
-  div.innerHTML = `<strong>Propuesta de orden (${esc(rec.mode)})</strong>${proposalHtml(rec)}`;
-  div.addEventListener('click', exClick);
-  $('chat-log').appendChild(div);
-  $('chat-log').scrollTop = $('chat-log').scrollHeight;
-}
-
-async function saveBingxKeys() {
-  const key = $('set-bingx-key').value.trim();
-  const secret = $('set-bingx-secret').value.trim();
-  if (!key || !secret) return;
-  await exApi('/keys', { method: 'PUT', body: JSON.stringify({ api_key: key, api_secret: secret }) });
-  $('set-bingx-key').value = '';
-  $('set-bingx-secret').value = '';
-  await loadSettings();
-  loadExecution();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.app-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      showAppView(tab.dataset.view);
-      if (tab.dataset.view === 'execution') {
-        $('ex-symbol').value = normSymbol($('symbol-input').value);
-        loadExecution();
-      }
-    });
+    tab.addEventListener('click', () => showAppView(tab.dataset.view));
   });
 
   $('refresh-btn').addEventListener('click', refreshCockpit);
@@ -653,13 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('save-key-btn').addEventListener('click', saveApiKey);
   $('chat-send').addEventListener('click', () => sendChat(null));
   $('calc-sizing-btn').addEventListener('click', calcManualSizing);
-  $('ex-from-context').addEventListener('click', () => exSuggest('context'));
-  $('ex-from-verdict').addEventListener('click', () => exSuggest('verdict'));
-  $('ex-propose').addEventListener('click', exPropose);
-  $('ex-halt').addEventListener('click', () => exAction('/halt', 'Kill switch activado'));
-  $('ex-resume').addEventListener('click', () => exAction('/resume', 'Ejecución reanudada'));
-  $('save-bingx-btn').addEventListener('click', saveBingxKeys);
-  $('view-execution').addEventListener('click', exClick);
+  $('reindex-btn').addEventListener('click', reindexNotes);
 
   document.querySelectorAll('[data-quick]').forEach(btn => {
     btn.addEventListener('click', () => sendChat(btn.dataset.quick));
@@ -672,8 +558,5 @@ document.addEventListener('DOMContentLoaded', () => {
   loadJournal();
 
   setInterval(refreshCockpit, 60000);
-  loadExecution();
-  setInterval(() => {
-    if ($('view-execution').classList.contains('active')) loadExecution();
-  }, 10000);
+  setInterval(refreshFlow, 10000);
 });

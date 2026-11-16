@@ -1,0 +1,294 @@
+{
+  "model_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+  "max_seq_length": 128,
+  "indexed_chunks": 553,
+  "chunks_exceeding_embedding_limit": 171,
+  "queries": [
+    {
+      "name": "actual_hype_context_core",
+      "query": "trend bullish order flow bullish volume spike True RSI 50 elliott wave setup reglas onda impulso correctiva order flow absorption delta CVD sweep reclaim wyckoff acumulacion distribucion spring upthrust fase rango esfuerzo resultado causa efecto linea menor resistencia triple pantalla marea confluencia divergencia momentum psicologia disciplina probabilidades gestion riesgo sizing acumulacion spring LPS golden pocket compra wave Impulso alcista HTF — breakout pdHigh 67.5, consolidacion en highs ~70.3. Hunt LONG en pullback a soporte. bias short POI golden pocket fibonacci invalidation 69.1 onda 5 divergencia volumen distribucion",
+      "query_tokens": 147,
+      "tokens_passed_to_model": 128,
+      "actual_decoded_query": "<s> trend bullish order flow bullish volume spike True RSI 50 elliott wave setup reglas onda impulso correctiva order flow absorption delta CVD sweep reclaim wyckoff acumulacion distribucion spring upthrust fase rango esfuerzo resultado causa efecto linea menor resistencia triple pantalla marea confluencia divergencia momentum psicologia disciplina probabilidades gestion riesgo sizing acumulacion spring LPS golden pocket compra wave Impulso alcista HTF — breakout pdHigh 67.5, consolidacion en highs ~70.3. Hunt LONG en pullback a soporte. bias short PO</s>",
+      "hits": [
+        {
+          "id": "notes/setup-rules/a-plus-checklist.md::13",
+          "source_file": "notes/setup-rules/a-plus-checklist.md",
+          "similarity": 0.6282,
+          "content": "ncia con Fib (golden pocket 0.618-0.66).\n[] POI HTF identificado (onda 2/4, cluster, OB, zona de oferta/demanda).\n[] Operar A FAVOR de la tendencia HTF. No long en resistencia, no short en soporte.\n\nEJECUCION (LTF: 15m) - Order Flow\n[] Patron de entrada en el POI: absorcion / drenaje de delta / toma de liquidez / retest OB.\n[] Delta y CVD a favor de la direccion.\n[] Volumen > media en la zona clave (sin volumen = posible fakeout).\n[] OI confirmando (sube con el movimiento direccional). Funding n"
+        },
+        {
+          "id": "notes/elliott/elliott-basics.md::17",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.6023,
+          "content": "================================================================\n1- Conteo en HTF (1D/4H): defino en que onda estoy y el bias (a favor de tendencia).\n2- Espero zona de interes: fin de onda 2 o de onda 4 para entrar a favor del impulso\n   siguiente (onda 3 o onda 5), que es lo mas probable y rentable.\n3- Confirmo con Order Flow en LTF (15m): absorcion, delta a favor, OI, SFP en el nivel.\n4- A+ setup = conteo Elliott claro + confluencia Fibo + confirmacion de order flow.\n5- Stop: donde se invalida"
+        },
+        {
+          "id": "notes/order-flow/ORDERFLOW.txt::10",
+          "source_file": "notes/order-flow/ORDERFLOW.txt",
+          "similarity": 0.602,
+          "content": "------------------------------\nSWING FAILURE PATTERN (SFP)\nLo primero a identificar es un buen punto de liquidez y que cuando llegue a romper ese nivel, solo deje mecha y deje cierre por debajo (o arriba de ese nivel). Son tomas de liquidez para continuar la tendencia original.\nPrestarle mucha atencion al SFP es un menor timeframe. Tratar de combinar con monthly o weekly POC's (Point of control de un volume profile)\nLa ventaja del verlo con el order flow es que si el primer SFP se ven muchos sho"
+        },
+        {
+          "id": "notes/elliott/elliott-basics.md::10",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.5891,
+          "content": "================================================================\n- Onda 1: arranque, poca conviccion, suele confundirse con rebote. Volumen medio.\n- Onda 2: correccion fuerte, miedo de que siga la tendencia previa. Retrocede\n  50-61.8% de onda 1. Buen volumen vendedor pero SIN romper el inicio de 1.\n- Onda 3: la mas rentable. Reconocimiento de la tendencia, FOMO. Maximo volumen,\n  delta a favor, OI creciente, imbalances/FVGs. Aqui busco mis mejores entradas.\n- Onda 4: correccion lateral, aburrid"
+        },
+        {
+          "id": "notes/order-flow/gatillo-long-visual-atas.md::18",
+          "source_file": "notes/order-flow/gatillo-long-visual-atas.md",
+          "similarity": 0.5876,
+          "content": "### Edge repetible (lo que tienen en comun)\nClimax de delta negativo + caja verde/POC como POI + DELTA FLIP a positivo con\nvolumen sobre la media. Las dos veces el mercado fue a buscar liquidez en/bajo mi\nzona y revirtio. El 25 fue superior porque hubo BARRIDO REAL bajo el soporte antes\ndel reclaim. Sin Elliott claro, el order flow por si solo dio la señal: esperar el\ndelta flip confirmado dentro de la caja era la entrada."
+        },
+        {
+          "id": "notes/backtesting-methodology.md::5",
+          "source_file": "notes/backtesting-methodology.md",
+          "similarity": 0.5814,
+          "content": "borde: wick/rechazo pese a delta agresor, luego flip. |\n| `delta_drain` | Tres deltas direccionales que pierden fuerza en el nivel y flip contrario. |\n| `cvd_divergence` | Convención de tus notas: precio HL+CVD LL para long; precio LH+CVD HH para short. |\n| `balance_rotation` | Delta flip responsive dentro del 20% exterior del rango previo. |\n| `balance_breakout` | Cierre fuera del rango previo con volumen alto y delta alineado. |\n| `balance_fakeout` | Perfora el rango con volumen bajo y cierra"
+        },
+        {
+          "id": "notes/elliott/structure-corrections.md::16",
+          "source_file": "notes/elliott/structure-corrections.md",
+          "similarity": 0.5709,
+          "content": "AT: B y C overshootean el alto/bajo de A. B con retroceso de A: 1.236\n  y 0.382 (1.618 raro = pauta de flat). C en 5 ondas: zona entre los dos 0.618.\n- REGULAR FLAT: toma el alto/bajo de A por poquito. C targets entre 1 y 1.236.\n- RUNNING FLAT: NO debe tomar el bajo (respeta A). Va a 1.236. B debe tomar alto/bajo,\n  target minimo a superar 1 y 1.05. Tiempos peligrosos: 0.618, 1, 1.18, 2."
+        },
+        {
+          "id": "notes/elliott/elliott-basics.md::20",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.566,
+          "content": "================================================================\n- Fin de Onda 2 -> entrar buscando Onda 3 (la mejor, mayor R:R y momentum).\n- Fin de Onda 4 -> entrar buscando Onda 5 (mas conservador, vigilar divergencias).\n- Fin de Onda C (correccion macro) -> entrar al nuevo impulso 1-2-3.\nEVITAR: contar y operar dentro de ondas correctivas complejas (4, B, triangulos):\nahi el conteo es ambiguo y el riesgo de quedar atrapado es alto."
+        }
+      ]
+    },
+    {
+      "name": "long_wave2_core",
+      "query": "trend bullish order flow bullish volume spike True RSI 35 elliott wave setup reglas onda impulso correctiva order flow absorption delta CVD sweep reclaim wyckoff acumulacion distribucion spring upthrust fase rango esfuerzo resultado causa efecto linea menor resistencia triple pantalla marea confluencia divergencia momentum psicologia disciplina probabilidades gestion riesgo sizing acumulacion spring LPS golden pocket compra wave fin onda 2 bias long POI golden pocket fibonacci invalidation 99.0 fin onda 2 entrada onda 3 golden pocket",
+      "query_tokens": 117,
+      "tokens_passed_to_model": 117,
+      "actual_decoded_query": "<s> trend bullish order flow bullish volume spike True RSI 35 elliott wave setup reglas onda impulso correctiva order flow absorption delta CVD sweep reclaim wyckoff acumulacion distribucion spring upthrust fase rango esfuerzo resultado causa efecto linea menor resistencia triple pantalla marea confluencia divergencia momentum psicologia disciplina probabilidades gestion riesgo sizing acumulacion spring LPS golden pocket compra wave fin onda 2 bias long POI golden pocket fibonacci invalidation 99.0 fin onda 2 entrada onda 3 golden pocket</s>",
+      "hits": [
+        {
+          "id": "notes/elliott/elliott-basics.md::17",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.6183,
+          "content": "================================================================\n1- Conteo en HTF (1D/4H): defino en que onda estoy y el bias (a favor de tendencia).\n2- Espero zona de interes: fin de onda 2 o de onda 4 para entrar a favor del impulso\n   siguiente (onda 3 o onda 5), que es lo mas probable y rentable.\n3- Confirmo con Order Flow en LTF (15m): absorcion, delta a favor, OI, SFP en el nivel.\n4- A+ setup = conteo Elliott claro + confluencia Fibo + confirmacion de order flow.\n5- Stop: donde se invalida"
+        },
+        {
+          "id": "notes/elliott/elliott-basics.md::10",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.6046,
+          "content": "================================================================\n- Onda 1: arranque, poca conviccion, suele confundirse con rebote. Volumen medio.\n- Onda 2: correccion fuerte, miedo de que siga la tendencia previa. Retrocede\n  50-61.8% de onda 1. Buen volumen vendedor pero SIN romper el inicio de 1.\n- Onda 3: la mas rentable. Reconocimiento de la tendencia, FOMO. Maximo volumen,\n  delta a favor, OI creciente, imbalances/FVGs. Aqui busco mis mejores entradas.\n- Onda 4: correccion lateral, aburrid"
+        },
+        {
+          "id": "notes/setup-rules/a-plus-checklist.md::13",
+          "source_file": "notes/setup-rules/a-plus-checklist.md",
+          "similarity": 0.6019,
+          "content": "ncia con Fib (golden pocket 0.618-0.66).\n[] POI HTF identificado (onda 2/4, cluster, OB, zona de oferta/demanda).\n[] Operar A FAVOR de la tendencia HTF. No long en resistencia, no short en soporte.\n\nEJECUCION (LTF: 15m) - Order Flow\n[] Patron de entrada en el POI: absorcion / drenaje de delta / toma de liquidez / retest OB.\n[] Delta y CVD a favor de la direccion.\n[] Volumen > media en la zona clave (sin volumen = posible fakeout).\n[] OI confirmando (sube con el movimiento direccional). Funding n"
+        },
+        {
+          "id": "notes/order-flow/gatillo-long-visual-atas.md::18",
+          "source_file": "notes/order-flow/gatillo-long-visual-atas.md",
+          "similarity": 0.5926,
+          "content": "### Edge repetible (lo que tienen en comun)\nClimax de delta negativo + caja verde/POC como POI + DELTA FLIP a positivo con\nvolumen sobre la media. Las dos veces el mercado fue a buscar liquidez en/bajo mi\nzona y revirtio. El 25 fue superior porque hubo BARRIDO REAL bajo el soporte antes\ndel reclaim. Sin Elliott claro, el order flow por si solo dio la señal: esperar el\ndelta flip confirmado dentro de la caja era la entrada."
+        },
+        {
+          "id": "notes/elliott/fib-levels.md::8",
+          "source_file": "notes/elliott/fib-levels.md",
+          "similarity": 0.5867,
+          "content": "================================================================\n- Mismas reglas de volumen y largos.\n- Mismos retrocesos en 2.\n- La onda 3 SI o SI pasa el 1 a 1.\n- Retroceso onda 4: 0.236 comun, NO overlap con 2.\n- Target 5 overshooted: Fib impulso sobre toda la 3 (bajo de 2 -> top de 3 -> bajo de 4), marcar 1.618.\n- La onda 5 tiene MAS volumen que la 3 (caso especial)."
+        },
+        {
+          "id": "notes/elliott/elliott-basics.md::11",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.5858,
+          "content": "es entradas.\n- Onda 4: correccion lateral, aburrida, baja volatilidad. NO solapa con onda 1.\n  Suele ser plana o triangulo. Volumen decreciente.\n- Onda 5: ultimo impulso, suele tener DIVERGENCIA (precio nuevo maximo, CVD/RSI no).\n  Aqui los retail entran tarde. Ojo: posible distribucion = fin de tendencia."
+        },
+        {
+          "id": "notes/order-flow/ORDERFLOW.txt::10",
+          "source_file": "notes/order-flow/ORDERFLOW.txt",
+          "similarity": 0.5856,
+          "content": "------------------------------\nSWING FAILURE PATTERN (SFP)\nLo primero a identificar es un buen punto de liquidez y que cuando llegue a romper ese nivel, solo deje mecha y deje cierre por debajo (o arriba de ese nivel). Son tomas de liquidez para continuar la tendencia original.\nPrestarle mucha atencion al SFP es un menor timeframe. Tratar de combinar con monthly o weekly POC's (Point of control de un volume profile)\nLa ventaja del verlo con el order flow es que si el primer SFP se ven muchos sho"
+        },
+        {
+          "id": "notes/elliott/elliott-basics.md::20",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.585,
+          "content": "================================================================\n- Fin de Onda 2 -> entrar buscando Onda 3 (la mejor, mayor R:R y momentum).\n- Fin de Onda 4 -> entrar buscando Onda 5 (mas conservador, vigilar divergencias).\n- Fin de Onda C (correccion macro) -> entrar al nuevo impulso 1-2-3.\nEVITAR: contar y operar dentro de ondas correctivas complejas (4, B, triangulos):\nahi el conteo es ambiguo y el riesgo de quedar atrapado es alto."
+        }
+      ]
+    },
+    {
+      "name": "short_wave5_core",
+      "query": "trend bearish order flow bearish volume spike False RSI 65 elliott wave setup reglas onda impulso correctiva order flow absorption delta CVD sweep reclaim wyckoff acumulacion distribucion spring upthrust fase rango esfuerzo resultado causa efecto linea menor resistencia triple pantalla marea confluencia divergencia momentum psicologia disciplina probabilidades gestion riesgo sizing distribucion upthrust UTAD LPSY venta wave fin onda 5 bias short POI golden pocket fibonacci invalidation 101.0 onda 5 divergencia volumen distribucion",
+      "query_tokens": 119,
+      "tokens_passed_to_model": 119,
+      "actual_decoded_query": "<s> trend bearish order flow bearish volume spike False RSI 65 elliott wave setup reglas onda impulso correctiva order flow absorption delta CVD sweep reclaim wyckoff acumulacion distribucion spring upthrust fase rango esfuerzo resultado causa efecto linea menor resistencia triple pantalla marea confluencia divergencia momentum psicologia disciplina probabilidades gestion riesgo sizing distribucion upthrust UTAD LPSY venta wave fin onda 5 bias short POI golden pocket fibonacci invalidation 101.0 onda 5 divergencia volumen distribucion</s>",
+      "hits": [
+        {
+          "id": "notes/elliott/elliott-basics.md::10",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.5947,
+          "content": "================================================================\n- Onda 1: arranque, poca conviccion, suele confundirse con rebote. Volumen medio.\n- Onda 2: correccion fuerte, miedo de que siga la tendencia previa. Retrocede\n  50-61.8% de onda 1. Buen volumen vendedor pero SIN romper el inicio de 1.\n- Onda 3: la mas rentable. Reconocimiento de la tendencia, FOMO. Maximo volumen,\n  delta a favor, OI creciente, imbalances/FVGs. Aqui busco mis mejores entradas.\n- Onda 4: correccion lateral, aburrid"
+        },
+        {
+          "id": "notes/elliott/elliott-basics.md::17",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.5915,
+          "content": "================================================================\n1- Conteo en HTF (1D/4H): defino en que onda estoy y el bias (a favor de tendencia).\n2- Espero zona de interes: fin de onda 2 o de onda 4 para entrar a favor del impulso\n   siguiente (onda 3 o onda 5), que es lo mas probable y rentable.\n3- Confirmo con Order Flow en LTF (15m): absorcion, delta a favor, OI, SFP en el nivel.\n4- A+ setup = conteo Elliott claro + confluencia Fibo + confirmacion de order flow.\n5- Stop: donde se invalida"
+        },
+        {
+          "id": "notes/elliott/elliott-basics.md::11",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.5891,
+          "content": "es entradas.\n- Onda 4: correccion lateral, aburrida, baja volatilidad. NO solapa con onda 1.\n  Suele ser plana o triangulo. Volumen decreciente.\n- Onda 5: ultimo impulso, suele tener DIVERGENCIA (precio nuevo maximo, CVD/RSI no).\n  Aqui los retail entran tarde. Ojo: posible distribucion = fin de tendencia."
+        },
+        {
+          "id": "notes/elliott/fib-levels.md::8",
+          "source_file": "notes/elliott/fib-levels.md",
+          "similarity": 0.5818,
+          "content": "================================================================\n- Mismas reglas de volumen y largos.\n- Mismos retrocesos en 2.\n- La onda 3 SI o SI pasa el 1 a 1.\n- Retroceso onda 4: 0.236 comun, NO overlap con 2.\n- Target 5 overshooted: Fib impulso sobre toda la 3 (bajo de 2 -> top de 3 -> bajo de 4), marcar 1.618.\n- La onda 5 tiene MAS volumen que la 3 (caso especial)."
+        },
+        {
+          "id": "notes/elliott/elliott-basics.md::4",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.5567,
+          "content": "================================================================\n1- La Onda 2 NUNCA retrocede mas del 100% de la Onda 1 (no hace nuevo minimo\n   bajo el inicio de onda 1 en un impulso alcista).\n2- La Onda 3 NUNCA es la mas corta de las tres ondas de impulso (1, 3, 5).\n   Casi siempre es la mas larga.\n3- La Onda 4 NUNCA entra en el territorio de precio de la Onda 1 (no se solapan).\n   * Excepcion: en diagonales y en mercados muy apalancados (cripto) puede haber\n     leves solapamientos. Confirmar"
+        },
+        {
+          "id": "notes/setup-rules/a-plus-checklist.md::13",
+          "source_file": "notes/setup-rules/a-plus-checklist.md",
+          "similarity": 0.5535,
+          "content": "ncia con Fib (golden pocket 0.618-0.66).\n[] POI HTF identificado (onda 2/4, cluster, OB, zona de oferta/demanda).\n[] Operar A FAVOR de la tendencia HTF. No long en resistencia, no short en soporte.\n\nEJECUCION (LTF: 15m) - Order Flow\n[] Patron de entrada en el POI: absorcion / drenaje de delta / toma de liquidez / retest OB.\n[] Delta y CVD a favor de la direccion.\n[] Volumen > media en la zona clave (sin volumen = posible fakeout).\n[] OI confirmando (sube con el movimiento direccional). Funding n"
+        },
+        {
+          "id": "notes/elliott/elliott-basics.md::20",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.5479,
+          "content": "================================================================\n- Fin de Onda 2 -> entrar buscando Onda 3 (la mejor, mayor R:R y momentum).\n- Fin de Onda 4 -> entrar buscando Onda 5 (mas conservador, vigilar divergencias).\n- Fin de Onda C (correccion macro) -> entrar al nuevo impulso 1-2-3.\nEVITAR: contar y operar dentro de ondas correctivas complejas (4, B, triangulos):\nahi el conteo es ambiguo y el riesgo de quedar atrapado es alto."
+        },
+        {
+          "id": "notes/elliott/elliott-basics.md::13",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.5458,
+          "content": "================================================================\nRetrocesos (correcciones):\n- Onda 2: 50% - 61.8% (a veces 78.6%) de la Onda 1.\n- Onda 4: 23.6% - 38.2% de la Onda 3 (correccion superficial).\nExtensiones (proyeccion de impulsos):\n- Onda 3: 161.8% (o 200%, 261.8% si esta extendida) de la Onda 1.\n- Onda 5: 61.8% - 100% de la distancia de Onda 1 a 3, o igualdad con Onda 1.\nObjetivo de correccion ABC:\n- Onda C: 100% - 161.8% de la Onda A."
+        }
+      ]
+    },
+    {
+      "name": "neutral_core",
+      "query": "trend neutral order flow mixed volume spike False RSI 50 elliott wave setup reglas onda impulso correctiva order flow absorption delta CVD sweep reclaim wyckoff acumulacion distribucion spring upthrust fase rango esfuerzo resultado causa efecto linea menor resistencia triple pantalla marea confluencia divergencia momentum psicologia disciplina probabilidades gestion riesgo sizing",
+      "query_tokens": 81,
+      "tokens_passed_to_model": 81,
+      "actual_decoded_query": "<s> trend neutral order flow mixed volume spike False RSI 50 elliott wave setup reglas onda impulso correctiva order flow absorption delta CVD sweep reclaim wyckoff acumulacion distribucion spring upthrust fase rango esfuerzo resultado causa efecto linea menor resistencia triple pantalla marea confluencia divergencia momentum psicologia disciplina probabilidades gestion riesgo sizing</s>",
+      "hits": [
+        {
+          "id": "notes/order-flow/gatillo-long-visual-atas.md::18",
+          "source_file": "notes/order-flow/gatillo-long-visual-atas.md",
+          "similarity": 0.5684,
+          "content": "### Edge repetible (lo que tienen en comun)\nClimax de delta negativo + caja verde/POC como POI + DELTA FLIP a positivo con\nvolumen sobre la media. Las dos veces el mercado fue a buscar liquidez en/bajo mi\nzona y revirtio. El 25 fue superior porque hubo BARRIDO REAL bajo el soporte antes\ndel reclaim. Sin Elliott claro, el order flow por si solo dio la señal: esperar el\ndelta flip confirmado dentro de la caja era la entrada."
+        },
+        {
+          "id": "notes/elliott/elliott-basics.md::17",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.5606,
+          "content": "================================================================\n1- Conteo en HTF (1D/4H): defino en que onda estoy y el bias (a favor de tendencia).\n2- Espero zona de interes: fin de onda 2 o de onda 4 para entrar a favor del impulso\n   siguiente (onda 3 o onda 5), que es lo mas probable y rentable.\n3- Confirmo con Order Flow en LTF (15m): absorcion, delta a favor, OI, SFP en el nivel.\n4- A+ setup = conteo Elliott claro + confluencia Fibo + confirmacion de order flow.\n5- Stop: donde se invalida"
+        },
+        {
+          "id": "notes/order-flow/ORDERFLOW.txt::10",
+          "source_file": "notes/order-flow/ORDERFLOW.txt",
+          "similarity": 0.5557,
+          "content": "------------------------------\nSWING FAILURE PATTERN (SFP)\nLo primero a identificar es un buen punto de liquidez y que cuando llegue a romper ese nivel, solo deje mecha y deje cierre por debajo (o arriba de ese nivel). Son tomas de liquidez para continuar la tendencia original.\nPrestarle mucha atencion al SFP es un menor timeframe. Tratar de combinar con monthly o weekly POC's (Point of control de un volume profile)\nLa ventaja del verlo con el order flow es que si el primer SFP se ven muchos sho"
+        },
+        {
+          "id": "notes/elliott/elliott-basics.md::10",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.5429,
+          "content": "================================================================\n- Onda 1: arranque, poca conviccion, suele confundirse con rebote. Volumen medio.\n- Onda 2: correccion fuerte, miedo de que siga la tendencia previa. Retrocede\n  50-61.8% de onda 1. Buen volumen vendedor pero SIN romper el inicio de 1.\n- Onda 3: la mas rentable. Reconocimiento de la tendencia, FOMO. Maximo volumen,\n  delta a favor, OI creciente, imbalances/FVGs. Aqui busco mis mejores entradas.\n- Onda 4: correccion lateral, aburrid"
+        },
+        {
+          "id": "notes/elliott/elliott-basics.md::11",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.5356,
+          "content": "es entradas.\n- Onda 4: correccion lateral, aburrida, baja volatilidad. NO solapa con onda 1.\n  Suele ser plana o triangulo. Volumen decreciente.\n- Onda 5: ultimo impulso, suele tener DIVERGENCIA (precio nuevo maximo, CVD/RSI no).\n  Aqui los retail entran tarde. Ojo: posible distribucion = fin de tendencia."
+        },
+        {
+          "id": "notes/setup-rules/a-plus-checklist.md::14",
+          "source_file": "notes/setup-rules/a-plus-checklist.md",
+          "similarity": 0.5332,
+          "content": "do (sube con el movimiento direccional). Funding no extremo.\n[] SFP confirmado si aplica (OI baja, delta negativo, volumen en mecha, traders atrapados).\n\nGESTION\n[] SL donde se invalida el conteo / bajo la zona de absorcion u OB.\n[] R:R minimo aceptable (idealmente >= 2). TP1 rapido, resto a la liquidez del otro lado.\n\nREGLA DE ORO: si el conteo no es claro o el order flow no confirma, NO operar."
+        },
+        {
+          "id": "notes/elliott/fib-levels.md::8",
+          "source_file": "notes/elliott/fib-levels.md",
+          "similarity": 0.5303,
+          "content": "================================================================\n- Mismas reglas de volumen y largos.\n- Mismos retrocesos en 2.\n- La onda 3 SI o SI pasa el 1 a 1.\n- Retroceso onda 4: 0.236 comun, NO overlap con 2.\n- Target 5 overshooted: Fib impulso sobre toda la 3 (bajo de 2 -> top de 3 -> bajo de 4), marcar 1.618.\n- La onda 5 tiene MAS volumen que la 3 (caso especial)."
+        },
+        {
+          "id": "notes/order-flow/ORDERFLOW.txt::54",
+          "source_file": "notes/order-flow/ORDERFLOW.txt",
+          "similarity": 0.5208,
+          "content": "Si por ejemplo vemos un movimiento por encima del rango (intentando romper balance) pero el volumen es bajo comparado al volumen tradeado en el rango, podemos deducir que no hay interes para romper ese nivel - posible fakeout.\nCVD -> Cumulative Volume Delta es decir el delta acumulado. Mirar el delta de cada vela sirve, pero es mejor ver el total del delta que se va acumulando para entender la verdadera intencion de los participantes.\nEl CVD en cripto lo usamos principalmente para ver divergenc"
+        }
+      ]
+    },
+    {
+      "name": "long_wave2_all",
+      "query": "trend bullish order flow bullish volume spike True RSI 35 elliott wave setup reglas onda impulso correctiva order flow absorption delta CVD sweep reclaim wyckoff acumulacion distribucion spring upthrust fase rango esfuerzo resultado causa efecto linea menor resistencia triple pantalla marea confluencia divergencia momentum psicologia disciplina probabilidades gestion riesgo sizing acumulacion spring LPS golden pocket compra wave fin onda 2 bias long POI golden pocket fibonacci invalidation 99.0 fin onda 2 entrada onda 3 golden pocket",
+      "query_tokens": 117,
+      "tokens_passed_to_model": 117,
+      "actual_decoded_query": "<s> trend bullish order flow bullish volume spike True RSI 35 elliott wave setup reglas onda impulso correctiva order flow absorption delta CVD sweep reclaim wyckoff acumulacion distribucion spring upthrust fase rango esfuerzo resultado causa efecto linea menor resistencia triple pantalla marea confluencia divergencia momentum psicologia disciplina probabilidades gestion riesgo sizing acumulacion spring LPS golden pocket compra wave fin onda 2 bias long POI golden pocket fibonacci invalidation 99.0 fin onda 2 entrada onda 3 golden pocket</s>",
+      "hits": [
+        {
+          "id": "notes/libros/sintesis-confluencias.md::4",
+          "source_file": "notes/libros/sintesis-confluencias.md",
+          "similarity": 0.6567,
+          "content": "/ola/onda de Elder =\n   línea de menor resistencia de Wyckoff = multi-TF del motor).\n4. **Gatillo de order flow en el POI:** sweep+reclaim+absorción, delta/CVD confirmando\n   ([[wyckoff-04-spring-upthrust-tests]]).\n5. **Divergencia coherente:** presente si es fin de onda 5 / clímax; ausente si es onda 3.\n6. **R:R ≥ 2** con stop por estructura (invalidación), no por monto.\n7. **Gestión:** riesgo ≤ tope $21; sizing desde el stop ([[elder-03-gestion-dinero]]).\n8. **Psicología OK:** sin FOMO/revanch"
+        },
+        {
+          "id": "notes/libros/elliott-04-personalidad-ondas.md::6",
+          "source_file": "notes/libros/elliott-04-personalidad-ondas.md",
+          "similarity": 0.6293,
+          "content": "## Aplicación directa al motor\n\n- El campo `wave` del contexto ya modula la búsqueda: onda 2 → \"fin onda 2 entrada\n  onda 3 golden pocket\"; onda 5 → \"divergencia CVD distribución\". Esta nota da el\n  \"por qué\" que Claude cita en el análisis.\n- Regla práctica: **volumen/CVD debe crecer en 1-3-5 a favor y secarse en 2-4.** Si\n  no pasa, el conteo es sospechoso."
+        },
+        {
+          "id": "notes/libros/elliott-05-guias-alternancia-canales.md::4",
+          "source_file": "notes/libros/elliott-05-guias-alternancia-canales.md",
+          "similarity": 0.6207,
+          "content": "## Truncamiento de la onda 5\n\nLa onda 5 no logra superar el final de la onda 3 (falla el nuevo máximo/mínimo).\nSeñala debilidad extrema de la tendencia → la corrección posterior será fuerte y\nrápida. Casi siempre acompañado de divergencia de CVD/momentum."
+        },
+        {
+          "id": "notes/elliott/elliott-basics.md::17",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.6183,
+          "content": "================================================================\n1- Conteo en HTF (1D/4H): defino en que onda estoy y el bias (a favor de tendencia).\n2- Espero zona de interes: fin de onda 2 o de onda 4 para entrar a favor del impulso\n   siguiente (onda 3 o onda 5), que es lo mas probable y rentable.\n3- Confirmo con Order Flow en LTF (15m): absorcion, delta a favor, OI, SFP en el nivel.\n4- A+ setup = conteo Elliott claro + confluencia Fibo + confirmacion de order flow.\n5- Stop: donde se invalida"
+        },
+        {
+          "id": "notes/libros/sintesis-confluencias.md::2",
+          "source_file": "notes/libros/sintesis-confluencias.md",
+          "similarity": 0.6107,
+          "content": "D/E, SOS, salto del arroyo | delta/CVD fuerte, volumen spike | marea + Force Index a favor |\n| Agotamiento / giro | onda 5 + divergencia | UTAD / clímax, esfuerzo≠resultado | divergencia CVD, absorción en extremo | divergencia histograma MACD |\n| Trampa de liquidez | plana expandida (B) | spring / upthrust | barrido de stops + reclaim | falsa ruptura |\n\nCuando VARIOS marcos apuntan al mismo nivel y dirección → confluencia alta → A+."
+        },
+        {
+          "id": "notes/elliott/elliott-basics.md::10",
+          "source_file": "notes/elliott/elliott-basics.md",
+          "similarity": 0.6046,
+          "content": "================================================================\n- Onda 1: arranque, poca conviccion, suele confundirse con rebote. Volumen medio.\n- Onda 2: correccion fuerte, miedo de que siga la tendencia previa. Retrocede\n  50-61.8% de onda 1. Buen volumen vendedor pero SIN romper el inicio de 1.\n- Onda 3: la mas rentable. Reconocimiento de la tendencia, FOMO. Maximo volumen,\n  delta a favor, OI creciente, imbalances/FVGs. Aqui busco mis mejores entradas.\n- Onda 4: correccion lateral, aburrid"
+        },
+        {
+          "id": "notes/setup-rules/a-plus-checklist.md::13",
+          "source_file": "notes/setup-rules/a-plus-checklist.md",
+          "similarity": 0.6019,
+          "content": "ncia con Fib (golden pocket 0.618-0.66).\n[] POI HTF identificado (onda 2/4, cluster, OB, zona de oferta/demanda).\n[] Operar A FAVOR de la tendencia HTF. No long en resistencia, no short en soporte.\n\nEJECUCION (LTF: 15m) - Order Flow\n[] Patron de entrada en el POI: absorcion / drenaje de delta / toma de liquidez / retest OB.\n[] Delta y CVD a favor de la direccion.\n[] Volumen > media en la zona clave (sin volumen = posible fakeout).\n[] OI confirmando (sube con el movimiento direccional). Funding n"
+        },
+        {
+          "id": "notes/libros/elliott-01-estructura-impulso.md::1",
+          "source_file": "notes/libros/elliott-01-estructura-impulso.md",
+          "similarity": 0.5938,
+          "content": "## El patrón base 5-3\n\nEl mercado avanza en un ciclo completo de 8 ondas: 5 ondas a favor de la tendencia\n(impulso, numeradas 1-2-3-4-5) seguidas de 3 ondas correctivas (A-B-C). Las ondas\n1, 3, 5 son impulsivas (a favor); 2 y 4 son correctivas (contra). Cada onda se\nsubdivide en el grado inferior con el mismo patrón fractal (5-3)."
+        }
+      ]
+    }
+  ],
+  "different_elliott_context_same_model_input": false
+}

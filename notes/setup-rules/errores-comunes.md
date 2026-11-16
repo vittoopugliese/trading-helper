@@ -175,7 +175,7 @@ CHECKLIST PSICOLOGICO PRE-ENTRADA (leer cada vez)
 ================================================================
 RECORDATORIOS DE GESTION (de mis notas de setup-rules)
 ================================================================
-- Maximo 2% de la cuenta en SL por posicion.
+- Riesgo maximo: politica activa de config.yaml (7% / $21 por trade). El 2% es la regla clasica de referencia.
 - "El mercado hara lo que quiera, no lo que queremos."
 - TP1 rapido para dejar de preocuparse, resto a la liquidez del otro lado.
 - NO operar tambien es una posicion.

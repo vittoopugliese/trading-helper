@@ -15,12 +15,10 @@ from agent import analyst, knowledge, metrics
 from agent.analyst import _sessions_db, init_sessions_db
 from agent.config import PROJECT_ROOT
 from agent.context import get_context
-from agent.execution import ExecutionError, ExecutionService, load_limits
 from web.services import analyze_for_api, find_chart_image, normalize_symbol
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"
 
 QUICK_PROMPTS = {
     "analyze_15m": (
@@ -47,70 +45,6 @@ QUICK_PROMPTS = {
         "claro (ENTRADA MECANICA o que falta) + entry, SL estructural, TP1 y sizing cuenta $300 x10."
     ),
 }
-
-
-PROPOSE_TOOL = {
-    "name": "proponer_orden",
-    "description": (
-        "Crea una PROPUESTA de orden limite post-only (maker) con SL y TP adjuntos en BingX. "
-        "NO ejecuta nada: queda pendiente hasta que el trader la aprueba con un click en el cockpit, "
-        "y el sistema re-valida los limites duros antes de enviarla. El tamano se calcula solo desde "
-        "el riesgo maximo configurado; no lo propongas vos. Usala cuando hay ENTRADA MECANICA con "
-        "niveles estructurales concretos o cuando el trader pide explicitamente armar la orden. "
-        "Devuelve la propuesta con qty, riesgo, R:R, comisiones y la lista de errores si un limite la bloquea."
-    ),
-    "eager_input_streaming": True,
-    "input_schema": {
-        "type": "object",
-        "properties": {
-            "side": {"type": "string", "enum": ["long", "short"]},
-            "entry": {"type": "number", "description": "Precio limite de entrada (debe quedar del lado maker del libro)."},
-            "stop": {"type": "number", "description": "SL estructural (invalidacion)."},
-            "take_profit": {"type": "number", "description": "TP1."},
-            "rationale": {"type": "string", "description": "Por que: confluencias y gatillo, en una o dos frases."},
-        },
-        "required": ["side", "entry", "stop", "take_profit", "rationale"],
-        "additionalProperties": False,
-    },
-}
-MAX_TOOL_ROUNDS = 3
-
-
-def _valid_proposal_input(args: Any) -> bool:
-    if not isinstance(args, dict) or args.get("side") not in ("long", "short"):
-        return False
-    for key in ("entry", "stop", "take_profit"):
-        value = args.get(key)
-        if isinstance(value, bool) or not isinstance(value, (int, float)) or value <= 0:
-            return False
-    return isinstance(args.get("rationale", ""), str)
-
-
-def _run_propose_tool(args: dict[str, Any], symbol: str, timeframe: str) -> tuple[dict[str, Any] | None, str]:
-    """Returns (record or None, tool_result text for the model)."""
-    try:
-        record = ExecutionService.instance().propose(
-            symbol=symbol,
-            side=args["side"],
-            entry=float(args["entry"]),
-            stop=float(args["stop"]),
-            take_profit=float(args["take_profit"]),
-            timeframe=timeframe,
-            source="chat",
-            rationale=args.get("rationale", ""),
-        )
-    except ExecutionError as exc:
-        return None, json.dumps({"error": str(exc)}, ensure_ascii=False)
-    summary = {
-        "id": record["id"],
-        "status": record["status"],
-        "mode": record["mode"],
-        "plan": record["plan"],
-        "errors": record["errors"],
-        "warnings": record["warnings"],
-        "nota": "Pendiente de aprobacion del trader en el cockpit. No digas que se ejecuto.",
-    }
-    return record, json.dumps(summary, ensure_ascii=False, default=str)
 
 
 def init_chat_db() -> None:
@@ -153,63 +87,56 @@ def get_chat_history(limit: int = 30, symbol: str | None = None) -> list[dict[st
 
 
 def _load_rules_snippet() -> str:
-    rules_dir = PROJECT_ROOT / ".cursor" / "rules"
-    parts: list[str] = []
-    for name in ("inicio-sesion.mdc", "entrada-mecanica.mdc", "analisis-5min-gatillo.mdc"):
-        path = rules_dir / name
-        if path.exists():
-            parts.append(path.read_text(encoding="utf-8")[:2000])
-    return "\n\n".join(parts)
+    """Kept for callers: the full rules (no truncation), see agent/prompt_context."""
+    from agent import prompt_context
+
+    return prompt_context.rules_text()
 
 
-def build_system_prompt(symbol: str, timeframe: str, trade_type: str, scope: str = "core") -> str:
+def build_system_prompt(symbol: str, timeframe: str, trade_type: str, scope: str = "core",
+                        question: str | None = None) -> str:
+    """One analysis bundle (one search, with the user's question) + full policy and rules."""
+    from agent import prompt_context
+
     sym = normalize_symbol(symbol)
     ctx = get_context(sym)
-    bundle = analyze_for_api(sym, timeframe, trade_type, persist=False, scope=scope)
-    notes = knowledge.search_notes(
-        knowledge.build_search_query(bundle.get("snapshot", {}), bundle.get("trade_context")),
-        scope=scope,
-    )
-    n_notes = 8 if scope != "core" else 5
-    notes_label = "Notas relevantes (incluye biblioteca de libros)" if scope != "core" else "Notas relevantes"
-    notes_text = "\n".join(
-        f"- [{n.get('title')}] {(n.get('content') or '')[:300]}" for n in notes[:n_notes]
-    )
+    bundle = analyze_for_api(sym, timeframe, trade_type, persist=False, scope=scope, question=question)
+    n_notes = 8 if scope != "core" else 6
     ctx_text = json.dumps(ctx.to_dict() if ctx else {}, ensure_ascii=False, indent=2)
-    evidence = json.dumps(
-        {"snapshot": bundle.get("snapshot"), "verdict": bundle.get("verdict")},
-        indent=2,
-        default=str,
-    )
-    rules = _load_rules_snippet()
-    limits = load_limits()
-    exec_mode = "DEMO VST, dinero ficticio" if not limits.is_live else "LIVE, dinero real"
-    exec_risk = limits.max_risk_usd
-    exec_rr = limits.min_rr
-    exec_symbols = "simbolos habilitados: " + ", ".join(limits.symbols)
+    if ctx:
+        issues = ctx.validate()
+        if issues or ctx.is_expired():
+            ctx_text += "\nPROBLEMAS DEL CONTEXTO: " + "; ".join(
+                issues + ([f"vencido ({ctx.age_days():.0f} dias)"] if ctx.is_expired() else [])
+            )
+    evidence = prompt_context.evidence_json(bundle.get("snapshot"), bundle.get("verdict"), bundle.get("price_live"))
     return f"""Eres el asistente de trading del proyecto trading-helper.
 El trader opera crypto futures (Binance USDT-M) con Elliott + Order Flow.
 Responde en espanol, directo, sin suavizar cuando hay gatillo claro.
 
-Reglas del workspace:
-{rules}
+{prompt_context.policy_block()}
+
+Reglas del workspace (completas):
+{prompt_context.rules_text()}
 
 Contexto Elliott ({sym}):
 {ctx_text}
 
-Evidencia live ({timeframe} {trade_type}):
+Evidencia live ({timeframe} {trade_type}, precio usado = price_live):
 {evidence}
 
-{notes_label}:
-{notes_text}
+{prompt_context.notes_block(bundle.get("relevant_notes") or [], limit=n_notes)}
 
-Cuando haya confluencia >=3 criterios y sin invalidacion, di **ENTRADA MECANICA** con entry, SL, TP1 y sizing.
-Margen != riesgo. Tope $21 riesgo por trade en cuenta $300 x10.
+Decision de entrada: di **ENTRADA MECANICA** solo si verdict.eligible es true y verdict.mechanical_entry es true.
+Si verdict.blocked_reasons no esta vacio, explica cada motivo y que falta; no sugieras entrar.
+El sizing sale de verdict.position_size (ya respeta la politica activa).
 
-Ejecucion BingX ({exec_mode}): podes usar la herramienta proponer_orden para dejar una orden limite
-post-only lista para aprobar. Limites duros del ejecutor: riesgo max ${exec_risk} por trade, R:R min {exec_rr},
-{exec_symbols}. Vos solo propones; el trader aprueba con un click. Nunca digas que una orden fue enviada.
-Si la herramienta devuelve errores, explicalos y no insistas con niveles inventados para esquivar un limite.
+Datos de footprint: snapshot.atas viene del indicador ATAS (absorcion, delta reversal, imbalances
+apilados, big trades, DOM). Si atas.available es false, deci "sin ATAS" y no inventes lectura de
+footprint. snapshot.liquidations son liquidaciones reales (Bybit + Binance); si ready es false no
+hay z-score. Este chat no tiene herramientas: no puede consultar datos nuevos, abrir notas ni
+registrar trades; si falta un dato, pedilo o indica que hay que refrescar. La plataforma no envia
+ordenes: solo analiza y alerta.
 """
 
 
@@ -260,7 +187,7 @@ def stream_chat(
         return
 
     client = anthropic.Anthropic(api_key=api_key)
-    system = build_system_prompt(sym, timeframe, trade_type, scope=scope)
+    system = build_system_prompt(sym, timeframe, trade_type, scope=scope, question=user_msg)
 
     content: list[Any] = []
     if include_chart:
@@ -277,44 +204,22 @@ def stream_chat(
     messages.append({"role": "user", "content": content})
 
     full = ""
-    for _ in range(MAX_TOOL_ROUNDS + 1):
-        try:
-            with client.messages.stream(
-                model=MODEL,
-                max_tokens=4000,
-                system=system,
-                messages=messages,
-                tools=[PROPOSE_TOOL],
-            ) as stream:
-                for text in stream.text_stream:
-                    full += text
-                    yield json.dumps({"text": text})
-                response = stream.get_final_message()
-        except ValueError:
-            # Tool input JSON the SDK could not parse; stop instead of guessing.
-            yield json.dumps({"error": "La propuesta del modelo llego malformada. Pedila de nuevo."})
-            break
-        except Exception as exc:
-            yield json.dumps({"error": str(exc)})
-            yield "[DONE]"
-            return
+    try:
+        from agent import prompt_context
 
-        tool_uses = [b for b in response.content if b.type == "tool_use"]
-        if not tool_uses or response.stop_reason in ("refusal", "max_tokens"):
-            break
-        results = []
-        for block in tool_uses:
-            if block.name != PROPOSE_TOOL["name"] or not _valid_proposal_input(block.input):
-                results.append({"type": "tool_result", "tool_use_id": block.id, "is_error": True,
-                                "content": "Input invalido: side long/short y entry/stop/take_profit numeros positivos."})
-                continue
-            record, tool_text = _run_propose_tool(block.input, sym, timeframe)
-            if record is not None:
-                yield json.dumps({"proposal": record}, default=str)
-                full += f"\n[Propuesta #{record['id']} {record['status']}]\n"
-            results.append({"type": "tool_result", "tool_use_id": block.id, "content": tool_text})
-        messages.append({"role": "assistant", "content": response.content})
-        messages.append({"role": "user", "content": results})
+        with client.messages.stream(
+            model=prompt_context.llm_model(),
+            max_tokens=8000,
+            system=system,
+            messages=messages,
+        ) as stream:
+            for text in stream.text_stream:
+                full += text
+                yield json.dumps({"text": text})
+    except Exception as exc:
+        yield json.dumps({"error": str(exc)})
+        yield "[DONE]"
+        return
 
     save_chat_message("assistant", full, sym)
     yield "[DONE]"

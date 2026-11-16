@@ -78,3 +78,13 @@ SANTO GRIAL PARA CONFIRMAR UN SFP
 [] Incremento de OI contrario.
 [] Traders atrapados.
 [] Volumen en la mecha (no en el cuerpo).
+
+================================================================
+DATOS QUE MIDEN CADA PATRON (ver setup-rules/datos-requeridos.md)
+================================================================
+- Absorcion: `absorcion_en_minimo` + POC en la mecha (`poc_pos` <= 0.33).
+- Drenaje de delta: `cvd_divergence = bearish` (tipo agotamiento) en el POI.
+- Sweep: mecha fuera del nivel + `volume_x >= 1.5`; sin eso = liquidez falsa (red flag).
+  Si hay historial de liquidaciones: `liq_flush` del lado barrido (hipotesis H2).
+- Unfinished auction: `unfinished_low/high` (bid y ask > 0 en el extremo) = iman.
+- Delta leading en contra: `imbalance_apilado_*` del lado contrario.

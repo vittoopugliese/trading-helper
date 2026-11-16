@@ -279,6 +279,41 @@ def backtest_suite_cmd(
         )
 
 
+@app.command("elliott-backtest")
+def elliott_backtest_cmd(
+    symbol: str = typer.Option("BTCUSDT", help="Simbolo con historial 1m en cache"),
+    timeframes: str = typer.Option("15m", help="Timeframes separados por coma; el primero es el primario"),
+    zigzag: str = typer.Option("2.0", help="Umbrales zigzag en ATR (el primero es el primario; el resto, robustez)"),
+    start: str | None = typer.Option(None, help="UTC ISO/date"),
+    end: str | None = typer.Option(None, help="UTC ISO/date"),
+    output_dir: str | None = typer.Option(None),
+) -> None:
+    """Candidatos 1-2 con reglas congeladas (notes/setup-rules/elliott-1-2-reglas.md)."""
+    from agent import elliott_backtest
+
+    tfs = [item.strip() for item in timeframes.split(",") if item.strip()]
+    zz = [float(item) for item in zigzag.split(",") if item.strip()]
+    base = elliott_backtest.Elliott12Config(timeframe=tfs[0], zigzag_atr=zz[0])
+    result = elliott_backtest.run(
+        symbol, tfs, base, historical.utc_ms(start), historical.utc_ms(end), zigzag_values=zz
+    )
+    path = elliott_backtest.save(result, output_dir)
+    console.print(f"[green]Elliott 1-2 guardado:[/green] {path}")
+    for run in result["runs"]:
+        cfg, s = run["config"], run["summary"]
+        tag = "*" if run["primary"] else " "
+        console.print(
+            f"{tag} {cfg['timeframe']} zz={cfg['zigzag_atr']} candidatos={s['candidates']} "
+            f"onda3 en zona={s['wave3_rate_in_zone']}% (n={s['wave3_sample']})"
+        )
+        for variant, name in (("variant_a", "A zona"), ("variant_b", "B confirmación")):
+            m = s["variants"][variant]
+            console.print(
+                f"    {name}: n={m['all']['trades']} WR={m['all']['win_rate']}% E={m['all']['expectancy_r']}R | "
+                f"test n={m['test']['trades']} WR={m['test']['win_rate']}% E={m['test']['expectancy_r']}R"
+            )
+
+
 @app.command("show-context")
 def show_context_cmd(symbol: str = typer.Argument(...)) -> None:
     """Mostrar contexto Elliott/Fib guardado para un simbolo."""
@@ -287,22 +322,6 @@ def show_context_cmd(symbol: str = typer.Argument(...)) -> None:
         console.print(f"[yellow]No context for {symbol.upper()}. Create context/{symbol.upper()}.yaml[/yellow]")
         raise typer.Exit(1)
     console.print_json(json.dumps(ctx.to_dict(), indent=2, ensure_ascii=False))
-
-
-@app.command("bingx-check")
-def bingx_check_cmd() -> None:
-    """Verificar conexion BingX (modo de config.yaml): equity, posiciones, limites. No opera."""
-    from agent.execution import ExecutionService
-
-    status = ExecutionService.instance().status()
-    if not status.get("connected"):
-        console.print(f"[red]Sin conexion ({status['mode']}):[/red] {status.get('error')}")
-        raise typer.Exit(1)
-    console.print(
-        f"[green]BingX {status['mode'].upper()} OK[/green] equity {status['equity']:.2f} "
-        f"libre {status['free']:.2f} | riesgo max/orden ${status['risk_budget_usd']:.2f} | "
-        f"posiciones {len(status['positions'])} | kill switch {'ON' if status['halted'] else 'off'}"
-    )
 
 
 @app.command()

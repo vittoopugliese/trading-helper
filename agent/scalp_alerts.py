@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 import pandas as pd
 
 from agent import market_data, metrics
+from agent.config import get_config
 from agent.context import TradeContext
 
 
@@ -21,9 +22,13 @@ class ScalpAlert:
     stop: float
     target: float
     detail: str
+    timeframe: str = ""
+    blocked_reasons: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
+            "timeframe": self.timeframe,
+            "blocked_reasons": self.blocked_reasons,
             "direction": self.direction,
             "trigger": self.trigger,
             "urgency": self.urgency,
@@ -82,8 +87,15 @@ def detect_scalp_alerts(
     long_support: tuple[float, float] | None = (70.25, 70.45),
     long_invalidation: float = 70.15,
     long_targets: tuple[float, ...] = (70.80, 71.00),
+    order_flow: dict[str, Any] | None = None,
 ) -> list[ScalpAlert]:
-    """Detect actionable scalp triggers from live order flow."""
+    """Detect scalp triggers from live order flow.
+
+    Delta thresholds are a share of each candle's own volume (they used to be absolute
+    contract counts, which mean different things on HYPE and BTC). Every alert still has to
+    pass `validate_alert` (geometry + minimum R:R) before it may be urgent.
+    `order_flow` lets the caller reuse an aggTrades/book read instead of fetching again.
+    """
     alerts: list[ScalpAlert] = []
     df = market_data.load_klines_df(symbol, timeframe, limit=30)
     if len(df) < 8:
@@ -91,7 +103,7 @@ def detect_scalp_alerts(
 
     price = float(df["close"].iloc[-1])
     delta = metrics.compute_delta_series(df)
-    of = metrics.compute_real_order_flow(symbol)
+    of = order_flow if order_flow is not None else metrics.compute_real_order_flow(symbol)
     buy_ratio = of.get("buy_ratio", 0.5)
     recent_delta = of.get("recent_delta_sum", 0)
     book_bias = of.get("book_bias")
@@ -105,7 +117,12 @@ def detect_scalp_alerts(
     d1 = float(delta.iloc[-2])
     d2 = float(delta.iloc[-3])
     d3 = float(delta.iloc[-4])
-    bounce_delta = d3 + d2 + d1
+    v1 = float(df["volume"].iloc[-2]) or 1.0
+    v2 = float(df["volume"].iloc[-3]) or 1.0
+    v3 = float(df["volume"].iloc[-4]) or 1.0
+    last = df.iloc[-2]
+    last_range = float(last["high"] - last["low"])
+    close_pos = (float(last["close"]) - float(last["low"])) / last_range if last_range > 0 else 0.5
 
     # --- SHORT: rejection at resistance after bounce ---
     at_resistance = short_resistance and short_resistance[0] <= price <= short_resistance[1]
@@ -120,7 +137,7 @@ def detect_scalp_alerts(
     exhaustion_after_bounce = d2 > 0 and d1 < 0 and buy_ratio < 0.50
 
     if (at_resistance or near_resistance) and rejection:
-        urgency = "now" if at_resistance and d1 < -500 else "watch"
+        urgency = "now" if at_resistance and d1 <= -0.15 * v1 else "watch"
         alerts.append(
             ScalpAlert(
                 direction="short",
@@ -141,7 +158,7 @@ def detect_scalp_alerts(
     # --- SHORT: delta drain at resistance (SETUP_RULE patron entrada) ---
     # Secuencia: delta positivo decreciente -> flip negativo en POI = agotamiento comprador
     delta_drain = (
-        d3 > 300
+        d3 >= 0.10 * v3
         and d2 > 0
         and d1 < 0
         and d2 < d3 * 0.65
@@ -180,7 +197,7 @@ def detect_scalp_alerts(
         )
 
     # --- SHORT: breakdown already started (chase with tight stop) ---
-    if short_resistance and drop_from_hi >= 0.002 and d1 < -800 and buy_ratio < 0.42:
+    if short_resistance and drop_from_hi >= 0.002 and d1 <= -0.20 * v1 and buy_ratio < 0.42:
         alerts.append(
             ScalpAlert(
                 direction="short",
@@ -196,15 +213,21 @@ def detect_scalp_alerts(
 
     vol_ma = float(df["volume"].iloc[-22:-2].mean()) if len(df) >= 22 else float(df["volume"].mean())
     last_vol = float(df["volume"].iloc[-2]) if len(df) >= 2 else float(df["volume"].iloc[-1])
-    vol_spike = last_vol >= vol_ma * 1.3 if vol_ma else False
+    # Same 1.5x as the notes / setup engine (thresholds.volume_spike_ratio), on the trigger
+    # candle or the one before it (the spike usually prints on the wick candle).
+    spike_ratio = float(get_config()['thresholds'].get('volume_spike_ratio', 1.5))
+    vol_spike = max(last_vol, v2) >= vol_ma * spike_ratio if vol_ma else False
 
-    # --- LONG: absorcion conservadora (delta negativo en mecha + flip positivo) ---
+    # --- LONG: absorcion (gatillo de 4 señales): en soporte, venta agresiva previa (delta
+    # <= -10% del volumen), flip a delta positivo, volumen sobre la media y la vela cerrada
+    # con cierre en su mitad superior (rechazo del minimo). Sin las cuatro = no hay absorcion.
     absorption = (
         at_support
-        and d2 < -300
+        and d2 <= -0.10 * v2
         and d1 > 0
-        and buy_ratio > 0.55
-        and book_bias in ("bullish", "neutral")
+        and vol_spike
+        and close_pos >= 0.5
+        and book_bias in ("bullish", "neutral", None)
     )
     if absorption:
         alerts.append(
@@ -218,24 +241,9 @@ def detect_scalp_alerts(
                 target=long_targets[0],
                 detail=(
                     f"Absorcion en soporte {long_support}: "
-                    f"d2={d2:+.0f} d1={d1:+.0f} buy_ratio={buy_ratio:.2f} "
-                    f"(sellers atrapados, buyers tomaron control)"
+                    f"d2={d2:+.0f} ({d2 / v2:+.0%} vol) d1={d1:+.0f} vol {last_vol / vol_ma:.1f}x "
+                    f"cierre {close_pos:.0%} del rango buy_ratio={buy_ratio:.2f}"
                 ),
-            )
-        )
-
-    # Legacy simple absorption (single candle)
-    if at_support and d1 > 0 and buy_ratio > 0.55 and book_bias in ("bullish", "neutral") and not absorption:
-        alerts.append(
-            ScalpAlert(
-                direction="long",
-                trigger="absorption_at_support",
-                urgency="now",
-                price=price,
-                entry=price,
-                stop=long_invalidation,
-                target=long_targets[0],
-                detail=f"Absorcion en soporte {long_support} delta={d1:+.0f} buy_ratio={buy_ratio:.2f}",
             )
         )
 
@@ -343,6 +351,13 @@ def levels_sane(direction: str, entry: float, stop: float, target: float) -> boo
     if direction == "short":
         return target < entry < stop
     return False
+
+
+def validate_alert(alert: ScalpAlert, required_rr: float | None = None) -> list[str]:
+    """Same level/R:R rule as the setup engine (agent/policy). Empty = may be urgent."""
+    from agent import policy
+
+    return policy.level_problems(alert.direction, alert.entry, alert.stop, alert.target, required_rr)
 
 
 def sanitize_alerts(alerts: list[ScalpAlert]) -> tuple[list[ScalpAlert], list[ScalpAlert]]:

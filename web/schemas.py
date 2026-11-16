@@ -69,27 +69,3 @@ class JournalTradeClose(BaseModel):
     result: Literal["win", "loss", "breakeven"]
     rr_real: float | None = None
     emotion: str = ""
-
-
-class ExecutionProposal(BaseModel):
-    symbol: str = "HYPEUSDT"
-    side: Literal["long", "short"]
-    entry: float = Field(gt=0)
-    stop: float = Field(gt=0)
-    take_profit: float = Field(gt=0)
-    timeframe: str = "15m"
-    source: Literal["manual", "context", "verdict", "chat"] = "manual"
-    rationale: str = Field(default="", max_length=2000)
-
-
-class ExecutionApprove(BaseModel):
-    confirm: str | None = None  # "LIVE" required when execution.mode == live
-
-
-class ExecutionClose(BaseModel):
-    confirm: str | None = None
-
-
-class BingXKeysUpdate(BaseModel):
-    api_key: str
-    api_secret: str

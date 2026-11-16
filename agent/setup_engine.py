@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+import pandas as pd
+
 from agent.config import get_config
 from agent.context import TradeContext, get_context
 from agent import metrics
@@ -34,6 +36,10 @@ class SetupVerdict:
     of_patterns: list[str] = field(default_factory=list)
     context_stale: bool = False
     context_drift_pct: float | None = None
+    evidence: dict[str, Any] = field(default_factory=dict)
+    eligible: bool = False
+    blocked_reasons: list[str] = field(default_factory=list)
+    policy_version: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -48,6 +54,10 @@ class SetupVerdict:
             "position_size": self.position_size,
             "at_poi": self.at_poi,
             "of_patterns": self.of_patterns,
+            "evidence": self.evidence,
+            "eligible": self.eligible,
+            "blocked_reasons": self.blocked_reasons,
+            "policy_version": self.policy_version,
             "conditions": [
                 {
                     "name": c.name,
@@ -189,19 +199,103 @@ def _check_structure_swing(snapshot: metrics.MarketSnapshot) -> ConditionResult:
     )
 
 
-def _check_risk_reward(levels: dict[str, float | None]) -> ConditionResult:
-    cfg = get_config()
+def _check_risk_reward(levels: dict[str, Any], direction: str) -> ConditionResult:
+    """R:R only counts when SL and TP sit on the correct side of the entry for `direction`
+    (an abs() R:R on inverted levels used to look positive)."""
+    from agent import policy
+
+    min_rr = policy.min_rr()
+    problems = policy.level_problems(direction, levels.get("entry"), levels.get("stop"), levels.get("target"))
     rr = levels.get("risk_reward") or 0.0
-    min_rr = cfg["scoring"]["min_rr"]
-    passed = rr >= min_rr
+    passed = not problems
     return ConditionResult(
         name="risk_reward",
         passed=passed,
         weight=0.0,
-        score=1.0 if passed else min(rr / min_rr, 0.9) if min_rr else 0.0,
-        detail=f"R:R = {rr} (min {min_rr}) [{levels.get('source', 'atr')}]",
+        score=1.0 if passed else (min(rr / min_rr, 0.9) if min_rr and "invertidos" not in " ".join(problems) else 0.0),
+        detail=f"R:R = {rr} (min {min_rr}) [{levels.get('source', 'atr')}]" + (f" — {problems[0]}" if problems else ""),
         critical=True,
     )
+
+
+_TF_SECONDS = {"m": 60, "h": 3600, "d": 86400, "w": 604800}
+
+
+def _tf_seconds(tf: str) -> int:
+    try:
+        return int(tf[:-1]) * _TF_SECONDS[tf[-1]]
+    except (KeyError, ValueError, IndexError):
+        return 0
+
+
+def _check_htf_alignment(snapshot: metrics.MarketSnapshot, direction: str) -> ConditionResult:
+    """Checklist star: trade WITH the higher-timeframe trend. Uses every context TF above the
+    execution TF. All of them against = counter-trend (blocks A+); no data = unknown."""
+    cfg = get_config()
+    exec_sec = _tf_seconds(snapshot.timeframe)
+    tf_by_label = cfg.get("timeframes", {})
+    trends = {}
+    for label, summary in (snapshot.context_timeframes or {}).items():
+        tf = tf_by_label.get(label, label)
+        if _tf_seconds(tf) > exec_sec:
+            trends[tf] = (summary.get("structure") or {}).get("trend")
+    want = "bullish" if direction == "long" else "bearish"
+    against = "bearish" if direction == "long" else "bullish"
+    with_us = [tf for tf, t in trends.items() if t == want]
+    vs_us = [tf for tf, t in trends.items() if t == against]
+    if not trends:
+        return ConditionResult("htf_alignment", True, 0.0, 0.5, "Sin temporalidades superiores en el snapshot (desconocido)")
+    counter = bool(vs_us) and not with_us
+    detail = f"HTF a favor={with_us or 'ninguna'}, en contra={vs_us or 'ninguna'}"
+    return ConditionResult("htf_alignment", not counter, 0.0, 0.0 if counter else 1.0,
+                           detail + (" — CONTRA TENDENCIA HTF" if counter else ""))
+
+
+def _invalidated_since(symbol: str, dctx: TradeContext | None) -> str | None:
+    """Was the scenario's invalidation already hit after the context was written?
+
+    A thesis broken last Tuesday stays broken even if price came back to the POI. Uses 1h
+    candles (300 cached = 12 days, more than context_max_age_days). None = not hit / unknown.
+    """
+    if dctx is None or dctx.invalidation is None or not dctx.as_of:
+        return None
+    from agent import market_data
+
+    try:
+        as_of = pd.Timestamp(dctx.as_of)
+        as_of = as_of.tz_localize("UTC") if as_of.tzinfo is None else as_of.tz_convert("UTC")
+        df = market_data.load_klines_df(symbol, "1h")
+        if df is None or df.empty or "open_time" not in df:
+            return None
+        times = pd.to_datetime(df["open_time"], utc=True)
+        after = df[times >= as_of.floor("h")]
+        if after.empty:
+            return None
+        if dctx.bias == "long":
+            hit = after[after["low"] <= dctx.invalidation]
+        else:
+            hit = after[after["high"] >= dctx.invalidation]
+        if hit.empty:
+            return None
+        return str(pd.to_datetime(hit["open_time"].iloc[0], utc=True))
+    except Exception:
+        return None
+
+
+def _directional_context(ctx: TradeContext | None, direction: str) -> TradeContext | None:
+    """The context seen from `direction`: its own POI / invalidation / targets, or None."""
+    if ctx is None or direction not in ("long", "short"):
+        return None
+    scenario = ctx.scenario(direction)
+    if scenario is None:
+        return None
+    view = TradeContext.from_dict(ctx.to_dict(), ctx.symbol)
+    view.bias = direction
+    view.poi_low, view.poi_high = scenario["poi_low"], scenario["poi_high"]
+    view.invalidation = scenario["invalidation"]
+    view.targets = list(scenario["targets"])
+    view.as_of = ctx.as_of
+    return view
 
 
 def _check_price_in_poi(snapshot: metrics.MarketSnapshot, ctx: TradeContext | None) -> ConditionResult:
@@ -315,11 +409,38 @@ def _check_cvd_divergence(snapshot: metrics.MarketSnapshot, direction: str, ctx:
     )
 
 
+def _check_atas_footprint(snapshot: metrics.MarketSnapshot, direction: str) -> tuple[ConditionResult, dict[str, Any]]:
+    from agent import atas_feed
+
+    conf = atas_feed.footprint_confirmation(snapshot.atas or {}, direction)
+    if not conf["available"]:
+        reason = (snapshot.atas or {}).get("reason") or "bridge ATAS sin datos"
+        return ConditionResult("atas_footprint", False, 0.0, 0.0, f"ATAS no disponible: {reason}"), conf
+    tf_used = snapshot.atas.get("tf")
+    bar = f" (vela {conf['bar'][11:16]} UTC)" if conf.get("bar") else ""
+    detail = f"ATAS {tf_used}{bar}: a favor={conf['signals'] or 'nada'}, en contra={conf['against'] or 'nada'}"
+    return ConditionResult("atas_footprint", conf["confirmed"], 0.0, 1.0 if conf["confirmed"] else 0.0, detail), conf
+
+
+def _check_liquidation_flush(snapshot: metrics.MarketSnapshot, direction: str) -> tuple[ConditionResult, dict[str, Any]]:
+    from agent import liquidations
+
+    flush = liquidations.flush_confirmation(snapshot.liquidations or {}, direction)
+    return ConditionResult("liquidation_flush", flush["flush"], 0.0, 1.0 if flush["flush"] else 0.0, flush["detail"]), flush
+
+
 def evaluate_setup(
     snapshot: metrics.MarketSnapshot,
     trade_context: TradeContext | None = None,
 ) -> SetupVerdict:
-    """Score snapshot against A+ checklist with Elliott context."""
+    """Score snapshot against the A+ checklist and decide eligibility in ONE place.
+
+    `grade` says how good the setup looks; `eligible` says whether an entry may be suggested.
+    Every surface (watcher, cockpit, chat, scheduler) must read `eligible` and show
+    `blocked_reasons` instead of re-deriving its own entry rule.
+    """
+    from agent import market_data, policy
+
     cfg = get_config()
     trade_type = snapshot.trade_type
     weights = cfg["weights"].get(trade_type, cfg["weights"]["swing"])
@@ -335,79 +456,130 @@ def evaluate_setup(
             direction="none",
             trade_type=trade_type,
             summary="No clear directional bias. Define bias in context/SYMBOL.yaml or wait for structure+flow.",
+            blocked_reasons=["sin direccion"],
+            policy_version=policy.POLICY_VERSION,
         )
 
-    from agent import market_data
+    blocked: list[str] = []
+    hard_block = False
+    if ctx is not None:
+        issues = ctx.validate()
+        if issues:
+            blocked += [f"contexto: {i}" for i in issues]
+            hard_block = True
+        if ctx.is_expired():
+            blocked.append(f"contexto vencido: editado hace {ctx.age_days():.0f} dias "
+                           f"(max {cfg['thresholds'].get('context_max_age_days', 7)})")
+            hard_block = True
+    dctx = _directional_context(ctx, direction)
+    if ctx is not None and ctx.has_poi() and dctx is None:
+        blocked.append(f"el contexto no tiene un escenario {direction} coherente")
+        hard_block = True
+    invalidated_at = _invalidated_since(snapshot.symbol, dctx)
+    if invalidated_at:
+        blocked.append(f"tesis {direction} invalidada desde {invalidated_at} (toco {dctx.invalidation}); rehacer el contexto")
+        hard_block = True
 
     df = market_data.load_klines_df(snapshot.symbol, snapshot.timeframe)
     levels = metrics.suggest_levels(df, direction, ctx)
     entry = levels.get("entry")
     stop = levels.get("stop")
+    guard = policy.daily_guard()
     pos_size = metrics.compute_position_size(
         float(entry) if entry else snapshot.price,
         float(stop) if stop else None,
         ctx.account_size if ctx else None,
         ctx.risk_pct if ctx else None,
+        open_trades=guard.get("open_trades"),
     )
+    if guard["blocked"]:
+        blocked.append(guard["detail"])
+        hard_block = True
+    if pos_size.get("blocked_reason"):
+        blocked.append(f"sizing: {pos_size['blocked_reason']}")
+        hard_block = True
 
     tolerance = cfg["thresholds"].get("poi_tolerance_pct", 0.001)
-    at_poi = bool(ctx and ctx.has_poi() and ctx.price_in_poi(snapshot.price, tolerance))
+    at_poi = bool(dctx and dctx.price_in_poi(snapshot.price, tolerance))
     pattern_info = metrics.detect_of_pattern_at_poi(snapshot.order_flow, direction, at_poi)
 
-    context_stale = bool(ctx and ctx.has_poi() and ctx.is_stale(snapshot.price))
-    context_drift = ctx.poi_drift_pct(snapshot.price) if ctx and ctx.has_poi() else None
+    poi_ctx = dctx or ctx
+    context_stale = bool(poi_ctx and poi_ctx.has_poi() and poi_ctx.is_stale(snapshot.price))
+    context_drift = poi_ctx.poi_drift_pct(snapshot.price) if poi_ctx and poi_ctx.has_poi() else None
+    if context_stale:
+        blocked.append(f"contexto desactualizado: precio a {(context_drift or 0):.1%} del POI {direction}")
+        hard_block = True
 
     checks = [
         _check_trend_alignment(snapshot, direction),
+        _check_htf_alignment(snapshot, direction),
         _check_delta_cvd(snapshot, direction),
         _check_volume_spike(snapshot),
         _check_oi_confirmation(snapshot, direction),
         _check_funding_neutral(snapshot),
         _check_structure_swing(snapshot),
-        _check_risk_reward(levels),
-        _check_price_in_poi(snapshot, ctx),
-        _check_invalidation_respected(snapshot, ctx),
-        _check_of_confirmation_at_poi(snapshot, ctx, direction),
-        _check_cvd_divergence(snapshot, direction, ctx),
+        _check_risk_reward(levels, direction),
+        _check_price_in_poi(snapshot, dctx),
+        _check_invalidation_respected(snapshot, dctx),
+        _check_of_confirmation_at_poi(snapshot, dctx, direction),
+        _check_cvd_divergence(snapshot, direction, dctx),
     ]
+    # Weight 0 on purpose: new evidence is shown and recorded in the signal ledger, but it
+    # does not move the score until forward results show it helps (see notes/research).
+    atas_check, atas_conf = _check_atas_footprint(snapshot, direction)
+    liq_check, liq_flush = _check_liquidation_flush(snapshot, direction)
+    checks += [atas_check, liq_check]
 
     weighted_score = 0.0
-    critical_failed = False
-
     for check in checks:
         w = weights.get(check.name, 0.0)
         check.weight = w
         check.score = check.score * w
         weighted_score += check.score
         if check.critical and not check.passed:
-            critical_failed = True
+            blocked.append(f"{check.name}: {check.detail}")
+            hard_block = True
 
-    if critical_failed:
-        grade = "NO_TRADE"
-    elif weighted_score >= threshold:
+    if weighted_score >= threshold:
         grade = "A+"
     elif weighted_score >= threshold - 0.15:
         grade = "B"
     else:
         grade = "NO_TRADE"
-
-    if context_stale:
+    if hard_block:
         grade = "NO_TRADE"
+
+    # Soft gates: the setup may look fine but is not an A+ entry.
+    gate_note = ""
+    htf = next(c for c in checks if c.name == "htf_alignment")
+    if not htf.passed:
+        blocked.append("contra tendencia HTF (checklist: operar a favor de la tendencia)")
+        if grade == "A+":
+            grade, gate_note = "B", " Contra tendencia HTF: baja a B."
+    # Footprint gate (the 4th signal of the gatillo notes): with live ATAS data an entry needs
+    # the footprint on its side. Without ATAS the grade stands but the alert says so.
+    atas_cfg = cfg.get("atas") or {}
+    if atas_conf["available"]:
+        if atas_conf["contradicted"]:
+            blocked.append("footprint ATAS en contra")
+            if grade == "A+":
+                grade, gate_note = "B", gate_note + " Footprint ATAS EN CONTRA: baja a B."
+        elif atas_cfg.get("require_confirmation_for_a_plus", True) and at_poi and not atas_conf["confirmed"]:
+            blocked.append("en POI sin gatillo footprint ATAS (absorcion / delta reversal / flip)")
+            if grade == "A+":
+                grade, gate_note = "B", gate_note + " En POI sin gatillo footprint ATAS: baja a B."
+    if grade != "A+" and not blocked:
+        blocked.append(f"score {weighted_score:.0%} < A+ ({threshold:.0%})")
+
+    eligible = grade == "A+" and not blocked
 
     passed_count = sum(1 for c in checks if c.passed)
     wave_info = f" | {ctx.wave}" if ctx and ctx.wave else ""
     poi_info = " @ POI" if at_poi else ""
-    stale_info = ""
-    if context_stale and ctx:
-        stale_info = (
-            f" CONTEXTO DESACTUALIZADO: precio {snapshot.price} esta a "
-            f"{(context_drift or 0.0):.1%} del POI [{ctx.poi_low}, {ctx.poi_high}] — "
-            f"rehace el conteo en context/{snapshot.symbol}.yaml. "
-            f"Los niveles mostrados salen de estructura/ATR, NO del contexto."
-        )
+    block_info = f" BLOQUEADO: {blocked[0]}" + (f" (+{len(blocked) - 1})" if len(blocked) > 1 else "") if blocked else ""
     summary = (
         f"{grade} - {direction.upper()} {trade_type} on {snapshot.symbol} {snapshot.timeframe}{poi_info}{wave_info}. "
-        f"Score {weighted_score:.0%} ({passed_count}/{len(checks)} conditions met).{stale_info}"
+        f"Score {weighted_score:.0%} ({passed_count}/{len(checks)} conditions met).{gate_note}{block_info}"
     )
 
     return SetupVerdict(
@@ -423,4 +595,8 @@ def evaluate_setup(
         of_patterns=pattern_info.get("patterns", []),
         context_stale=context_stale,
         context_drift_pct=round(context_drift, 4) if context_drift is not None else None,
+        evidence={"atas": atas_conf, "liquidations": liq_flush, "daily_guard": guard},
+        eligible=eligible,
+        blocked_reasons=blocked,
+        policy_version=policy.POLICY_VERSION,
     )

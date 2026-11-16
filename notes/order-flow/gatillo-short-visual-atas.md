@@ -69,3 +69,13 @@ trampa ya se cerro, no mientras sigue subiendo.
 - 22-jun: short 69.25, techo zona 69.55, delta negativo -> cayo a 67.91 (-2%).
   Gatillo OK; fallo: salida prematura por ruido 1m (Error #5).
 Leccion cruzada: el gatillo SHORT viene funcionando; lo que falla es la GESTION del SL.
+
+## Datos que miden cada señal (espejo del long)
+Diccionario completo: `notes/setup-rules/datos-requeridos.md`.
+1) Precio en mi techo -> `price_in_poi`.
+2) Pincha arriba y vuelve -> `absorcion_en_maximo` (>=35% del volumen en el 25% superior,
+   delta de esa zona positivo, cierre en la mitad inferior).
+3) Barra gigante -> `volume_x >= 1.5`.
+4) Delta verde -> rojo / drenaje -> `delta_reversal_intra_vela` (max delta >= +15% del vol y
+   cierra -), `delta_flip` a rojo, o `cvd_divergence = bearish`.
+Frenar si aparece `imbalance_apilado_comprador`. Extra (H2): squeeze de shorts, z >= 2.5.

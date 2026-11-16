@@ -157,8 +157,6 @@ def read_settings() -> dict[str, Any]:
     env = load_env_file()
     return {
         "has_anthropic_key": bool(env.get("ANTHROPIC_API_KEY")),
-        "has_bingx_keys": bool(env.get("BINGX_API_KEY") and env.get("BINGX_API_SECRET")),
-        "execution_mode": (cfg.get("execution") or {}).get("mode", "demo"),
         "account_size": risk.get("default_account_size", 300),
         "leverage": risk.get("leverage", 10),
         "max_risk_usd": risk.get("max_risk_usd", 21),
@@ -168,15 +166,28 @@ def read_settings() -> dict[str, Any]:
 
 
 def update_risk_settings(data: dict[str, Any]) -> dict[str, Any]:
+    """Edit only the `risk:` values in config.yaml, line by line, keeping every comment."""
+    import re
+
     cfg_path = PROJECT_ROOT / "config.yaml"
-    with open(cfg_path, encoding="utf-8") as f:
-        cfg = yaml.safe_load(f) or {}
-    risk = cfg.setdefault("risk", {})
-    for k in ("default_account_size", "max_risk_usd", "leverage"):
-        if data.get(k) is not None:
-            risk[k] = data[k]
-    with open(cfg_path, "w", encoding="utf-8") as f:
-        yaml.dump(cfg, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+    with open(cfg_path, encoding="utf-8", newline="") as f:  # keep the file's own line endings
+        lines = f.read().splitlines(keepends=True)
+    pending = {k: data[k] for k in ("default_account_size", "max_risk_usd", "leverage") if data.get(k) is not None}
+    in_risk = False
+    for i, line in enumerate(lines):
+        if re.match(r"^\S", line):
+            in_risk = line.startswith("risk:")
+            continue
+        if not in_risk:
+            continue
+        m = re.match(r"^(\s+)(\w+):(\s*)([^#\n]*?)(\s*#.*)?(\r?\n)?$", line)
+        if m and m.group(2) in pending:
+            value = pending.pop(m.group(2))
+            lines[i] = f"{m.group(1)}{m.group(2)}:{m.group(3) or ' '}{value}{m.group(5) or ''}{m.group(6) or ''}"
+    if pending:
+        raise ValueError(f"claves no encontradas en risk: {sorted(pending)}")
+    with open(cfg_path, "w", encoding="utf-8", newline="") as f:
+        f.write("".join(lines))
     from agent.config import reset_config
 
     reset_config()
@@ -190,14 +201,14 @@ def analyze_for_api(
     *,
     persist: bool = True,
     scope: str = "core",
+    question: str | None = None,
 ) -> dict[str, Any]:
     from agent import analyst
 
     bundle = analyst.analyze(
-        symbol, timeframe, trade_type, deep=False, compare_previous=False, scope=scope
+        symbol, timeframe, trade_type, deep=False, compare_previous=False, scope=scope,
+        question=question, persist=persist,
     )
-    if not persist:
-        pass
     data = bundle.to_dict()
     verdict = data.get("verdict") or {}
     hunt = [verdict.get("direction", "long")]
